@@ -28,7 +28,9 @@ import {
   History,
   LayoutDashboard,
   Edit,
-  Bell
+  Bell,
+  CheckCircle,
+  Calendar
 } from "lucide-react";
 import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock } from "@/lib/mockData";
 import { isSupabaseConfigured } from "@/lib/supabase";
@@ -100,6 +102,7 @@ export default function Dashboard() {
   const [kanbanDateFilter, setKanbanDateFilter] = useState<string>("");
   const [kanbanSortOrder, setKanbanSortOrder] = useState<"delivery" | "order">("delivery");
   const [activeKanbanMobileTab, setActiveKanbanMobileTab] = useState<"ordered" | "preparing" | "completed" | "delivered">("ordered");
+  const [dismissedNotificationIds, setDismissedNotificationIds] = useState<string[]>([]);
   const [appMode, setAppMode] = useState<"billing" | "inventory" | "admin">("billing");
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState("");
@@ -220,8 +223,11 @@ export default function Dashboard() {
       }))
     );
   }, [newProductCategory, subTypes, isEditProductMode]);
-  // Dynamic chronological stock shortage calculator
+  // Dynamic chronological stock shortage calculator & general notifications builder
   const notifications = React.useMemo(() => {
+    const alerts: { id: string; invoiceId?: string; type: "shortage" | "low_stock" | "delivery_today"; title: string; message: string; severity: "critical" | "warning" | "info"; dueDate?: string }[] = [];
+
+    // 1. Dynamic chronological stock shortage calculator
     const activeInvoices = invoices.filter(
       (inv) => inv.deleted_at === null && inv.status !== "delivered" && inv.status !== "completed"
     );
@@ -239,7 +245,7 @@ export default function Dashboard() {
     additives.forEach((a) => {
       dryfruitStock[a.id] = a.stock_qty_kg || 0;
     });
-    const alerts: { id: string; invoiceId: string; title: string; message: string; dueDate: string }[] = [];
+
     sortedInvoices.forEach((inv) => {
       if (!inv.delivery_date) return;
       const shortageItems: string[] = [];
@@ -289,17 +295,63 @@ export default function Dashboard() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         if (diffDays <= 2) {
           alerts.push({
-            id: `alert-${inv.id}`,
+            id: `alert-shortage-${inv.id}`,
             invoiceId: inv.id,
-            title: `ORD-${inv.invoice_number} Shortage`,
+            type: "shortage",
+            title: `ORD-${inv.invoice_number || inv.order_id} Shortage`,
             message: `${inv.customer_name} scheduled on ${inv.delivery_date} needs: ${shortageItems.join(", ")}. Please restock!`,
-            dueDate: inv.delivery_date
+            dueDate: inv.delivery_date,
+            severity: "critical"
           });
         }
       }
     });
-    return alerts;
-  }, [invoices, products, stock, additives, simulationDate]);
+
+    // 2. Low General Stock Warning
+    products.forEach(p => {
+      const activeLocStocks = stock.filter(st => st.product_id === p.id && st.deleted_at === null);
+      const totalQty = activeLocStocks.reduce((sum, s) => sum + s.quantity, 0);
+      if (totalQty < 5) {
+        alerts.push({
+          id: `alert-lowstock-prod-${p.id}`,
+          type: "low_stock",
+          title: `Low Product Stock: ${p.name}`,
+          message: `Only ${totalQty} units left in combined storage. Consider preparing more boxes!`,
+          severity: "warning"
+        });
+      }
+    });
+
+    additives.forEach(a => {
+      if ((a.stock_qty_kg || 0) < 5) {
+        alerts.push({
+          id: `alert-lowstock-add-${a.id}`,
+          type: "low_stock",
+          title: `Low Dryfruit Stock: ${a.name}`,
+          message: `Only ${a.stock_qty_kg?.toFixed(2) || 0} kg left in inventory. Consider buying more raw materials!`,
+          severity: "warning"
+        });
+      }
+    });
+
+    // 3. Deliveries Scheduled for Today
+    const todayStr = simulationDate;
+    const todayInvoices = invoices.filter(i => i.deleted_at === null && i.status !== "delivered" && i.delivery_date === todayStr);
+    todayInvoices.forEach(inv => {
+      alerts.push({
+        id: `alert-today-${inv.id}`,
+        invoiceId: inv.id,
+        type: "delivery_today",
+        title: `Dispatch Today: ${inv.order_id}`,
+        message: `${inv.customer_name} order (₹${inv.total_amount.toLocaleString("en-IN")}) is scheduled for delivery today!`,
+        severity: "info",
+        dueDate: inv.delivery_date
+      });
+    });
+
+    // Filter out dismissed notification alerts
+    return alerts.filter(a => !dismissedNotificationIds.includes(a.id));
+  }, [invoices, products, stock, additives, simulationDate, dismissedNotificationIds]);
   if (!isLoaded) {
     return (
       <div className={`flex h-screen items-center justify-center ${theme === "dark" ? "bg-zinc-950 text-white" : "bg-zinc-50 text-zinc-800"}`}>
@@ -1351,48 +1403,104 @@ export default function Dashboard() {
               </button>
               {isNotificationOpen && (
                 <div className={`absolute right-0 mt-2 w-80 max-w-sm rounded-2xl border p-4 shadow-2xl z-55 flex flex-col gap-3 transition duration-150 ${
-                  isDark ? "bg-zinc-950 border-zinc-808/80 text-zinc-300" : "bg-white border-slate-205 text-slate-800"
+                  isDark ? "bg-zinc-950 border-zinc-808/80 text-zinc-300 shadow-zinc-950/50" : "bg-white border-slate-205 text-slate-800 shadow-slate-100/50"
                 }`}>
                   <div className="flex items-center justify-between border-b pb-2 border-zinc-808/20">
                     <h4 className="text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
                       <Bell className="h-3.5 w-3.5 text-indigo-500" /> Notifications
                     </h4>
-                    {notifications.length > 0 && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500">
-                        {notifications.length} Alert{notifications.length > 1 ? "s" : ""}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {dismissedNotificationIds.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setDismissedNotificationIds([])}
+                          className="text-[9px] font-bold text-indigo-500 hover:underline cursor-pointer"
+                        >
+                          Reset Dismissed
+                        </button>
+                      )}
+                      {notifications.length > 0 && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-500">
+                          {notifications.length} Active
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
+                  <div className="flex flex-col gap-2.5 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
                     {notifications.length === 0 ? (
-                      <div className="text-center py-6 text-zinc-500 italic text-[11px]">
-                        No active stock shortage alerts. All set!
+                      <div className="text-center py-8 text-zinc-500 italic text-[11px] flex flex-col items-center justify-center gap-1.5">
+                        <CheckCircle className="h-6 w-6 text-emerald-500" />
+                        <span>No active alerts. Operational state healthy!</span>
                       </div>
                     ) : (
-                      notifications.map(n => (
-                        <div
-                          key={n.id}
-                          onClick={() => {
-                            setPreviewInvoiceId(n.invoiceId);
-                            setIsPreviewModalOpen(true);
-                            setIsNotificationOpen(false);
-                          }}
-                          className={`p-2.5 rounded-xl border text-[11px] leading-relaxed cursor-pointer text-left transition ${
-                            isDark 
-                              ? "bg-zinc-900/40 border-zinc-808/40 hover:bg-zinc-900 hover:border-zinc-700" 
-                              : "bg-slate-50/50 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between font-bold text-rose-500 mb-1">
-                            <span>{n.title}</span>
-                            <span className="text-[8px] font-mono uppercase px-1.5 py-0.5 rounded bg-rose-500/10">Due: {n.dueDate}</span>
+                      notifications.map(n => {
+                        let severityClass = "";
+                        let textClass = "";
+                        let icon = null;
+
+                        if (n.severity === "critical") {
+                          severityClass = isDark ? "bg-rose-500/5 border-rose-500/30" : "bg-rose-50 border-rose-100";
+                          textClass = "text-rose-500";
+                          icon = <AlertTriangle className="h-3.5 w-3.5 text-rose-500 shrink-0" />;
+                        } else if (n.severity === "warning") {
+                          severityClass = isDark ? "bg-amber-500/5 border-amber-500/30" : "bg-amber-50 border-amber-100";
+                          textClass = "text-amber-555 dark:text-amber-400";
+                          icon = <Package className="h-3.5 w-3.5 text-amber-500 shrink-0" />;
+                        } else {
+                          severityClass = isDark ? "bg-indigo-500/5 border-indigo-500/30" : "bg-indigo-50 border-indigo-100";
+                          textClass = "text-indigo-500";
+                          icon = <Calendar className="h-3.5 w-3.5 text-indigo-500 shrink-0" />;
+                        }
+
+                        return (
+                          <div
+                            key={n.id}
+                            className={`p-3 rounded-xl border text-[11px] leading-relaxed relative flex flex-col gap-1 text-left transition ${severityClass}`}
+                          >
+                            {/* Dismiss button */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDismissedNotificationIds([...dismissedNotificationIds, n.id]);
+                              }}
+                              className="absolute top-2 right-2 p-0.5 rounded text-zinc-500 hover:text-zinc-800 dark:hover:text-white transition duration-150 cursor-pointer"
+                              title="Dismiss Alert"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+
+                            {/* Header row */}
+                            <div className="flex items-center gap-1.5 font-bold mb-0.5 pr-4">
+                              {icon}
+                              <span className={textClass}>{n.title}</span>
+                              {n.dueDate && (
+                                <span className="text-[8px] font-mono uppercase px-1 py-0.5 rounded bg-zinc-500/10 text-zinc-500 ml-auto font-black">
+                                  {n.dueDate}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Message content */}
+                            <p className="text-zinc-550 dark:text-zinc-400 font-medium">{n.message}</p>
+
+                            {/* Details Action trigger */}
+                            {n.invoiceId && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPreviewInvoiceId(n.invoiceId || "");
+                                  setIsPreviewModalOpen(true);
+                                  setIsNotificationOpen(false);
+                                }}
+                                className="text-[9px] text-indigo-500 hover:underline mt-1 text-left font-bold cursor-pointer"
+                              >
+                                View Order Details &rarr;
+                              </button>
+                            )}
                           </div>
-                          <p className="text-zinc-550 dark:text-zinc-400">{n.message}</p>
-                          <p className="text-[9px] text-indigo-500 hover:underline mt-1.5 font-bold">
-                            View Invoice Details &rarr;
-                          </p>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>
