@@ -99,6 +99,7 @@ export default function Dashboard() {
   const [kanbanDaysFilter, setKanbanDaysFilter] = useState<string>("all");
   const [kanbanDateFilter, setKanbanDateFilter] = useState<string>("");
   const [kanbanSortOrder, setKanbanSortOrder] = useState<"delivery" | "order">("delivery");
+  const [activeKanbanMobileTab, setActiveKanbanMobileTab] = useState<"ordered" | "preparing" | "completed" | "delivered">("ordered");
   const [appMode, setAppMode] = useState<"billing" | "inventory" | "admin">("billing");
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState("");
@@ -1576,7 +1577,7 @@ export default function Dashboard() {
             })()}
             {billingTab === "form" || isEditingInvoice ? (
               /* Dedicated Invoice Form Card */
-              <div className={`${cardClass} p-6 flex flex-col gap-6 rounded-2xl relative shadow-lg`}>
+              <div className={`${cardClass} p-6 pb-24 lg:pb-6 flex flex-col gap-6 rounded-2xl relative shadow-lg`}>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h2 className={`text-xl font-bold mb-1 flex items-center gap-2 ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
@@ -1587,7 +1588,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-              <form onSubmit={handleCreateInvoice} className="space-y-5">
+              <form id="invoice-form" onSubmit={handleCreateInvoice} className="space-y-5">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   {/* Left Column: Customer Details & Settings */}
                   <div className="lg:col-span-4 space-y-5">
@@ -2164,6 +2165,28 @@ export default function Dashboard() {
               </div>
             </div>
           </form>
+          
+          {/* Sticky Bottom Total & Action Bar on Mobile Viewports */}
+          <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden p-4 border-t shadow-lg flex items-center justify-between gap-3 animate-slideUp bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-808">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Estimated Total</span>
+              <span className="font-mono font-black text-lg text-emerald-500">
+                ₹{invoiceItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100)), 0).toLocaleString("en-IN")}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                form="invoice-form"
+                className={`px-5 py-2.5 text-xs text-white font-bold rounded-xl shadow-md transition duration-150 flex items-center gap-1.5 cursor-pointer ${
+                  isEditingInvoice ? "bg-amber-600 hover:bg-amber-500 shadow-amber-600/10" : "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/10"
+                }`}
+              >
+                <FileText className="h-3.5 w-3.5" />
+                <span>{isEditingInvoice ? "Save Changes" : "Generate Bill"}</span>
+              </button>
+            </div>
+          </div>
             </div>
             ) : (
               /* ORDER KANBAN BOARD */
@@ -2453,6 +2476,30 @@ export default function Dashboard() {
                   </div>
                 </div>
 
+                {/* Mobile Kanban Tab Selector (md:hidden) */}
+                <div className="flex md:hidden gap-1 p-1 bg-zinc-950/20 dark:bg-zinc-900/40 rounded-xl border border-zinc-808/30 w-full mt-2">
+                  {[
+                    { key: "ordered", label: "Ordered", dotColor: "bg-blue-500" },
+                    { key: "preparing", label: "Prep", dotColor: "bg-amber-500" },
+                    { key: "completed", label: "Ready", dotColor: "bg-indigo-500" },
+                    { key: "delivered", label: "Sent", dotColor: "bg-emerald-500" }
+                  ].map(tab => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      onClick={() => setActiveKanbanMobileTab(tab.key as any)}
+                      className={`flex-1 py-1.5 text-[10px] font-bold rounded-lg transition duration-150 flex items-center justify-center gap-1 cursor-pointer ${
+                        activeKanbanMobileTab === tab.key 
+                          ? "bg-indigo-600 text-white shadow-sm" 
+                          : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-550 hover:text-slate-800")
+                      }`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${tab.dotColor}`} />
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+
                 {/* Board grid columns: Ordered, Preparing, Completed, Delivered */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start select-none">
                   {[
@@ -2462,8 +2509,14 @@ export default function Dashboard() {
                     { key: "delivered", label: "Delivered", dotColor: "bg-emerald-500", headerColor: "border-t-emerald-500 bg-emerald-500/5", textColor: "text-emerald-500" }
                   ].map(col => {
                     const colInvoices = getKanbanInvoices(col.key);
+                    const isVisibleOnMobile = activeKanbanMobileTab === col.key;
                     return (
-                      <div key={col.key} className={`flex flex-col gap-3 p-4 border rounded-2xl border-t-4 min-h-[500px] ${col.headerColor} ${isDark ? "border-zinc-808/80 bg-zinc-950/20" : "border-slate-205 bg-slate-50/20"}`}>
+                      <div 
+                        key={col.key} 
+                        className={`flex flex-col gap-3 p-4 border rounded-2xl border-t-4 min-h-[500px] ${col.headerColor} ${
+                          isVisibleOnMobile ? "flex" : "hidden md:flex"
+                        } ${isDark ? "border-zinc-808/80 bg-zinc-950/20" : "border-slate-205 bg-slate-50/20"}`}
+                      >
                         {/* Column Header */}
                         <div className="flex items-center justify-between pb-2 border-b border-dashed border-zinc-808/30">
                           <div className="flex items-center gap-2">
