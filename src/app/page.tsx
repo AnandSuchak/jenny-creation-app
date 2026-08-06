@@ -3126,13 +3126,13 @@ export default function Dashboard() {
                                   setStockQuantity(st.quantity);
                                   setIsStockModalOpen(true);
                                 }}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded transition duration-150"
+                                className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded transition duration-150"
                               >
                                 Edit
                               </button>
                               <button 
                                 onClick={() => handleSoftDelete("stock", st.id)}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-zinc-800 text-rose-400 hover:text-rose-300 rounded transition duration-150"
+                                className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 hover:bg-zinc-800 text-rose-400 hover:text-rose-300 rounded transition duration-150"
                                 title="Soft Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -3298,13 +3298,13 @@ export default function Dashboard() {
                                   setStockQuantity(st.quantity);
                                   setIsStockModalOpen(true);
                                 }}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded transition duration-150 cursor-pointer"
+                                className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded transition duration-150 cursor-pointer"
                               >
                                 Edit
                               </button>
                               <button 
                                 onClick={() => handleSoftDelete("stock", st.id)}
-                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-zinc-800 text-rose-400 hover:text-rose-355 rounded transition duration-150 cursor-pointer"
+                                className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 hover:bg-zinc-800 text-rose-400 hover:text-rose-355 rounded transition duration-150 cursor-pointer"
                                 title="Soft Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -3626,7 +3626,7 @@ export default function Dashboard() {
                         <span className={`font-medium block ${isDark ? "text-zinc-300" : "text-zinc-705"}`}>{c.name}</span>
                         <span className="text-[10px] text-zinc-500 font-mono">ID: {c.id}</span>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition duration-150">
+                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
                         <button 
                           onClick={() => {
                             setIsEditMode(true);
@@ -3676,7 +3676,7 @@ export default function Dashboard() {
                         </span>
                         <span className="text-[10px] text-zinc-500 font-mono">ID: {s.id}</span>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition duration-150">
+                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
                         <button 
                           onClick={() => {
                             setIsEditMode(true);
@@ -3728,7 +3728,7 @@ export default function Dashboard() {
                         </span>
                         <span className="text-[10px] text-zinc-500 font-mono">ID: {l.id}</span>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition duration-150">
+                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
                         <button 
                           onClick={() => {
                             setIsEditMode(true);
@@ -3788,7 +3788,7 @@ export default function Dashboard() {
                           <span>₹{Math.round(add.price_per_kg / 10)}/100g</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition duration-150">
+                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
                         <button 
                           onClick={() => {
                             setIsEditMode(true);
