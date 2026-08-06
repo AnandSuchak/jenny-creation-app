@@ -96,6 +96,9 @@ export default function Dashboard() {
   const [stockPerPage, setStockPerPage] = useState<number>(10);
   const [dryfruitSearchQuery, setDryfruitSearchQuery] = useState("");
   const [dryfruitLocationFilter, setDryfruitLocationFilter] = useState("all");
+  const [kanbanDaysFilter, setKanbanDaysFilter] = useState<string>("all");
+  const [kanbanDateFilter, setKanbanDateFilter] = useState<string>("");
+  const [kanbanSortOrder, setKanbanSortOrder] = useState<"delivery" | "order">("delivery");
   const [appMode, setAppMode] = useState<"billing" | "inventory" | "admin">("billing");
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState("");
@@ -125,8 +128,8 @@ export default function Dashboard() {
   const [billingTab, setBillingTab] = useState<"form" | "kanban">("form");
   const [materialScope, setMaterialScope] = useState<"today" | "tomorrow" | "both" | "all">("today");
   const [simulationDate, setSimulationDate] = useState<string>(() => new Date().toISOString().split("T")[0]);
-  const [isOperationsPanelExpanded, setIsOperationsPanelExpanded] = useState(true);
-  const [isUrgentAlertExpanded, setIsUrgentAlertExpanded] = useState(true);
+  const [isOperationsPanelExpanded, setIsOperationsPanelExpanded] = useState(false);
+  const [isUrgentAlertExpanded, setIsUrgentAlertExpanded] = useState(false);
   const [additiveStockQty, setAdditiveStockQty] = useState("");
   const [stockModalType, setStockModalType] = useState<"product" | "additive">("product");
   const [stockAdditiveId, setStockAdditiveId] = useState("");
@@ -896,6 +899,46 @@ export default function Dashboard() {
     (stockPage - 1) * stockPerPage,
     stockPage * stockPerPage
   );
+
+  const getKanbanInvoices = (status: string) => {
+    let list = invoices.filter(i => i.deleted_at === null && i.status === status);
+
+    if (kanbanDateFilter) {
+      list = list.filter(i => i.delivery_date === kanbanDateFilter);
+    }
+
+    if (kanbanDaysFilter !== "all") {
+      const today = new Date(simulationDate);
+      today.setHours(0,0,0,0);
+      list = list.filter(i => {
+        if (!i.delivery_date) return false;
+        const delivDate = new Date(i.delivery_date);
+        delivDate.setHours(0,0,0,0);
+        const diffTime = delivDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (kanbanDaysFilter === "overdue") {
+          return diffDays < 0 && i.status !== "delivered";
+        } else {
+          const limit = Number(kanbanDaysFilter);
+          if (limit === 0) return diffDays === 0;
+          if (limit === 1) return diffDays === 1;
+          return diffDays >= 0 && diffDays <= limit;
+        }
+      });
+    }
+
+    list.sort((a, b) => {
+      if (kanbanSortOrder === "delivery") {
+        if (!a.delivery_date) return 1;
+        if (!b.delivery_date) return -1;
+        return new Date(a.delivery_date).getTime() - new Date(b.delivery_date).getTime();
+      } else {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+    });
+
+    return list;
+  };
   const isDark = theme === "dark";
   const bgClass = isDark 
     ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950 text-zinc-200" 
@@ -2352,6 +2395,64 @@ export default function Dashboard() {
                     </div>
                   );
                 })()}
+                {/* Kanban Filters & Sorting Bar */}
+                <div className={`p-4 rounded-xl border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 transition duration-205 ${isDark ? "bg-zinc-900/40 border-zinc-808/80" : "bg-white border-slate-205 shadow-sm"}`}>
+                  <div className="flex flex-wrap items-center gap-3 text-xs w-full md:w-auto">
+                    <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                      <span className={`font-bold uppercase text-[10px] tracking-wider shrink-0 ${isDark ? "text-zinc-400" : "text-slate-500"}`}>Days Left:</span>
+                      <select
+                        value={kanbanDaysFilter}
+                        onChange={e => setKanbanDaysFilter(e.target.value)}
+                        className={`px-3 py-1.5 border rounded-lg focus:outline-none w-full sm:w-auto font-semibold ${inputClass}`}
+                      >
+                        <option value="all">All Pre-Orders</option>
+                        <option value="overdue">🚨 Overdue Orders</option>
+                        <option value="0">📅 Deliver Today (0 days left)</option>
+                        <option value="1">📅 Deliver Tomorrow (1 day left)</option>
+                        <option value="2">⏳ Due in 2 days</option>
+                        <option value="5">⏳ Due in 5 days</option>
+                        <option value="10">⏳ Due in 10 days</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                      <span className={`font-bold uppercase text-[10px] tracking-wider shrink-0 ${isDark ? "text-zinc-400" : "text-slate-500"}`}>Specific Date:</span>
+                      <div className="flex items-center gap-1 w-full sm:w-auto">
+                        <input
+                          type="date"
+                          value={kanbanDateFilter}
+                          onChange={e => setKanbanDateFilter(e.target.value)}
+                          className={`px-2.5 py-1.5 border rounded-lg focus:outline-none w-full sm:w-auto font-mono text-xs font-bold ${inputClass}`}
+                        />
+                        {kanbanDateFilter && (
+                          <button
+                            type="button"
+                            onClick={() => setKanbanDateFilter("")}
+                            className={`p-1.5 border rounded-lg hover:text-rose-500 transition duration-150 cursor-pointer ${
+                              isDark ? "bg-zinc-950 border-zinc-808" : "bg-slate-50 border-slate-205"
+                            }`}
+                            title="Clear Date"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-xs w-full md:w-auto justify-end">
+                    <span className={`font-bold uppercase text-[10px] tracking-wider shrink-0 ${isDark ? "text-zinc-400" : "text-slate-500"}`}>Sort By:</span>
+                    <select
+                      value={kanbanSortOrder}
+                      onChange={e => setKanbanSortOrder(e.target.value as any)}
+                      className={`px-3 py-1.5 border rounded-lg focus:outline-none font-semibold w-full sm:w-auto ${inputClass}`}
+                    >
+                      <option value="delivery">📅 Delivery Date (Earliest first)</option>
+                      <option value="order">💳 Purchase Order (Creation Date)</option>
+                    </select>
+                  </div>
+                </div>
+
                 {/* Board grid columns: Ordered, Preparing, Completed, Delivered */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start select-none">
                   {[
@@ -2360,7 +2461,7 @@ export default function Dashboard() {
                     { key: "completed", label: "Completed", dotColor: "bg-indigo-500", headerColor: "border-t-indigo-500 bg-indigo-500/5", textColor: "text-indigo-500" },
                     { key: "delivered", label: "Delivered", dotColor: "bg-emerald-500", headerColor: "border-t-emerald-500 bg-emerald-500/5", textColor: "text-emerald-500" }
                   ].map(col => {
-                    const colInvoices = invoices.filter(i => i.deleted_at === null && i.status === col.key);
+                    const colInvoices = getKanbanInvoices(col.key);
                     return (
                       <div key={col.key} className={`flex flex-col gap-3 p-4 border rounded-2xl border-t-4 min-h-[500px] ${col.headerColor} ${isDark ? "border-zinc-808/80 bg-zinc-950/20" : "border-slate-205 bg-slate-50/20"}`}>
                         {/* Column Header */}
