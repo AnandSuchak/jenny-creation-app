@@ -1862,8 +1862,10 @@ export default function Dashboard() {
                       const isDryfruitRow = isOnlyDryfruits || (item.additiveId !== null && item.productId === null);
                       const currentAdditive = isDryfruitRow ? additives.find(a => a.id === item.additiveId) : null;
                       const currentProduct = !isDryfruitRow && item.productId ? products.find(p => p.id === item.productId) : null;
+                      const maxJars = item.productId ? getProductMaxJars(item.productId) : 0;
                       return (
-                        <div key={index} className={`grid grid-cols-12 gap-3 items-start p-3 rounded-xl border ${isDark ? "bg-zinc-950/40 border-zinc-808/80" : "bg-slate-50/50 border-slate-205"}`}>
+                        <div key={index} className="space-y-3">
+                          <div className={`grid grid-cols-12 gap-3 items-start p-3 rounded-xl border ${isDark ? "bg-zinc-950/40 border-zinc-808/80" : "bg-slate-50/50 border-slate-205"}`}>
                           {/* Custom Autocomplete Search Selector */}
                           <div className={`${showDiscountFields ? "col-span-12 md:col-span-4" : "col-span-12 md:col-span-5"} relative`}>
                             <label className="block text-[10px] font-semibold text-zinc-500 mb-1 flex justify-between">
@@ -2210,6 +2212,167 @@ export default function Dashboard() {
                               <Trash2 className="h-4 w-4 inline" />
                             </button>
                           </div>
+
+                          </div>
+
+                          {/* Jar Customizer Panel */}
+                          {!isDryfruitRow && item.productId && maxJars > 0 && activeJarConfigIndex === index && (
+                            <div className={`p-4 rounded-xl border flex flex-col gap-4 animate-slideDown ${
+                              isDark ? "bg-zinc-950/40 border-zinc-808/80" : "bg-slate-100/50 border-slate-250 shadow-inner"
+                            }`}>
+                              <div className="flex justify-between items-center border-b pb-2 border-zinc-808/20">
+                                <h4 className={`text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${isDark ? "text-zinc-200" : "text-slate-700"}`}>
+                                  <span>🍯 Jar Filling Customization</span>
+                                  <span className="text-[10px] lowercase font-normal text-zinc-500">
+                                    (up to {maxJars} jars)
+                                  </span>
+                                </h4>
+                                <button
+                                  type="button"
+                                  onClick={() => setActiveJarConfigIndex(null)}
+                                  className="text-[10px] font-bold text-indigo-500 hover:underline cursor-pointer"
+                                >
+                                  Close Panel
+                                </button>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                                {Array.from({ length: maxJars }).map((_, jarIdx) => {
+                                  const jarNumber = jarIdx + 1;
+                                  const existingConfig = (item.customizations || []).find(c => c.jar_number === jarNumber) || { jar_number: jarNumber, additive_id: "empty", weight_grams: 0 };
+                                  const addObj = additives.find(a => a.id === existingConfig.additive_id);
+                                  const addPriceKg = addObj?.price_per_kg || 0;
+                                  const extraCost = Math.round((addPriceKg / 1000) * existingConfig.weight_grams);
+                                  
+                                  return (
+                                    <div key={jarIdx} className={`p-3.5 rounded-xl border flex flex-col gap-3.5 ${
+                                      isDark ? "bg-zinc-900/40 border-zinc-808/50" : "bg-white border-slate-205 shadow-sm"
+                                    }`}>
+                                      <div className="flex justify-between items-center text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                                        <span>Jar #{jarNumber}</span>
+                                        {extraCost > 0 && (
+                                          <span className="text-emerald-500 font-mono font-black text-[10px]">
+                                            +₹{extraCost}
+                                          </span>
+                                        )}
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-2 gap-3.5 items-end">
+                                        {/* Additive Autocomplete Selector */}
+                                        <div className="relative">
+                                          <label className="block text-[10px] text-zinc-550 dark:text-zinc-450 font-bold uppercase tracking-wider mb-1.5">Filling</label>
+                                          
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              if (activeJarDropdown?.rowIndex === index && activeJarDropdown?.jarNumber === jarNumber) {
+                                                setActiveJarDropdown(null);
+                                              } else {
+                                                setActiveJarDropdown({ rowIndex: index, jarNumber: jarNumber });
+                                                setAdditiveSearchQuery("");
+                                              }
+                                            }}
+                                            className={`w-full px-2.5 py-1.5 border rounded-lg text-left text-xs flex items-center justify-between transition duration-150 cursor-pointer ${
+                                              isDark ? "bg-zinc-950 border-zinc-850 text-zinc-200" : "bg-white border-slate-200 text-slate-800"
+                                            }`}
+                                          >
+                                            <span className="truncate font-semibold text-[11px]">
+                                              {existingConfig.additive_id === "empty" 
+                                                ? "Empty / None" 
+                                                : (addObj?.name || "Empty / None")}
+                                            </span>
+                                            <ChevronDown className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+                                          </button>
+
+                                          {activeJarDropdown?.rowIndex === index && activeJarDropdown?.jarNumber === jarNumber && (
+                                            <>
+                                              <div className="fixed inset-0 z-30" onClick={() => setActiveJarDropdown(null)} />
+                                              
+                                              <div className={`absolute left-0 right-0 mt-1.5 p-2 rounded-xl border z-45 flex flex-col gap-2 shadow-xl min-w-[200px] ${
+                                                isDark ? "bg-zinc-950 border-zinc-808 shadow-zinc-950/80" : "bg-white border-slate-205 shadow-slate-200/50"
+                                              }`}>
+                                                <div className="relative">
+                                                  <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-zinc-500" />
+                                                  <input
+                                                    type="text"
+                                                    placeholder="Search dryfruit..."
+                                                    value={additiveSearchQuery}
+                                                    autoFocus
+                                                    onChange={e => setAdditiveSearchQuery(e.target.value)}
+                                                    className={`w-full pl-8 pr-2 py-1 text-xs border rounded-md focus:outline-none ${inputClass}`}
+                                                  />
+                                                </div>
+
+                                                <div className="max-h-36 overflow-y-auto space-y-1 scrollbar-thin">
+                                                  <div
+                                                    onClick={() => {
+                                                      updateJarFilling(index, jarNumber, "empty", existingConfig.weight_grams);
+                                                      setActiveJarDropdown(null);
+                                                    }}
+                                                    className={`p-1.5 rounded-lg text-left transition duration-150 text-[11px] font-medium cursor-pointer ${
+                                                      existingConfig.additive_id === "empty"
+                                                        ? "bg-indigo-600 text-white font-semibold"
+                                                        : (isDark ? "hover:bg-zinc-850 text-zinc-300" : "hover:bg-slate-100 text-slate-700")
+                                                    }`}
+                                                  >
+                                                    Empty / None
+                                                  </div>
+
+                                                  {additives
+                                                    .filter(a => a.deleted_at === null && a.name.toLowerCase().includes(additiveSearchQuery.toLowerCase()))
+                                                    .map(add => {
+                                                      const isSelected = existingConfig.additive_id === add.id;
+                                                      return (
+                                                        <div
+                                                          key={add.id}
+                                                          onClick={() => {
+                                                            updateJarFilling(index, jarNumber, add.id, existingConfig.weight_grams);
+                                                            setActiveJarDropdown(null);
+                                                          }}
+                                                          className={`p-1.5 rounded-lg text-left transition duration-150 flex items-center justify-between text-[11px] font-medium cursor-pointer ${
+                                                            isSelected
+                                                              ? "bg-indigo-600 text-white font-semibold"
+                                                              : (isDark ? "hover:bg-zinc-850 text-zinc-300" : "hover:bg-slate-100 text-slate-700")
+                                                          }`}
+                                                        >
+                                                          <span>{add.name}</span>
+                                                          <span className={`font-mono text-[9px] ${isSelected ? "text-indigo-200" : "text-zinc-505"}`}>
+                                                            ₹{add.price_per_kg}/kg
+                                                          </span>
+                                                        </div>
+                                                      );
+                                                    })}
+                                                </div>
+                                              </div>
+                                            </>
+                                          )}
+                                        </div>
+                                        
+                                        {/* Weight Input */}
+                                        <div>
+                                          <label className="block text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">Weight (g)</label>
+                                          <input
+                                            type="text"
+                                            disabled={existingConfig.additive_id === "empty"}
+                                            placeholder="e.g. 100"
+                                            value={existingConfig.additive_id === "empty" ? "" : existingConfig.weight_grams}
+                                            onChange={(e) => {
+                                              const val = e.target.value.replace(/[^0-9]/g, "");
+                                              const weight = val ? Number(val) : 0;
+                                              updateJarFilling(index, jarNumber, existingConfig.additive_id, weight);
+                                            }}
+                                            className={`w-full px-2.5 py-1.5 border rounded-lg text-xs font-mono text-left focus:outline-none ${inputClass} ${
+                                              existingConfig.additive_id === "empty" ? "opacity-50 cursor-not-allowed" : ""
+                                            }`}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
