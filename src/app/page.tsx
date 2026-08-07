@@ -116,6 +116,7 @@ export default function Dashboard() {
   const [previewInvoiceId, setPreviewInvoiceId] = useState("");
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [invoiceHistorySearchQuery, setInvoiceHistorySearchQuery] = useState("");
+  const [invoiceHistorySortOrder, setInvoiceHistorySortOrder] = useState<"latest" | "oldest">("latest");
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [activeDropdownIndex, setActiveDropdownIndex] = useState<number | null>(null);
   const [productSearchQuery, setProductSearchQuery] = useState("");
@@ -3081,61 +3082,78 @@ export default function Dashboard() {
                     })}
                   </div>
                   {/* Search filter for invoices history */}
-                  <div className="flex gap-2 items-center">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-500" />
-                      <input
-                        type="text"
-                        placeholder="Search name, code..."
-                        value={invoiceHistorySearchQuery}
-                        onChange={e => setInvoiceHistorySearchQuery(e.target.value)}
-                        className={`pl-9 pr-4 py-1.5 text-xs border rounded-lg focus:outline-none w-full ${inputClass}`}
-                      />
+                  <div className="flex flex-col gap-2 print:hidden">
+                    <div className="flex gap-2 items-center">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-500" />
+                        <input
+                          type="text"
+                          placeholder="Search name, code..."
+                          value={invoiceHistorySearchQuery}
+                          onChange={e => setInvoiceHistorySearchQuery(e.target.value)}
+                          className={`pl-9 pr-4 py-1.5 text-xs border rounded-lg focus:outline-none w-full ${inputClass}`}
+                        />
+                      </div>
+                      <select
+                        value={invoiceHistoryStatusFilter}
+                        onChange={e => setInvoiceHistoryStatusFilter(e.target.value)}
+                        className={`px-2.5 py-1.5 text-xs border rounded-lg focus:outline-none font-bold cursor-pointer shrink-0 w-28 ${inputClass}`}
+                      >
+                        <option value="all">All Status</option>
+                        <option value="ordered">Ordered</option>
+                        <option value="preparing">Preparing</option>
+                        <option value="completed">Completed</option>
+                        <option value="delivered">Delivered</option>
+                      </select>
                     </div>
-                    <select
-                      value={invoiceHistoryStatusFilter}
-                      onChange={e => setInvoiceHistoryStatusFilter(e.target.value)}
-                      className={`px-2.5 py-1.5 text-xs border rounded-lg focus:outline-none font-bold cursor-pointer shrink-0 w-28 ${inputClass}`}
-                    >
-                      <option value="all">All Status</option>
-                      <option value="ordered">Ordered</option>
-                      <option value="preparing">Preparing</option>
-                      <option value="completed">Completed</option>
-                      <option value="delivered">Delivered</option>
-                    </select>
+                    
+                    {/* Sort Order Selector */}
+                    <div className="flex items-center gap-1.5 text-[10px] text-zinc-550 dark:text-zinc-400">
+                      <span className="font-bold uppercase tracking-wider">Sort:</span>
+                      <select
+                        value={invoiceHistorySortOrder}
+                        onChange={e => setInvoiceHistorySortOrder(e.target.value as any)}
+                        className={`flex-1 px-2.5 py-1 text-[10px] border rounded-lg focus:outline-none font-bold cursor-pointer ${inputClass}`}
+                      >
+                        <option value="latest">📅 Issue Date (Latest First)</option>
+                        <option value="oldest">📅 Issue Date (Oldest First)</option>
+                      </select>
+                    </div>
                   </div>
                   {/* Scrollable list */}
                   <div className="flex-1 overflow-y-auto space-y-3 pr-1 scrollbar-thin">
-                    {invoices
-                      .filter(inv => {
+                    {(() => {
+                      const filtered = invoices.filter(inv => {
                         const matchesSearch = invoiceHistorySearchQuery === "" || 
                           inv.customer_name.toLowerCase().includes(invoiceHistorySearchQuery.toLowerCase()) ||
                           inv.invoice_number.toLowerCase().includes(invoiceHistorySearchQuery.toLowerCase());
                         const matchesStatus = invoiceHistoryStatusFilter === "all" || inv.status === invoiceHistoryStatusFilter;
                         return matchesSearch && matchesStatus;
-                      })
-                      .length === 0 ? (
-                        <div className={`p-6 rounded-xl border border-dashed text-center text-xs italic ${isDark ? "bg-zinc-950/20 border-zinc-858 text-zinc-500" : "bg-slate-50/50 border-slate-205 text-slate-450"}`}>
-                          No matching invoices found in local storage.
-                        </div>
-                      ) : (
-                        invoices
-                          .filter(inv => {
-                            const matchesSearch = invoiceHistorySearchQuery === "" || 
-                              inv.customer_name.toLowerCase().includes(invoiceHistorySearchQuery.toLowerCase()) ||
-                              inv.invoice_number.toLowerCase().includes(invoiceHistorySearchQuery.toLowerCase());
-                            const matchesStatus = invoiceHistoryStatusFilter === "all" || inv.status === invoiceHistoryStatusFilter;
-                            return matchesSearch && matchesStatus;
-                          })
-                          .map(inv => (
-                            <div 
-                              key={inv.id}
-                              onClick={() => {
-                                setPreviewInvoiceId(inv.id);
-                                setIsPreviewModalOpen(true);
-                              }}
-                              className={`p-3 rounded-xl border cursor-pointer transition duration-155 group flex flex-col justify-between gap-2.5 ${isDark ? "bg-zinc-950/30 border-zinc-858 hover:border-zinc-700 hover:bg-zinc-900/40" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-xs"}`}
-                            >
+                      });
+
+                      filtered.sort((a, b) => {
+                        const timeA = new Date(a.issue_date).getTime();
+                        const timeB = new Date(b.issue_date).getTime();
+                        return invoiceHistorySortOrder === "latest" ? timeB - timeA : timeA - timeB;
+                      });
+
+                      if (filtered.length === 0) {
+                        return (
+                          <div className={`p-6 rounded-xl border border-dashed text-center text-xs italic ${isDark ? "bg-zinc-950/20 border-zinc-858 text-zinc-500" : "bg-slate-50/50 border-slate-205 text-slate-450"}`}>
+                            No matching invoices found in local storage.
+                          </div>
+                        );
+                      }
+
+                      return filtered.map(inv => (
+                        <div 
+                          key={inv.id}
+                          onClick={() => {
+                            setPreviewInvoiceId(inv.id);
+                            setIsPreviewModalOpen(true);
+                          }}
+                          className={`p-3 rounded-xl border cursor-pointer transition duration-155 group flex flex-col justify-between gap-2.5 ${isDark ? "bg-zinc-950/30 border-zinc-858 hover:border-zinc-700 hover:bg-zinc-900/40" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-xs"}`}
+                        >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-1.5">
                                   <span className={`px-1.5 py-0.5 rounded font-mono text-[9px] font-bold ${
@@ -3182,8 +3200,8 @@ export default function Dashboard() {
                                 </div>
                               </div>
                             </div>
-                          ))
-                      )}
+                          ));
+                    })()}
                   </div>
                 </div>
               </>
