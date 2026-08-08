@@ -138,6 +138,8 @@ export default function Dashboard() {
   const [additiveStockQty, setAdditiveStockQty] = useState("");
   const [stockModalType, setStockModalType] = useState<"product" | "additive">("product");
   const [stockAdditiveId, setStockAdditiveId] = useState("");
+  const [activeStockAdditiveDropdown, setActiveStockAdditiveDropdown] = useState(false);
+  const [stockAdditiveSearchQuery, setStockAdditiveSearchQuery] = useState("");
   const [moveModalType, setMoveModalType] = useState<"product" | "additive">("product");
   const [moveAdditiveId, setMoveAdditiveId] = useState("");
   const [damagedModalType, setDamagedModalType] = useState<"product" | "additive">("product");
@@ -4832,6 +4834,8 @@ export default function Dashboard() {
               onClick={() => {
                 setStockModalCategoryFilter("all");
                 setStockModalSearchQuery("");
+                setActiveStockAdditiveDropdown(false);
+                setStockAdditiveSearchQuery("");
                 setIsStockModalOpen(false);
               }}
               className={`absolute top-4 right-4 p-1 rounded transition duration-150 cursor-pointer ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900"}`}
@@ -4935,19 +4939,86 @@ export default function Dashboard() {
                 </>
               ) : (
                 <>
-                  <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>Dryfruit Ingredient</label>
-                    <select 
-                      required={stockModalType === "additive"}
-                      value={stockAdditiveId}
-                      onChange={e => setStockAdditiveId(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${inputClass}`}
+                  <div className="relative">
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                      Dryfruit Ingredient
+                    </label>
+                    <input type="hidden" required={stockModalType === "additive"} value={stockAdditiveId} />
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveStockAdditiveDropdown(!activeStockAdditiveDropdown);
+                        setStockAdditiveSearchQuery("");
+                      }}
+                      className={`w-full px-3 py-2 border rounded-lg text-left text-xs flex items-center justify-between transition duration-150 cursor-pointer ${
+                        isDark ? "bg-zinc-950 border-zinc-850 text-zinc-200" : "bg-white border-slate-200 text-slate-800"
+                      }`}
                     >
-                      <option value="">Select Dryfruit Ingredient...</option>
-                      {additives.map(a => (
-                        <option key={a.id} value={a.id}>{a.name} (₹{a.price_per_kg}/kg)</option>
-                      ))}
-                    </select>
+                      <span className="truncate font-semibold">
+                        {stockAdditiveId 
+                          ? (additives.find(a => a.id === stockAdditiveId)?.name || "Select Dryfruit Ingredient...") 
+                          : "Select Dryfruit Ingredient..."}
+                      </span>
+                      <ChevronDown className="h-4 w-4 text-zinc-550 shrink-0" />
+                    </button>
+
+                    {activeStockAdditiveDropdown && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setActiveStockAdditiveDropdown(false)} />
+                        
+                        <div className={`absolute left-0 right-0 mt-1.5 p-2 rounded-xl border z-45 flex flex-col gap-2 shadow-xl ${
+                          isDark ? "bg-zinc-950 border-zinc-808 shadow-zinc-950/80" : "bg-white border-slate-205 shadow-slate-200/50"
+                        }`}>
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-zinc-550" />
+                            <input
+                              type="text"
+                              placeholder="Search dryfruit ingredient..."
+                              value={stockAdditiveSearchQuery}
+                              autoFocus
+                              onChange={e => setStockAdditiveSearchQuery(e.target.value)}
+                              className={`w-full pl-8 pr-2 py-1.5 text-xs border rounded-md focus:outline-none ${inputClass}`}
+                            />
+                          </div>
+
+                          <div className="max-h-48 overflow-y-auto space-y-1 scrollbar-thin">
+                            {additives
+                              .filter(a => a.deleted_at === null && a.name.toLowerCase().includes(stockAdditiveSearchQuery.toLowerCase()))
+                              .length === 0 ? (
+                                <div className="p-2 text-center text-xs text-zinc-500 italic">
+                                  No ingredients found
+                                </div>
+                              ) : (
+                                additives
+                                  .filter(a => a.deleted_at === null && a.name.toLowerCase().includes(stockAdditiveSearchQuery.toLowerCase()))
+                                  .map(add => {
+                                    const isSelected = stockAdditiveId === add.id;
+                                    return (
+                                      <div
+                                        key={add.id}
+                                        onClick={() => {
+                                          setStockAdditiveId(add.id);
+                                          setActiveStockAdditiveDropdown(false);
+                                        }}
+                                        className={`p-2 rounded-lg text-left transition duration-155 flex items-center justify-between text-xs font-semibold cursor-pointer ${
+                                          isSelected
+                                            ? "bg-indigo-600 text-white"
+                                            : (isDark ? "hover:bg-zinc-850 text-zinc-300" : "hover:bg-slate-100 text-slate-700")
+                                        }`}
+                                      >
+                                        <span>{add.name}</span>
+                                        <span className={`font-mono text-[10px] ${isSelected ? "text-indigo-200" : "text-zinc-500"}`}>
+                                          ₹{add.price_per_kg}/kg
+                                        </span>
+                                      </div>
+                                    );
+                                  })
+                              )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {stockAdditiveId && (
