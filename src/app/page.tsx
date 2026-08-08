@@ -1988,6 +1988,12 @@ export default function Dashboard() {
                                     {isDryfruitRow ? (
                                       additives
                                         .filter(a => a.deleted_at === null)
+                                        .filter(a => {
+                                          if (!productSearchQuery && a.stock_qty_kg <= 0) {
+                                            return false;
+                                          }
+                                          return true;
+                                        })
                                         .filter(a => !productSearchQuery || a.name.toLowerCase().includes(productSearchQuery.toLowerCase()))
                                         .length === 0 ? (
                                           <div className="text-[10px] text-zinc-500 italic p-2 text-center">
@@ -1996,6 +2002,12 @@ export default function Dashboard() {
                                         ) : (
                                           additives
                                             .filter(a => a.deleted_at === null)
+                                            .filter(a => {
+                                              if (!productSearchQuery && a.stock_qty_kg <= 0) {
+                                                return false;
+                                              }
+                                              return true;
+                                            })
                                             .filter(a => !productSearchQuery || a.name.toLowerCase().includes(productSearchQuery.toLowerCase()))
                                             .map(add => {
                                               const isSelected = item.additiveId === add.id;
@@ -2038,6 +2050,13 @@ export default function Dashboard() {
                                       products
                                         .filter(p => p.deleted_at === null)
                                         .filter(p => {
+                                          const stockCount = getProductStock(p.id);
+                                          if (!productSearchQuery && stockCount <= 0) {
+                                            return false;
+                                          }
+                                          return true;
+                                        })
+                                        .filter(p => {
                                           if (!productSearchQuery) return true;
                                           const q = productSearchQuery.toLowerCase();
                                           return p.name.toLowerCase().includes(q) || 
@@ -2053,6 +2072,13 @@ export default function Dashboard() {
                                         ) : (
                                           products
                                             .filter(p => p.deleted_at === null)
+                                            .filter(p => {
+                                              const stockCount = getProductStock(p.id);
+                                              if (!productSearchQuery && stockCount <= 0) {
+                                                return false;
+                                              }
+                                              return true;
+                                            })
                                             .filter(p => {
                                               if (!productSearchQuery) return true;
                                               const q = productSearchQuery.toLowerCase();
@@ -2184,7 +2210,11 @@ export default function Dashboard() {
                                 updated[index].quantity = enteredQty;
                                 setInvoiceItems(updated);
                               }}
-                              className={`w-full px-2 py-1.5 border rounded-lg focus:outline-none text-xs font-mono text-left ${inputClass}`}
+                              className={`w-full px-2 py-1.5 border rounded-lg focus:outline-none text-xs font-mono text-left ${
+                                !item.quantity || Number(item.quantity) <= 0
+                                  ? "border-rose-500 bg-rose-500/5 text-rose-650 focus:ring-2 focus:ring-rose-500/20"
+                                  : inputClass
+                              }`}
                             />
                           </div>
                           {/* Price Input */}
@@ -6187,6 +6217,39 @@ export default function Dashboard() {
                     </select>
                   </div>
 
+                  {moveProductId && (() => {
+                    const activeStocks = stock.filter(st => st.product_id === moveProductId && st.quantity > 0 && st.deleted_at === null);
+                    const totalStock = activeStocks.reduce((sum, s) => sum + s.quantity, 0);
+                    if (totalStock === 0) {
+                      return (
+                        <div className="p-3.5 rounded-xl border border-red-500/30 bg-red-500/5 text-red-500 text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                          <span>⚠️</span>
+                          <span>Out of Stock: No units available in any storage location!</span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className={`p-3.5 rounded-xl border space-y-2 ${isDark ? "bg-zinc-950/20 border-zinc-808/50" : "bg-slate-100/30 border-slate-200 shadow-inner"}`}>
+                        <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider block">Current Storage Locations & Stock:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {activeStocks.map(st => (
+                            <span 
+                              key={st.id} 
+                              className={`px-2 py-0.5 text-[10px] font-semibold font-mono rounded-md border flex items-center gap-1 ${
+                                isDark 
+                                  ? "bg-zinc-950 border-zinc-808/60 text-zinc-300" 
+                                  : "bg-white border-slate-220 text-slate-700 shadow-xs"
+                              }`}
+                            >
+                              <MapPin className="h-2.5 w-2.5 text-indigo-500 shrink-0" />
+                              <span>{getLocationName(st.storage_location_id)}: <strong>{st.quantity}</strong> units</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {moveProductId && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -6271,6 +6334,39 @@ export default function Dashboard() {
                       ))}
                     </select>
                   </div>
+
+                  {moveAdditiveId && (() => {
+                    const activeStocks = stock.filter(st => st.additive_id === moveAdditiveId && st.quantity > 0 && st.deleted_at === null);
+                    const totalStock = activeStocks.reduce((sum, s) => sum + s.quantity, 0);
+                    if (totalStock === 0) {
+                      return (
+                        <div className="p-3.5 rounded-xl border border-red-500/30 bg-red-500/5 text-red-500 text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                          <span>⚠️</span>
+                          <span>Out of Stock: No inventory available in any storage location!</span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className={`p-3.5 rounded-xl border space-y-2 ${isDark ? "bg-zinc-950/20 border-zinc-808/50" : "bg-slate-100/30 border-slate-200 shadow-inner"}`}>
+                        <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider block">Current Storage Locations & Stock:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {activeStocks.map(st => (
+                            <span 
+                              key={st.id} 
+                              className={`px-2 py-0.5 text-[10px] font-semibold font-mono rounded-md border flex items-center gap-1 ${
+                                isDark 
+                                  ? "bg-zinc-950 border-zinc-808/60 text-zinc-300" 
+                                  : "bg-white border-slate-220 text-slate-700 shadow-xs"
+                              }`}
+                            >
+                              <MapPin className="h-2.5 w-2.5 text-indigo-500 shrink-0" />
+                              <span>{getLocationName(st.storage_location_id)}: <strong>{st.quantity.toFixed(2)} kg</strong></span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {moveAdditiveId && (
                     <div className="grid grid-cols-2 gap-4">
