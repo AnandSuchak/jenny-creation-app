@@ -168,6 +168,8 @@ export default function Dashboard() {
   const [damagedSearchQuery, setDamagedSearchQuery] = useState("");
   const [isDamagedLogExpanded, setIsDamagedLogExpanded] = useState(false);
   // Hydration state
+  const [deviceId, setDeviceId] = useState("");
+  const [deviceIpAddress, setDeviceIpAddress] = useState("Offline / Unknown");
   const [isLoaded, setIsLoaded] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const toggleTheme = () => {
@@ -199,6 +201,27 @@ export default function Dashboard() {
     setDeletedInvoices(localDB.getDeletedInvoices());
   };
   useEffect(() => {
+    // Generate/retrieve device tracking ID signature
+    let currentDeviceId = localStorage.getItem("jenny_device_fingerprint_id");
+    if (!currentDeviceId) {
+      currentDeviceId = "DEV-" + Math.random().toString(36).substring(2, 10).toUpperCase() + "-" + Date.now().toString().slice(-6);
+      localStorage.setItem("jenny_device_fingerprint_id", currentDeviceId);
+    }
+    setDeviceId(currentDeviceId);
+
+    // Fetch IP address in background
+    fetch("https://api.ipify.org?format=json")
+      .then(res => res.json())
+      .then(data => {
+        if (data.ip) setDeviceIpAddress(data.ip);
+      })
+      .catch(() => {
+        fetch("https://ipv4.icanhazip.com")
+          .then(res => res.text())
+          .then(ip => setDeviceIpAddress(ip.trim()))
+          .catch(() => setDeviceIpAddress("Unknown"));
+      });
+
     loadData();
     const saved = localStorage.getItem("j_creation_theme") as "light" | "dark";
     if (saved) {
@@ -818,6 +841,12 @@ export default function Dashboard() {
       let activeId = "";
       const deliveryDateParam = isPreOrder ? invoiceDeliveryDate : undefined;
       const advancePaidParam = isPreOrder && invoiceAdvancePaid ? Number(invoiceAdvancePaid) : undefined;
+      const deviceInfo = {
+        device_id: deviceId,
+        ip_address: deviceIpAddress,
+        user_agent: navigator.userAgent,
+        captured_at: new Date().toISOString()
+      };
       if (isEditingInvoice && editingInvoiceId) {
         const res = localDB.updateInvoice(
           editingInvoiceId, 
@@ -827,7 +856,8 @@ export default function Dashboard() {
           invoiceCustomerStatus,
           deliveryDateParam,
           advancePaidParam,
-          invoicePaymentMode
+          invoicePaymentMode,
+          deviceInfo
         );
         if (res) activeId = res.id;
         alert("Order updated successfully!");
@@ -839,7 +869,8 @@ export default function Dashboard() {
           invoiceCustomerStatus,
           deliveryDateParam,
           advancePaidParam,
-          invoicePaymentMode
+          invoicePaymentMode,
+          deviceInfo
         );
         if (res) activeId = res.id;
       }
@@ -5822,10 +5853,15 @@ export default function Dashboard() {
                     )}
                   </div>
                 </div>
-                <div className="text-center mt-6 pt-4 border-t border-dashed border-zinc-808/30 print:mt-10">
+                <div className="text-center mt-6 pt-4 border-t border-dashed border-zinc-808/30 print:mt-10 flex flex-col gap-1">
                   <p className="text-[10px] italic text-zinc-500 font-medium">
                     Invoice generated electronically • System developed by <span className="font-extrabold not-italic text-indigo-500">Lecharme</span>
                   </p>
+                  {inv.device_info && (
+                    <p className="text-[8px] font-mono text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
+                      Device Signature: {inv.device_info.device_id} | IP: {inv.device_info.ip_address} | Time: {new Date(inv.device_info.captured_at).toLocaleString("en-IN")}
+                    </p>
+                  )}
                 </div>
               </div>
               {/* Modal Actions */}

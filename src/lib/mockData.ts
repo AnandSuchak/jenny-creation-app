@@ -117,6 +117,7 @@ export interface Invoice {
   updated_at: string;
   deleted_at: string | null;
   items?: InvoiceItem[];
+  device_info?: any;
 }
 
 // Initial seed data
@@ -807,7 +808,7 @@ class LocalDB {
   }
 
   // Create Invoice
-  createInvoice(customerName: string, customerPhone: string, items: { productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[], status: "ordered" | "preparing" | "completed" | "delivered" = "ordered", deliveryDate?: string, advancePaid?: number, paymentMode?: string): Invoice {
+  createInvoice(customerName: string, customerPhone: string, items: { productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[], status: "ordered" | "preparing" | "completed" | "delivered" = "ordered", deliveryDate?: string, advancePaid?: number, paymentMode?: string, deviceInfo?: any): Invoice {
     const invoices = getStorageItem<Invoice[]>("invoices", initialInvoices);
     const invoiceItems = getStorageItem<InvoiceItem[]>("invoice_items", initialInvoiceItems);
     
@@ -1010,7 +1011,8 @@ class LocalDB {
       issue_date: new Date().toISOString(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      deleted_at: null
+      deleted_at: null,
+      device_info: deviceInfo || null
     };
  
     invoices.push(newInvoice);
@@ -1038,7 +1040,7 @@ class LocalDB {
     return null;
   }
 
-  updateInvoice(id: string, customerName: string, customerPhone: string, items: { productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[], status: "ordered" | "preparing" | "completed" | "delivered", deliveryDate?: string, advancePaid?: number, paymentMode?: string): Invoice | null {
+  updateInvoice(id: string, customerName: string, customerPhone: string, items: { productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[], status: "ordered" | "preparing" | "completed" | "delivered", deliveryDate?: string, advancePaid?: number, paymentMode?: string, deviceInfo?: any): Invoice | null {
     const invoices = getStorageItem<Invoice[]>("invoices", initialInvoices);
     const invoiceItems = getStorageItem<InvoiceItem[]>("invoice_items", initialInvoiceItems);
     const stocks = getStorageItem<Stock[]>("stock", initialStock);
@@ -1267,6 +1269,7 @@ class LocalDB {
     invoices[idx].delivery_date = deliveryDate || undefined;
     invoices[idx].advance_paid = advancePaid !== undefined ? Number(advancePaid) : undefined;
     invoices[idx].payment_mode = paymentMode || "Cash";
+    invoices[idx].device_info = deviceInfo || invoices[idx].device_info || null;
     invoices[idx].updated_at = new Date().toISOString();
     
     const cleanedItems = invoiceItems.filter(ivi => ivi.invoice_id !== id);
