@@ -13,13 +13,14 @@ export interface User {
   };
   created_at: string;
   deleted_at: string | null;
+  require_password_change?: boolean;
 }
 
 const initialUsers: User[] = [
   {
     id: "usr-admin",
     username: "superadmin",
-    password_hash: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3", // SHA-256 of admin123
+    password_hash: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3", // SHA-256 of 123
     role: "super_admin",
     rights: {
       view_stock: true,
@@ -411,7 +412,8 @@ class LocalDB {
       role,
       rights,
       created_at: new Date().toISOString(),
-      deleted_at: null
+      deleted_at: null,
+      require_password_change: false
     };
     list.push(newUser);
     setStorageItem("users", list);
@@ -429,6 +431,33 @@ class LocalDB {
     const updated = list.map(u => u.id === id ? { ...u, deleted_at: new Date().toISOString() } : u);
     setStorageItem("users", updated);
     return true;
+  }
+
+  resetUserPassword(id: string, defaultPasswordHash: string, callerUserId: string): User {
+    const caller = this.getUsers().find(u => u.id === callerUserId);
+    if (!caller || caller.role !== "super_admin") {
+      throw new Error("Unauthorized: Only Super Admins can reset user passwords.");
+    }
+    const list = getStorageItem<User[]>("users", initialUsers);
+    const matchedIdx = list.findIndex(u => u.id === id && u.deleted_at === null);
+    if (matchedIdx === -1) throw new Error("User not found.");
+    if (list[matchedIdx].id === "usr-admin") {
+      throw new Error("Cannot reset the primary Super Admin account's password.");
+    }
+    list[matchedIdx].password_hash = defaultPasswordHash;
+    list[matchedIdx].require_password_change = true;
+    setStorageItem("users", list);
+    return list[matchedIdx];
+  }
+
+  changeUserPassword(id: string, newPasswordHash: string): User {
+    const list = getStorageItem<User[]>("users", initialUsers);
+    const matchedIdx = list.findIndex(u => u.id === id && u.deleted_at === null);
+    if (matchedIdx === -1) throw new Error("User not found.");
+    list[matchedIdx].password_hash = newPasswordHash;
+    list[matchedIdx].require_password_change = false;
+    setStorageItem("users", list);
+    return list[matchedIdx];
   }
 
   getCategories(): Category[] {

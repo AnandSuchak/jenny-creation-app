@@ -182,6 +182,10 @@ export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState<any | null>(null);
   const [authUsernameInput, setAuthUsernameInput] = useState("");
   const [authPasswordInput, setAuthPasswordInput] = useState("");
+  const [isPasswordChangeRequired, setIsPasswordChangeRequired] = useState(false);
+  const [changePasswordNew, setChangePasswordNew] = useState("");
+  const [changePasswordConfirm, setChangePasswordConfirm] = useState("");
+  const [passwordChangeUser, setPasswordChangeUser] = useState<any | null>(null);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [newUserName, setNewUserName] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
@@ -444,6 +448,108 @@ export default function Dashboard() {
     );
   }
 
+  if (isPasswordChangeRequired && passwordChangeUser) {
+    return (
+      <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
+        {/* Solid Background Color Layer behind everything */}
+        <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
+        {/* Background Image with blur & opacity overlay */}
+        <div 
+          className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
+          style={{ 
+            backgroundImage: "url('/gifting_bg_image.jpg')",
+            filter: "blur(18px) brightness(0.95)",
+            opacity: isDark ? 0.08 : 0.04
+          }}
+        />
+        {/* Top glowing line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 opacity-80" />
+        
+        {/* Glassmorphic Password Change Card */}
+        <div className={`w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 ${
+          isDark ? "bg-zinc-900/50 border-zinc-808/80" : "bg-white/80 border-slate-205"
+        }`}>
+          <div className="flex flex-col items-center text-center gap-2">
+            <span className="p-3 bg-amber-500/10 text-amber-505 rounded-2xl border border-amber-500/20">
+              <Lock className="h-6 w-6" />
+            </span>
+            <h2 className="text-2xl font-black tracking-tight mt-1 text-slate-850 dark:text-zinc-100">
+              Reset Temporary Password
+            </h2>
+            <p className="text-xs text-zinc-550 dark:text-zinc-455 leading-normal max-w-xs font-semibold">
+              Your administrator has reset your password. You must set a new password before signing in.
+            </p>
+          </div>
+          
+          <form 
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!changePasswordNew.trim() || !changePasswordConfirm.trim()) return;
+              if (changePasswordNew.trim().length < 3) {
+                alert("Password must be at least 3 characters long.");
+                return;
+              }
+              if (changePasswordNew.trim() !== changePasswordConfirm.trim()) {
+                alert("Passwords do not match.");
+                return;
+              }
+              try {
+                const newHash = await hashPassword(changePasswordNew.trim());
+                const updatedUser = localDB.changeUserPassword(passwordChangeUser.id, newHash);
+                
+                // Clear change states
+                setChangePasswordNew("");
+                setChangePasswordConfirm("");
+                setIsPasswordChangeRequired(false);
+                setPasswordChangeUser(null);
+                
+                // Complete sign in
+                sessionStorage.setItem("jenny_session_user", JSON.stringify(updatedUser));
+                setCurrentUser(updatedUser);
+                loadData();
+                alert("Password updated and signed in successfully!");
+              } catch (err: any) {
+                alert("Password reset error: " + err.message);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">New Password</label>
+              <input
+                type="password"
+                required
+                placeholder="Enter new password..."
+                value={changePasswordNew}
+                onChange={e => setChangePasswordNew(e.target.value)}
+                className={`w-full px-3.5 py-2 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-550 mb-1.5">Confirm Password</label>
+              <input
+                type="password"
+                required
+                placeholder="Confirm new password..."
+                value={changePasswordConfirm}
+                onChange={e => setChangePasswordConfirm(e.target.value)}
+                className={`w-full px-3.5 py-2 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="mt-2 w-full py-2.5 bg-indigo-650 hover:bg-indigo-600 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer"
+            >
+              Save New Password & Sign In
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentUser) {
     return (
       <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
@@ -490,13 +596,20 @@ export default function Dashboard() {
                 }
                 const inputHash = await hashPassword(authPasswordInput.trim());
                 if (inputHash === matched.password_hash) {
-                  // Save session
-                  sessionStorage.setItem("jenny_session_user", JSON.stringify(matched));
-                  setCurrentUser(matched);
-                  setAuthUsernameInput("");
-                  setAuthPasswordInput("");
-                  // Trigger reload data to sync
-                  loadData();
+                  if (matched.require_password_change) {
+                    setPasswordChangeUser(matched);
+                    setIsPasswordChangeRequired(true);
+                    setAuthUsernameInput("");
+                    setAuthPasswordInput("");
+                  } else {
+                    // Save session
+                    sessionStorage.setItem("jenny_session_user", JSON.stringify(matched));
+                    setCurrentUser(matched);
+                    setAuthUsernameInput("");
+                    setAuthPasswordInput("");
+                    // Trigger reload data to sync
+                    loadData();
+                  }
                 } else {
                   alert("Invalid username or password.");
                 }
@@ -6925,7 +7038,28 @@ export default function Dashboard() {
                       </div>
 
                       {/* Actions */}
-                      <div>
+                      <div className="flex items-center gap-1">
+                        {!isPrimaryAdmin && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (confirm(`Are you sure you want to reset password for "${u.username}" to default "default123"? The user will be required to change it upon next sign in.`)) {
+                                try {
+                                  const defaultHash = await hashPassword("default123");
+                                  localDB.resetUserPassword(u.id, defaultHash, currentUser.id);
+                                  loadData();
+                                  alert(`Password for "${u.username}" has been reset to "default123" successfully. Mandatory password reset is active.`);
+                                } catch (err: any) {
+                                  alert(err.message);
+                                }
+                              }
+                            }}
+                            className={`p-1.5 rounded-lg transition duration-150 text-amber-500 hover:bg-amber-500/10 cursor-pointer`}
+                            title="Reset password to default (Mandatory change on next login)"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           type="button"
                           disabled={isPrimaryAdmin || isSelf}
@@ -6945,6 +7079,7 @@ export default function Dashboard() {
                               ? "opacity-30 cursor-not-allowed text-zinc-500"
                               : "text-rose-500 hover:bg-rose-500/10 cursor-pointer"
                           }`}
+                          title="Delete Account"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
