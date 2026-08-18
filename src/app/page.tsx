@@ -30,10 +30,19 @@ import {
   Edit,
   Bell,
   CheckCircle,
-  Calendar
+  Calendar,
+  Lock,
+  Users
 } from "lucide-react";
 import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock } from "@/lib/mockData";
 import { isSupabaseConfigured } from "@/lib/supabase";
+const hashPassword = async (password: string): Promise<string> => {
+  const msgBuffer = new TextEncoder().encode(password);
+  const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+};
+
 export default function Dashboard() {
   // DB States
   const [categories, setCategories] = useState<Category[]>([]);
@@ -170,8 +179,32 @@ export default function Dashboard() {
   // Hydration state
   const [deviceId, setDeviceId] = useState("");
   const [deviceIpAddress, setDeviceIpAddress] = useState("Offline / Unknown");
+  const [currentUser, setCurrentUser] = useState<any | null>(null);
+  const [authUsernameInput, setAuthUsernameInput] = useState("");
+  const [authPasswordInput, setAuthPasswordInput] = useState("");
+  const [usersList, setUsersList] = useState<any[]>([]);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRights, setNewUserRights] = useState({ view_stock: true, generate_bill: true, edit_inventory: false });
+  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const isDark = theme === "dark";
+  const bgClass = isDark 
+    ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950 text-zinc-200" 
+    : "bg-slate-100 text-slate-800";
+  const cardClass = isDark
+    ? "bg-zinc-900 border border-zinc-800"
+    : "bg-white border border-slate-200 shadow-sm shadow-slate-100/50";
+  const inputClass = isDark
+    ? "bg-zinc-950 border border-zinc-850 text-zinc-200 focus:border-zinc-700"
+    : "bg-white border border-slate-200 text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/5 transition duration-150";
+  const setupItemClass = isDark
+    ? "bg-zinc-950/45 border border-zinc-808"
+    : "bg-slate-50/50 border border-slate-150";
+  const btnOutlineClass = isDark
+    ? "bg-zinc-900/60 hover:bg-zinc-850 border border-zinc-800 text-zinc-300"
+    : "bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-sm";
   const toggleTheme = () => {
     const nextTheme = theme === "light" ? "dark" : "light";
     setTheme(nextTheme);
@@ -186,6 +219,7 @@ export default function Dashboard() {
     setStock(localDB.getStock());
     setInvoices(localDB.getInvoices());
     setAdditives(localDB.getAdditives());
+    setUsersList(localDB.getUsers());
     setDamagedStockList(localDB.getDamagedStock());
     const settings = localDB.getSellerSettings();
     setSellerName(settings.seller_name);
@@ -201,6 +235,16 @@ export default function Dashboard() {
     setDeletedInvoices(localDB.getDeletedInvoices());
   };
   useEffect(() => {
+    // Retrieve session user
+    const sessionStr = sessionStorage.getItem("jenny_session_user");
+    if (sessionStr) {
+      try {
+        setCurrentUser(JSON.parse(sessionStr));
+      } catch {
+        setCurrentUser(null);
+      }
+    }
+
     // Generate/retrieve device tracking ID signature
     let currentDeviceId = localStorage.getItem("jenny_device_fingerprint_id");
     if (!currentDeviceId) {
@@ -232,6 +276,17 @@ export default function Dashboard() {
   useEffect(() => {
     setProductsPage(1);
   }, [searchQuery, selectedCategoryFilter, selectedLocationFilter]);
+
+  useEffect(() => {
+    if (currentUser) {
+      if (appMode === "inventory" && !currentUser.rights.view_stock) {
+        setAppMode("billing");
+      }
+      if (appMode === "admin" && currentUser.role !== "super_admin") {
+        setAppMode("billing");
+      }
+    }
+  }, [currentUser, appMode]);
   useEffect(() => {
     if (!newProductCategory || isEditProductMode) {
       setProductVariants([]);
@@ -384,6 +439,109 @@ export default function Dashboard() {
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="h-10 w-10 animate-spin text-indigo-400" />
           <p className="text-zinc-500 font-medium">Loading JENNY CREATION Control Center...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
+        {/* Solid Background Color Layer behind everything */}
+        <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
+        {/* Background Image with blur & opacity overlay */}
+        <div 
+          className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
+          style={{ 
+            backgroundImage: "url('/gifting_bg_image.jpg')",
+            filter: "blur(18px) brightness(0.95)",
+            opacity: isDark ? 0.08 : 0.04
+          }}
+        />
+        {/* Top glowing line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 opacity-80" />
+        
+        {/* Glassmorphic Login Card */}
+        <div className={`w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 ${
+          isDark ? "bg-zinc-900/50 border-zinc-808/80" : "bg-white/80 border-slate-205"
+        }`}>
+          <div className="flex flex-col items-center text-center gap-2">
+            <span className="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl border border-indigo-500/20">
+              <Lock className="h-6 w-6" />
+            </span>
+            <h2 className="text-2xl font-black tracking-tight mt-1 text-slate-850 dark:text-zinc-100">
+              Control Center Sign In
+            </h2>
+            <p className="text-xs text-zinc-550 dark:text-zinc-455 leading-normal max-w-xs font-semibold">
+              Provide credentials to access Jenny Creation Gifting Inventory & Billing suite.
+            </p>
+          </div>
+          
+          <form 
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!authUsernameInput.trim() || !authPasswordInput.trim()) return;
+              try {
+                const users = localDB.getUsers();
+                const matched = users.find(u => u.username.toLowerCase() === authUsernameInput.trim().toLowerCase());
+                if (!matched) {
+                  alert("Invalid username or password.");
+                  return;
+                }
+                const inputHash = await hashPassword(authPasswordInput.trim());
+                if (inputHash === matched.password_hash) {
+                  // Save session
+                  sessionStorage.setItem("jenny_session_user", JSON.stringify(matched));
+                  setCurrentUser(matched);
+                  setAuthUsernameInput("");
+                  setAuthPasswordInput("");
+                  // Trigger reload data to sync
+                  loadData();
+                } else {
+                  alert("Invalid username or password.");
+                }
+              } catch (err: any) {
+                alert("Auth error: " + err.message);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">Username</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. superadmin"
+                value={authUsernameInput}
+                onChange={e => setAuthUsernameInput(e.target.value)}
+                className={`w-full px-3.5 py-2 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">Password</label>
+              <input
+                type="password"
+                required
+                placeholder="Enter password..."
+                value={authPasswordInput}
+                onChange={e => setAuthPasswordInput(e.target.value)}
+                className={`w-full px-3.5 py-2 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="mt-2 w-full py-2.5 bg-indigo-650 hover:bg-indigo-600 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer"
+            >
+              Sign In to Dashboard
+            </button>
+          </form>
+          
+          <div className="text-[10px] text-zinc-500 font-mono text-center flex flex-col gap-0.5 border-t border-dashed border-zinc-808/30 pt-4">
+            <div>Default Gate Credentials:</div>
+            <div>Username: <span className="font-bold text-zinc-450 dark:text-zinc-300">superadmin</span> • Pass: <span className="font-bold text-zinc-450 dark:text-zinc-300">admin123</span></div>
+          </div>
         </div>
       </div>
     );
@@ -857,7 +1015,8 @@ export default function Dashboard() {
           deliveryDateParam,
           advancePaidParam,
           invoicePaymentMode,
-          deviceInfo
+          deviceInfo,
+          currentUser
         );
         if (res) activeId = res.id;
         alert("Order updated successfully!");
@@ -870,7 +1029,8 @@ export default function Dashboard() {
           deliveryDateParam,
           advancePaidParam,
           invoicePaymentMode,
-          deviceInfo
+          deviceInfo,
+          currentUser
         );
         if (res) activeId = res.id;
       }
@@ -897,12 +1057,20 @@ export default function Dashboard() {
     }
   };
   const handleSoftDelete = (table: string, id: string) => {
+    if (currentUser && currentUser.role !== "super_admin" && !currentUser.rights.edit_inventory) {
+      alert("Unauthorized: Your user account lacks permission to edit inventory.");
+      return;
+    }
     if (confirm(`Are you sure you want to soft delete this item from ${table}?`)) {
       localDB.softDelete(table, id);
       loadData();
     }
   };
   const handleRestore = (table: string, id: string) => {
+    if (currentUser && currentUser.role !== "super_admin" && !currentUser.rights.edit_inventory) {
+      alert("Unauthorized: Your user account lacks permission to edit inventory.");
+      return;
+    }
     localDB.restore(table, id);
     loadData();
     alert(`Successfully restored item back from archive.`);
@@ -1026,22 +1194,6 @@ export default function Dashboard() {
 
     return list;
   };
-  const isDark = theme === "dark";
-  const bgClass = isDark 
-    ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950 text-zinc-200" 
-    : "bg-slate-100 text-slate-800";
-  const cardClass = isDark
-    ? "bg-zinc-900 border border-zinc-800"
-    : "bg-white border border-slate-200 shadow-sm shadow-slate-100/50";
-  const inputClass = isDark
-    ? "bg-zinc-950 border border-zinc-850 text-zinc-200 focus:border-zinc-700"
-    : "bg-white border border-slate-200 text-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/5 transition duration-150";
-  const setupItemClass = isDark
-    ? "bg-zinc-950/45 border border-zinc-808"
-    : "bg-slate-50/50 border border-slate-150";
-  const btnOutlineClass = isDark
-    ? "bg-zinc-900/60 hover:bg-zinc-850 border border-zinc-800 text-zinc-300"
-    : "bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-sm";
   // Day-End Closure Summary Report PDF Generator
   const handleGenerateDaySummary = () => {
     const todayStr = simulationDate;
@@ -1395,28 +1547,75 @@ export default function Dashboard() {
             >
               <FileText className="h-4 w-4" /> Billing Station
             </button>
-            <button
-              onClick={() => setAppMode("inventory")}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition duration-200 flex items-center gap-1.5 whitespace-nowrap select-none ${
-                appMode === "inventory"
-                  ? "bg-indigo-600 text-white shadow-sm font-extrabold"
-                  : (isDark ? "text-zinc-450 hover:text-zinc-250" : "text-slate-550 hover:text-slate-800")
-              }`}
-            >
-              <Layers className="h-4 w-4" /> Inventory Hub
-            </button>
-            <button
-              onClick={() => setAppMode("admin")}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition duration-200 flex items-center gap-1.5 whitespace-nowrap select-none ${
-                appMode === "admin"
-                  ? "bg-indigo-600 text-white shadow-sm font-extrabold"
-                  : (isDark ? "text-zinc-450 hover:text-zinc-250" : "text-slate-550 hover:text-slate-800")
-              }`}
-            >
-              <SlidersHorizontal className="h-4 w-4" /> Admin Controls
-            </button>
+            
+            {currentUser?.rights.view_stock && (
+              <button
+                onClick={() => setAppMode("inventory")}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition duration-200 flex items-center gap-1.5 whitespace-nowrap select-none ${
+                  appMode === "inventory"
+                    ? "bg-indigo-600 text-white shadow-sm font-extrabold"
+                    : (isDark ? "text-zinc-450 hover:text-zinc-250" : "text-slate-550 hover:text-slate-800")
+                }`}
+              >
+                <Layers className="h-4 w-4" /> Inventory Hub
+              </button>
+            )}
+
+            {currentUser?.role === "super_admin" && (
+              <button
+                onClick={() => setAppMode("admin")}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition duration-200 flex items-center gap-1.5 whitespace-nowrap select-none ${
+                  appMode === "admin"
+                    ? "bg-indigo-600 text-white shadow-sm font-extrabold"
+                    : (isDark ? "text-zinc-450 hover:text-zinc-250" : "text-slate-550 hover:text-slate-800")
+                }`}
+              >
+                <SlidersHorizontal className="h-4 w-4" /> Admin Controls
+              </button>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            {/* User Profile & Logout Segment */}
+            <div className={`flex items-center gap-2.5 p-1 pl-3.5 pr-2.5 rounded-2xl border ${
+              isDark ? "bg-zinc-950/40 border-zinc-808/80" : "bg-white border-slate-205 shadow-sm"
+            }`}>
+              <div className="flex flex-col items-start leading-tight">
+                <span className={`text-[10px] font-black ${isDark ? "text-zinc-200" : "text-slate-800"}`}>
+                  {currentUser?.username}
+                </span>
+                <span className="text-[8px] uppercase tracking-wider font-extrabold text-indigo-500">
+                  {currentUser?.role === "super_admin" ? "Super Admin" : "Operator"}
+                </span>
+              </div>
+              
+              {currentUser?.role === "super_admin" && (
+                <button
+                  type="button"
+                  onClick={() => setIsUserManagementOpen(true)}
+                  className={`p-1.5 rounded-lg border text-indigo-500 transition duration-150 cursor-pointer ${
+                    isDark ? "bg-zinc-900 border-zinc-800 hover:bg-zinc-800/80" : "bg-slate-50 border-slate-200 hover:bg-slate-100/50"
+                  }`}
+                  title="Manage User Credentials & Roles"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Are you sure you want to sign out?")) {
+                    sessionStorage.removeItem("jenny_session_user");
+                    setCurrentUser(null);
+                    setAppMode("billing");
+                  }
+                }}
+                className="text-[9px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-lg border text-rose-500 border-rose-500/20 hover:bg-rose-500/10 transition duration-150 cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+
             {/* 🔔 Facebook/Instagram Style Notification Bell Dropdown */}
             <div className="relative">
               <button
@@ -1719,7 +1918,8 @@ export default function Dashboard() {
             })()}
             {billingTab === "form" || isEditingInvoice ? (
               /* Dedicated Invoice Form Card */
-              <div className={`${cardClass} p-6 pb-24 lg:pb-6 flex flex-col gap-6 rounded-2xl relative shadow-lg`}>
+              currentUser?.rights.generate_bill ? (
+                <div className={`${cardClass} p-6 pb-24 lg:pb-6 flex flex-col gap-6 rounded-2xl relative shadow-lg`}>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h2 className={`text-xl font-bold mb-1 flex items-center gap-2 ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
@@ -2522,7 +2722,16 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-            </div>
+                </div>
+              ) : (
+                <div className={`${cardClass} p-8 text-center flex flex-col items-center justify-center gap-3 rounded-2xl relative shadow-lg min-h-[350px]`}>
+                  <div className="p-4 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                    <Lock className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-base font-extrabold text-slate-800 dark:text-zinc-150">Billing Access Restricted</h3>
+                  <p className="text-xs text-zinc-500 max-w-sm">Your user account lacks rights to generate or edit invoices. Please request the administrator to assign billing permissions.</p>
+                </div>
+              )
             ) : (
               /* ORDER KANBAN BOARD */
               <div className="w-full relative space-y-6">
@@ -3249,6 +3458,11 @@ export default function Dashboard() {
                                   <span className={`text-[10px] ${isDark ? "text-zinc-500" : "text-slate-455"}`}>
                                     {inv.items?.length || 0} items
                                   </span>
+                                  {currentUser?.role === "super_admin" && inv.created_by_username && (
+                                    <span className="text-[9px] font-semibold bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded border border-indigo-500/10">
+                                      👤 By: {inv.created_by_username}
+                                    </span>
+                                  )}
                                   <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded font-mono ${
                                     inv.status === "ordered" ? "bg-blue-500/10 text-blue-500 border border-blue-500/20" :
                                     inv.status === "preparing" ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" :
@@ -3279,10 +3493,11 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 <span className="text-base">🛠️</span>
                 <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-zinc-300" : "text-slate-700"}`}>
-                  Inventory Controls
+                  Inventory Controls {!currentUser?.rights.edit_inventory && "🔒 (Restricted)"}
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
+              {currentUser?.rights.edit_inventory && (
+                <div className="flex flex-wrap items-center gap-3">
                 <button 
                   onClick={() => {
                     setSetupModalType("category");
@@ -3334,6 +3549,7 @@ export default function Dashboard() {
                   <AlertTriangle className="h-4 w-4" /> Add Damaged Pieces
                 </button>
               </div>
+              )}
             </div>
             {/* Stats Section */}
             <section className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
@@ -3830,6 +4046,7 @@ export default function Dashboard() {
                     </div>
                   )}
                   <div className="absolute top-3 right-3 flex gap-1.5">
+{currentUser?.rights.edit_inventory && (
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -3848,6 +4065,7 @@ export default function Dashboard() {
                     >
                       Edit
                     </button>
+                    )}
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -3931,7 +4149,7 @@ export default function Dashboard() {
               </div>
             ))}
             {/* Create Product Card - Only show on last page */}
-            {productsPage === totalProductsPages && (
+            {currentUser?.rights.edit_inventory && productsPage === totalProductsPages && (
               <div 
                 onClick={() => setIsProductModalOpen(true)}
                 className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition duration-300 min-h-[300px] ${isDark ? "bg-zinc-905 hover:bg-zinc-900 border-zinc-808 hover:border-zinc-700" : "bg-white hover:bg-zinc-50/80 border-zinc-200 hover:border-zinc-300 shadow-sm"}`}
@@ -5890,6 +6108,7 @@ export default function Dashboard() {
                   {inv.device_info && (
                     <p className="text-[8px] font-mono text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">
                       Device Signature: {inv.device_info.device_id} | IP: {inv.device_info.ip_address} | Time: {new Date(inv.device_info.captured_at).toLocaleString("en-IN")}
+                      {currentUser?.role === "super_admin" && inv.created_by_username && ` | OPERATOR: ${inv.created_by_username.toUpperCase()}`}
                     </p>
                   )}
                 </div>
@@ -6617,6 +6836,213 @@ export default function Dashboard() {
                 Close Details
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 9. User Management Modal */}
+      {isUserManagementOpen && currentUser?.role === "super_admin" && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className={`w-full max-w-2xl p-6 rounded-3xl border shadow-2xl flex flex-col gap-5 max-h-[90vh] overflow-y-auto ${
+            isDark ? "bg-zinc-900 border-zinc-808/80 shadow-zinc-950/80" : "bg-white border-slate-205 shadow-slate-200/50"
+          }`}>
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 bg-indigo-500/10 text-indigo-505 rounded-xl">
+                  <Users className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 className={`text-base font-extrabold ${isDark ? "text-white" : "text-slate-800"}`}>
+                    Operator Accounts & Permissions (RBAC)
+                  </h3>
+                  <p className={`text-[10px] font-semibold ${isDark ? "text-zinc-550" : "text-zinc-450"}`}>
+                    Manage credentials and allocate permissions for billing, inventory, and stock views.
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setIsUserManagementOpen(false);
+                  setNewUserName("");
+                  setNewUserPassword("");
+                  setNewUserRights({ view_stock: true, generate_bill: true, edit_inventory: false });
+                }}
+                className={`p-1.5 rounded-lg border transition duration-150 cursor-pointer ${isDark ? "bg-zinc-950 hover:bg-zinc-855 border-zinc-850 text-zinc-400 hover:text-white" : "bg-slate-50 hover:bg-slate-100 border-slate-205 text-slate-550"}`}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* List of current users */}
+            <div className="space-y-3">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Active Users ({usersList.length})</span>
+              <div className="grid gap-2 max-h-48 overflow-y-auto scrollbar-thin">
+                {usersList.map(u => {
+                  const isPrimaryAdmin = u.id === "usr-admin";
+                  const isSelf = u.id === currentUser?.id;
+                  return (
+                    <div 
+                      key={u.id} 
+                      className={`p-3 rounded-xl border flex items-center justify-between gap-4 text-xs ${
+                        isDark ? "bg-zinc-950/40 border-zinc-808/50" : "bg-slate-50/50 border-slate-200"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="flex flex-col">
+                          <span className={`font-bold flex items-center gap-1.5 ${isDark ? "text-zinc-200" : "text-slate-700"}`}>
+                            {u.username}
+                            {isSelf && (
+                              <span className="text-[8px] bg-indigo-500/10 text-indigo-505 font-extrabold px-1 rounded">YOU</span>
+                            )}
+                          </span>
+                          <span className="text-[9px] text-zinc-500 font-medium">Role: {u.role === "super_admin" ? "Super Admin" : "Operator"}</span>
+                        </div>
+                      </div>
+
+                      {/* Permissions overview badges */}
+                      <div className="flex items-center gap-1.5">
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold border ${
+                          u.rights.view_stock 
+                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" 
+                            : "bg-rose-500/10 border-rose-505/20 text-rose-500"
+                        }`}>
+                          View Stock
+                        </span>
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold border ${
+                          u.rights.generate_bill 
+                            ? "bg-emerald-500/10 border-emerald-505/20 text-emerald-555" 
+                            : "bg-rose-500/10 border-rose-505/20 text-rose-500"
+                        }`}>
+                          Generate Bill
+                        </span>
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold border ${
+                          u.rights.edit_inventory 
+                            ? "bg-emerald-500/10 border-emerald-505/20 text-emerald-555" 
+                            : "bg-rose-500/10 border-rose-505/20 text-rose-500"
+                        }`}>
+                          Edit Inv
+                        </span>
+                      </div>
+
+                      {/* Actions */}
+                      <div>
+                        <button
+                          type="button"
+                          disabled={isPrimaryAdmin || isSelf}
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to delete user "${u.username}"?`)) {
+                              try {
+                                localDB.deleteUser(u.id, currentUser.id);
+                                loadData();
+                                alert(`Deleted user "${u.username}" successfully.`);
+                              } catch (err: any) {
+                                alert(err.message);
+                              }
+                            }
+                          }}
+                          className={`p-1.5 rounded-lg transition duration-150 ${
+                            isPrimaryAdmin || isSelf
+                              ? "opacity-30 cursor-not-allowed text-zinc-500"
+                              : "text-rose-500 hover:bg-rose-500/10 cursor-pointer"
+                          }`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Create Operator Form */}
+            <form 
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!newUserName.trim() || !newUserPassword.trim()) return;
+                try {
+                  const hash = await hashPassword(newUserPassword.trim());
+                  localDB.createUser(newUserName.trim(), hash, newUserRights, "operator");
+                  loadData();
+                  setNewUserName("");
+                  setNewUserPassword("");
+                  setNewUserRights({ view_stock: true, generate_bill: true, edit_inventory: false });
+                  alert("Created new operator user account successfully!");
+                } catch (err: any) {
+                  alert(err.message);
+                }
+              }}
+              className="border-t border-dashed border-zinc-808/30 pt-4 space-y-3"
+            >
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Create Operator User</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[9px] font-bold uppercase tracking-wider text-zinc-550 mb-1">Username</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. jennystaff1"
+                    value={newUserName}
+                    onChange={e => setNewUserName(e.target.value)}
+                    className={`w-full px-2.5 py-1.5 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[9px] font-bold uppercase tracking-wider text-zinc-550 mb-1">Password</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Set temporary password..."
+                    value={newUserPassword}
+                    onChange={e => setNewUserPassword(e.target.value)}
+                    className={`w-full px-2.5 py-1.5 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                  />
+                </div>
+              </div>
+
+              {/* Checkboxes for permissions */}
+              <div className={`p-3 rounded-xl border space-y-2 ${
+                isDark ? "bg-zinc-950/20 border-zinc-808/50" : "bg-slate-100/30 border-slate-200"
+              }`}>
+                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Assign User Rights</span>
+                <div className="grid grid-cols-3 gap-2">
+                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={newUserRights.view_stock}
+                      onChange={e => setNewUserRights({ ...newUserRights, view_stock: e.target.checked })}
+                      className="rounded border-zinc-808 text-indigo-650 focus:ring-indigo-500"
+                    />
+                    <span>View Stock</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={newUserRights.generate_bill}
+                      onChange={e => setNewUserRights({ ...newUserRights, generate_bill: e.target.checked })}
+                      className="rounded border-zinc-808 text-indigo-650 focus:ring-indigo-500"
+                    />
+                    <span>Generate Bill</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={newUserRights.edit_inventory}
+                      onChange={e => setNewUserRights({ ...newUserRights, edit_inventory: e.target.checked })}
+                      className="rounded border-zinc-808 text-indigo-650 focus:ring-indigo-500"
+                    />
+                    <span>Edit Inventory</span>
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2 bg-indigo-650 hover:bg-indigo-600 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer flex items-center justify-center gap-1"
+              >
+                <Plus className="h-3.5 w-3.5" /> Create Operator Account
+              </button>
+            </form>
           </div>
         </div>
       )}

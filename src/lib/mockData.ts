@@ -1,6 +1,36 @@
 // Mock Database and Client Service for local mode (with localStorage persistence)
 // Mimics PostgreSQL relational schema and soft deletes
 
+export interface User {
+  id: string;
+  username: string;
+  password_hash: string;
+  role: "super_admin" | "operator";
+  rights: {
+    view_stock: boolean;
+    generate_bill: boolean;
+    edit_inventory: boolean;
+  };
+  created_at: string;
+  deleted_at: string | null;
+}
+
+const initialUsers: User[] = [
+  {
+    id: "usr-admin",
+    username: "superadmin",
+    password_hash: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3", // SHA-256 of admin123
+    role: "super_admin",
+    rights: {
+      view_stock: true,
+      generate_bill: true,
+      edit_inventory: true
+    },
+    created_at: new Date().toISOString(),
+    deleted_at: null
+  }
+];
+
 export interface SellerSettings {
   seller_name: string;
   seller_address: string;
@@ -118,6 +148,8 @@ export interface Invoice {
   deleted_at: string | null;
   items?: InvoiceItem[];
   device_info?: any;
+  created_by_user_id?: string;
+  created_by_username?: string;
 }
 
 // Initial seed data
@@ -353,6 +385,52 @@ const setStorageItem = <T>(key: string, value: T): void => {
 
 // Database state management
 class LocalDB {
+  getCurrentSessionUser(): User | null {
+    if (typeof window === "undefined") return null;
+    try {
+      const sessionStr = window.sessionStorage.getItem("jenny_session_user");
+      return sessionStr ? JSON.parse(sessionStr) : null;
+    } catch {
+      return null;
+    }
+  }
+  getUsers(): User[] {
+    return getStorageItem("users", initialUsers).filter(u => u.deleted_at === null);
+  }
+
+  createUser(username: string, passwordHash: string, rights: { view_stock: boolean; generate_bill: boolean; edit_inventory: boolean }, role: "super_admin" | "operator" = "operator"): User {
+    const list = getStorageItem<User[]>("users", initialUsers);
+    const usernameLower = username.trim().toLowerCase();
+    const exists = list.some(u => u.username.toLowerCase() === usernameLower && u.deleted_at === null);
+    if (exists) throw new Error(`User "${username.trim()}" already exists.`);
+
+    const newUser: User = {
+      id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      username: username.trim(),
+      password_hash: passwordHash,
+      role,
+      rights,
+      created_at: new Date().toISOString(),
+      deleted_at: null
+    };
+    list.push(newUser);
+    setStorageItem("users", list);
+    return newUser;
+  }
+
+  deleteUser(id: string, callerUserId: string): boolean {
+    if (id === "usr-admin") {
+      throw new Error("Cannot delete primary Super Admin account.");
+    }
+    if (id === callerUserId) {
+      throw new Error("Cannot delete your own currently logged-in account.");
+    }
+    const list = getStorageItem<User[]>("users", initialUsers);
+    const updated = list.map(u => u.id === id ? { ...u, deleted_at: new Date().toISOString() } : u);
+    setStorageItem("users", updated);
+    return true;
+  }
+
   getCategories(): Category[] {
     return getStorageItem("categories", initialCategories).filter(c => c.deleted_at === null);
   }
@@ -573,7 +651,11 @@ class LocalDB {
     return getStorageItem("invoices", initialInvoices).filter(i => i.deleted_at !== null);
   }
 
-  updateCategory(id: string, name: string): Category | null {
+  updateCategory(id: string, name: string, callerUser?: any): Category | null {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<Category[]>("categories", initialCategories);
     
     const nameLower = name.trim().toLowerCase();
@@ -590,7 +672,11 @@ class LocalDB {
     return null;
   }
 
-  updateSubType(id: string, name: string, categoryId: string): SubType | null {
+  updateSubType(id: string, name: string, categoryId: string, callerUser?: any): SubType | null {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<SubType[]>("sub_types", initialSubTypes);
     
     const nameLower = name.trim().toLowerCase();
@@ -608,7 +694,11 @@ class LocalDB {
     return null;
   }
 
-  updateLocation(id: string, name: string): StorageLocation | null {
+  updateLocation(id: string, name: string, callerUser?: any): StorageLocation | null {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<StorageLocation[]>("locations", initialLocations);
     
     const nameLower = name.trim().toLowerCase();
@@ -626,7 +716,11 @@ class LocalDB {
   }
 
   // Insert product
-  addProduct(name: string, categoryId: string, subTypeId: string, photos: string[], price: number, supplierCode?: string): Product {
+  addProduct(name: string, categoryId: string, subTypeId: string, photos: string[], price: number, supplierCode?: string, callerUser?: any): Product {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<Product[]>("products", initialProducts);
     const newProduct: Product = {
       id: `prod-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -645,7 +739,11 @@ class LocalDB {
     return newProduct;
   }
 
-  updateProduct(id: string, name: string, categoryId: string, subTypeId: string, photos: string[], price: number, supplierCode?: string): Product | null {
+  updateProduct(id: string, name: string, categoryId: string, subTypeId: string, photos: string[], price: number, supplierCode?: string, callerUser?: any): Product | null {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<Product[]>("products", initialProducts);
     const idx = list.findIndex(p => p.id === id);
     if (idx >= 0) {
@@ -663,7 +761,11 @@ class LocalDB {
   }
 
   // Insert category
-  addCategory(name: string): Category {
+  addCategory(name: string, callerUser?: any): Category {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<Category[]>("categories", initialCategories);
     
     const nameLower = name.trim().toLowerCase();
@@ -683,7 +785,11 @@ class LocalDB {
   }
 
   // Insert sub-type
-  addSubType(name: string, categoryId: string): SubType {
+  addSubType(name: string, categoryId: string, callerUser?: any): SubType {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<SubType[]>("sub_types", initialSubTypes);
     
     const nameLower = name.trim().toLowerCase();
@@ -704,7 +810,11 @@ class LocalDB {
   }
 
   // Insert location
-  addLocation(name: string): StorageLocation {
+  addLocation(name: string, callerUser?: any): StorageLocation {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<StorageLocation[]>("locations", initialLocations);
     
     const nameLower = name.trim().toLowerCase();
@@ -724,7 +834,11 @@ class LocalDB {
   }
 
   // Set or update stock quantity
-  updateStock(productId: string | null, locationId: string, quantity: number, additiveId: string | null = null): Stock {
+  updateStock(productId: string | null, locationId: string, quantity: number, additiveId: string | null = null, callerUser?: any): Stock {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<Stock[]>("stock", initialStock);
     const existingIndex = list.findIndex(
       st => st.product_id === productId && 
@@ -756,7 +870,11 @@ class LocalDB {
   }
 
   // Move stock between locations
-  moveStock(productId: string | null, sourceLocationId: string, destinationLocationId: string, quantity: number, additiveId: string | null = null): boolean {
+  moveStock(productId: string | null, sourceLocationId: string, destinationLocationId: string, quantity: number, additiveId: string | null = null, callerUser?: any): boolean {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     if (sourceLocationId === destinationLocationId) {
       throw new Error("Source and destination locations cannot be the same.");
     }
@@ -808,9 +926,14 @@ class LocalDB {
   }
 
   // Create Invoice
-  createInvoice(customerName: string, customerPhone: string, items: { productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[], status: "ordered" | "preparing" | "completed" | "delivered" = "ordered", deliveryDate?: string, advancePaid?: number, paymentMode?: string, deviceInfo?: any): Invoice {
+  createInvoice(customerName: string, customerPhone: string, items: { productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[], status: "ordered" | "preparing" | "completed" | "delivered" = "ordered", deliveryDate?: string, advancePaid?: number, paymentMode?: string, deviceInfo?: any, creatorUser?: any): Invoice {
     const invoices = getStorageItem<Invoice[]>("invoices", initialInvoices);
     const invoiceItems = getStorageItem<InvoiceItem[]>("invoice_items", initialInvoiceItems);
+
+    const user = creatorUser || this.getCurrentSessionUser();
+    if (user && user.role !== "super_admin" && !user.rights.generate_bill) {
+      throw new Error("Unauthorized: Your user account lacks permission to generate bills.");
+    }
     
     const invoiceId = `inv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const invoiceNumber = `INV-2026-${String(invoices.length + 1).padStart(3, '0')}`;
@@ -1012,7 +1135,9 @@ class LocalDB {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       deleted_at: null,
-      device_info: deviceInfo || null
+      device_info: deviceInfo || null,
+      created_by_user_id: user?.id || undefined,
+      created_by_username: user?.username || undefined
     };
  
     invoices.push(newInvoice);
@@ -1040,7 +1165,7 @@ class LocalDB {
     return null;
   }
 
-  updateInvoice(id: string, customerName: string, customerPhone: string, items: { productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[], status: "ordered" | "preparing" | "completed" | "delivered", deliveryDate?: string, advancePaid?: number, paymentMode?: string, deviceInfo?: any): Invoice | null {
+  updateInvoice(id: string, customerName: string, customerPhone: string, items: { productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[], status: "ordered" | "preparing" | "completed" | "delivered", deliveryDate?: string, advancePaid?: number, paymentMode?: string, deviceInfo?: any, creatorUser?: any): Invoice | null {
     const invoices = getStorageItem<Invoice[]>("invoices", initialInvoices);
     const invoiceItems = getStorageItem<InvoiceItem[]>("invoice_items", initialInvoiceItems);
     const stocks = getStorageItem<Stock[]>("stock", initialStock);
@@ -1049,6 +1174,11 @@ class LocalDB {
     
     const idx = invoices.findIndex(i => i.id === id);
     if (idx < 0) return null;
+
+    const user = creatorUser || this.getCurrentSessionUser();
+    if (user && user.role !== "super_admin" && !user.rights.generate_bill) {
+      throw new Error("Unauthorized: Your user account lacks permission to update bills.");
+    }
     
     // 1. Restore old items stock levels (both products and loose dryfruits, including customized jar fillings!)
     const oldItems = invoiceItems.filter(ivi => ivi.invoice_id === id && ivi.deleted_at === null);
@@ -1270,6 +1400,8 @@ class LocalDB {
     invoices[idx].advance_paid = advancePaid !== undefined ? Number(advancePaid) : undefined;
     invoices[idx].payment_mode = paymentMode || "Cash";
     invoices[idx].device_info = deviceInfo || invoices[idx].device_info || null;
+    invoices[idx].created_by_user_id = user?.id || invoices[idx].created_by_user_id;
+    invoices[idx].created_by_username = user?.username || invoices[idx].created_by_username;
     invoices[idx].updated_at = new Date().toISOString();
     
     const cleanedItems = invoiceItems.filter(ivi => ivi.invoice_id !== id);
@@ -1298,7 +1430,11 @@ class LocalDB {
     });
   }
 
-  addAdditive(name: string, pricePerKg: number, stockQtyKg: number = 0): Additive {
+  addAdditive(name: string, pricePerKg: number, stockQtyKg: number = 0, callerUser?: any): Additive {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<Additive[]>("additives", initialAdditives);
     const nameLower = name.trim().toLowerCase();
     const exists = list.some(a => a.name.toLowerCase() === nameLower && a.deleted_at === null);
@@ -1337,7 +1473,11 @@ class LocalDB {
     return newItem;
   }
 
-  updateAdditive(id: string, name: string, pricePerKg: number, stockQtyKg: number): Additive | null {
+  updateAdditive(id: string, name: string, pricePerKg: number, stockQtyKg: number, callerUser?: any): Additive | null {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const list = getStorageItem<Additive[]>("additives", initialAdditives);
     const nameLower = name.trim().toLowerCase();
     const exists = list.some(a => a.id !== id && a.name.toLowerCase() === nameLower && a.deleted_at === null);
@@ -1359,7 +1499,11 @@ class LocalDB {
     return getStorageItem<DamagedStock[]>("damaged_stock", initialDamagedStock).filter(d => d.deleted_at === null);
   }
 
-  addDamagedStock(productId: string | null, locationId: string, quantity: number, additiveId: string | null = null): DamagedStock {
+  addDamagedStock(productId: string | null, locationId: string, quantity: number, additiveId: string | null = null, callerUser?: any): DamagedStock {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
     const stocks = getStorageItem<Stock[]>("stock", initialStock);
     const stIndex = stocks.findIndex(
       s => s.product_id === productId && 
@@ -1405,6 +1549,7 @@ class LocalDB {
     setStorageItem("invoice_items", []);
     setStorageItem("additives", []);
     setStorageItem("damaged_stock", []);
+    setStorageItem("users", []);
   }
 
   getSellerSettings(): SellerSettings {
@@ -1433,6 +1578,7 @@ class LocalDB {
     setStorageItem("invoice_items", initialInvoiceItems);
     setStorageItem("additives", initialAdditives);
     setStorageItem("damaged_stock", initialDamagedStock);
+    setStorageItem("users", initialUsers);
   }
 }
 
