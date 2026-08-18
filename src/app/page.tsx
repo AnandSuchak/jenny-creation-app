@@ -450,33 +450,31 @@ export default function Dashboard() {
 
   if (isPasswordChangeRequired && passwordChangeUser) {
     return (
-      <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
+      <div className="min-h-screen text-zinc-200 font-sans relative overflow-hidden flex items-center justify-center p-4">
         {/* Solid Background Color Layer behind everything */}
-        <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
+        <div className="absolute inset-0 -z-30 bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" />
         {/* Background Image with blur & opacity overlay */}
         <div 
           className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
           style={{ 
             backgroundImage: "url('/gifting_bg_image.jpg')",
             filter: "blur(18px) brightness(0.95)",
-            opacity: isDark ? 0.08 : 0.04
+            opacity: 0.08
           }}
         />
         {/* Top glowing line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 opacity-80" />
         
         {/* Glassmorphic Password Change Card */}
-        <div className={`w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 ${
-          isDark ? "bg-zinc-900/50 border-zinc-808/80" : "bg-white/80 border-slate-205"
-        }`}>
+        <div className="w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 bg-zinc-900/50 border-zinc-808/80">
           <div className="flex flex-col items-center text-center gap-2">
             <span className="p-3 bg-amber-500/10 text-amber-505 rounded-2xl border border-amber-500/20">
               <Lock className="h-6 w-6" />
             </span>
-            <h2 className="text-2xl font-black tracking-tight mt-1 text-slate-850 dark:text-zinc-100">
+            <h2 className="text-2xl font-black tracking-tight mt-1 text-zinc-100">
               Reset Temporary Password
             </h2>
-            <p className="text-xs text-zinc-550 dark:text-zinc-455 leading-normal max-w-xs font-semibold">
+            <p className="text-xs text-zinc-400 leading-normal max-w-xs font-semibold">
               Your administrator has reset your password. You must set a new password before signing in.
             </p>
           </div>
@@ -552,33 +550,31 @@ export default function Dashboard() {
 
   if (!currentUser) {
     return (
-      <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
+      <div className="min-h-screen text-zinc-200 font-sans relative overflow-hidden flex items-center justify-center p-4">
         {/* Solid Background Color Layer behind everything */}
-        <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
+        <div className="absolute inset-0 -z-30 bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" />
         {/* Background Image with blur & opacity overlay */}
         <div 
           className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
           style={{ 
             backgroundImage: "url('/gifting_bg_image.jpg')",
             filter: "blur(18px) brightness(0.95)",
-            opacity: isDark ? 0.08 : 0.04
+            opacity: 0.08
           }}
         />
         {/* Top glowing line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 opacity-80" />
         
         {/* Glassmorphic Login Card */}
-        <div className={`w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 ${
-          isDark ? "bg-zinc-900/50 border-zinc-808/80" : "bg-white/80 border-slate-205"
-        }`}>
+        <div className="w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 bg-zinc-900/50 border-zinc-808/80">
           <div className="flex flex-col items-center text-center gap-2">
             <span className="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl border border-indigo-500/20">
               <Lock className="h-6 w-6" />
             </span>
-            <h2 className="text-2xl font-black tracking-tight mt-1 text-slate-850 dark:text-zinc-100">
+            <h2 className="text-2xl font-black tracking-tight mt-1 text-zinc-100">
               Control Center Sign In
             </h2>
-            <p className="text-xs text-zinc-550 dark:text-zinc-455 leading-normal max-w-xs font-semibold">
+            <p className="text-xs text-zinc-400 leading-normal max-w-xs font-semibold">
               Provide credentials to access Jenny Creation Gifting Inventory & Billing suite.
             </p>
           </div>
@@ -651,9 +647,9 @@ export default function Dashboard() {
             </button>
           </form>
           
-          <div className="text-[10px] text-zinc-500 font-mono text-center flex flex-col gap-0.5 border-t border-dashed border-zinc-808/30 pt-4">
+          <div className="text-[10px] text-zinc-400 font-mono text-center flex flex-col gap-0.5 border-t border-dashed border-zinc-808/30 pt-4">
             <div>Default Gate Credentials:</div>
-            <div>Username: <span className="font-bold text-zinc-450 dark:text-zinc-300">superadmin</span> • Pass: <span className="font-bold text-zinc-450 dark:text-zinc-300">admin123</span></div>
+            <div>Username: <span className="font-bold text-zinc-300">superadmin</span> • Pass: <span className="font-bold text-zinc-300">123</span></div>
           </div>
         </div>
       </div>
