@@ -538,7 +538,7 @@ export default function Dashboard() {
             
             <button
               type="submit"
-              className="mt-2 w-full py-2.5 bg-indigo-650 hover:bg-indigo-600 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer"
+              className="mt-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer"
             >
               Save New Password & Sign In
             </button>
@@ -641,7 +641,7 @@ export default function Dashboard() {
             
             <button
               type="submit"
-              className="mt-2 w-full py-2.5 bg-indigo-650 hover:bg-indigo-600 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer"
+              className="mt-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer"
             >
               Sign In to Dashboard
             </button>
