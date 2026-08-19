@@ -373,6 +373,45 @@
       "created_at": "2026-08-19T13:15:49.698Z",
       "updated_at": "2026-08-19T13:15:49.698Z",
       "deleted_at": null
+    },
+    {
+      "id": "prod-1787145777526-t65hd",
+      "name": "tile (Baccha)",
+      "category_id": "cat-1785331613141",
+      "sub_type_id": "sub-1785344907692",
+      "photos": [
+        "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 80,
+      "created_at": "2026-08-19T13:22:57.526Z",
+      "updated_at": "2026-08-19T13:22:57.526Z",
+      "deleted_at": null
+    },
+    {
+      "id": "prod-1787145777527-9gbp9",
+      "name": "tile (8*8)",
+      "category_id": "cat-1785331613141",
+      "sub_type_id": "sub-1785344918988",
+      "photos": [
+        "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 100,
+      "created_at": "2026-08-19T13:22:57.527Z",
+      "updated_at": "2026-08-19T13:22:57.527Z",
+      "deleted_at": null
+    },
+    {
+      "id": "prod-1787145777527-ajxot",
+      "name": "tile (10*10)",
+      "category_id": "cat-1785331613141",
+      "sub_type_id": "sub-1785344926023",
+      "photos": [
+        "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 200,
+      "created_at": "2026-08-19T13:22:57.527Z",
+      "updated_at": "2026-08-19T13:22:57.527Z",
+      "deleted_at": null
     }
   ],
   "stock": [
@@ -493,6 +532,36 @@
       "quantity": 20,
       "created_at": "2026-08-08T05:00:40.583Z",
       "updated_at": "2026-08-08T05:00:40.583Z",
+      "deleted_at": null
+    },
+    {
+      "id": "st-1787145777526-75o0c",
+      "product_id": "prod-1787145777526-t65hd",
+      "additive_id": null,
+      "storage_location_id": "loc-1785331622196",
+      "quantity": 10,
+      "created_at": "2026-08-19T13:22:57.526Z",
+      "updated_at": "2026-08-19T13:22:57.526Z",
+      "deleted_at": null
+    },
+    {
+      "id": "st-1787145777527-gdy7h",
+      "product_id": "prod-1787145777527-9gbp9",
+      "additive_id": null,
+      "storage_location_id": "loc-1785331622196",
+      "quantity": 10,
+      "created_at": "2026-08-19T13:22:57.527Z",
+      "updated_at": "2026-08-19T13:22:57.527Z",
+      "deleted_at": null
+    },
+    {
+      "id": "st-1787145777527-i32kr",
+      "product_id": "prod-1787145777527-ajxot",
+      "additive_id": null,
+      "storage_location_id": "loc-1785331622196",
+      "quantity": 10,
+      "created_at": "2026-08-19T13:22:57.527Z",
+      "updated_at": "2026-08-19T13:22:57.527Z",
       "deleted_at": null
     }
   ],

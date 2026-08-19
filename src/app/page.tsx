@@ -2565,6 +2565,7 @@ export default function Dashboard() {
                                     {isDryfruitRow ? (
                                       additives
                                         .filter(a => a.deleted_at === null)
+                                        .filter(a => !invoiceItems.some((x, xIdx) => xIdx !== index && x.additiveId === a.id))
                                         .filter(a => {
                                           if (!productSearchQuery && a.stock_qty_kg <= 0) {
                                             return false;
@@ -2579,6 +2580,7 @@ export default function Dashboard() {
                                         ) : (
                                           additives
                                             .filter(a => a.deleted_at === null)
+                                            .filter(a => !invoiceItems.some((x, xIdx) => xIdx !== index && x.additiveId === a.id))
                                             .filter(a => {
                                               if (!productSearchQuery && a.stock_qty_kg <= 0) {
                                                 return false;
@@ -2626,6 +2628,7 @@ export default function Dashboard() {
                                     ) : (
                                       products
                                         .filter(p => p.deleted_at === null)
+                                        .filter(p => !invoiceItems.some((x, xIdx) => xIdx !== index && x.productId === p.id))
                                         .filter(p => {
                                           const stockCount = getProductStock(p.id);
                                           if (!productSearchQuery && stockCount <= 0) {
@@ -2649,6 +2652,7 @@ export default function Dashboard() {
                                         ) : (
                                           products
                                             .filter(p => p.deleted_at === null)
+                                            .filter(p => !invoiceItems.some((x, xIdx) => xIdx !== index && x.productId === p.id))
                                             .filter(p => {
                                               const stockCount = getProductStock(p.id);
                                               if (!productSearchQuery && stockCount <= 0) {
