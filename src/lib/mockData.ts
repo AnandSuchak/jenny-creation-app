@@ -434,6 +434,24 @@ class LocalDB {
     return true;
   }
 
+  updateUserRights(id: string, rights: { view_stock: boolean; generate_bill: boolean; edit_inventory: boolean }, callerUserId: string): User {
+    const caller = this.getUsers().find(u => u.id === callerUserId);
+    if (!caller || caller.role !== "super_admin") {
+      throw new Error("Unauthorized: Only Super Admins can update user permissions.");
+    }
+    const list = getStorageItem<User[]>("users", initialUsers);
+    const matchedIdx = list.findIndex(u => u.id === id && u.deleted_at === null);
+    if (matchedIdx === -1) {
+      throw new Error("User not found.");
+    }
+    if (list[matchedIdx].id === "usr-admin") {
+      throw new Error("Cannot modify rights for primary Super Admin.");
+    }
+    list[matchedIdx].rights = rights;
+    setStorageItem("users", list);
+    return list[matchedIdx];
+  }
+
   resetUserPassword(id: string, defaultPasswordHash: string, callerUserId: string): User {
     const caller = this.getUsers().find(u => u.id === callerUserId);
     if (!caller || caller.role !== "super_admin") {

@@ -36,11 +36,88 @@ import {
 } from "lucide-react";
 import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock } from "@/lib/mockData";
 import { isSupabaseConfigured } from "@/lib/supabase";
+const sha256Fallback = (ascii: string): string => {
+  function rR(v: number, a: number) { return (v >>> a) | (v << (32 - a)); }
+  const k = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+  ];
+  let h0 = 0x6a09e667;
+  let h1 = 0xbb67ae85;
+  let h2 = 0x3c6ef372;
+  let h3 = 0xa54ff53a;
+  let h4 = 0x510e527f;
+  let h5 = 0x9b05688c;
+  let h6 = 0x1f83d9ab;
+  let h7 = 0x5be0cd19;
+  const bytes = [];
+  for (let i = 0; i < ascii.length; i++) {
+    bytes.push(ascii.charCodeAt(i) & 0xff);
+  }
+  bytes.push(0x80);
+  while ((bytes.length * 8) % 512 !== 448) {
+    bytes.push(0x00);
+  }
+  const bitsLength = ascii.length * 8;
+  const lenBytes = new Array(8).fill(0);
+  let tempBits = bitsLength;
+  for (let i = 7; i >= 0; i--) {
+    lenBytes[i] = tempBits & 0xff;
+    tempBits = Math.floor(tempBits / 256);
+  }
+  bytes.push(...lenBytes);
+  for (let chunkOffset = 0; chunkOffset < bytes.length; chunkOffset += 64) {
+    const w = new Array(64).fill(0);
+    for (let i = 0; i < 16; i++) {
+      const idx = chunkOffset + i * 4;
+      w[i] = (bytes[idx] << 24) | (bytes[idx + 1] << 16) | (bytes[idx + 2] << 8) | bytes[idx + 3];
+    }
+    for (let i = 16; i < 64; i++) {
+      const s0 = rR(w[i - 15], 7) ^ rR(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+      const s1 = rR(w[i - 2], 17) ^ rR(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+    }
+    let a = h0; let b = h1; let c = h2; let d = h3; let e = h4; let f = h5; let g = h6; let h = h7;
+    for (let i = 0; i < 64; i++) {
+      const S1 = rR(e, 6) ^ rR(e, 11) ^ rR(e, 25);
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = (h + S1 + ch + k[i] + w[i]) | 0;
+      const S0 = rR(a, 2) ^ rR(a, 13) ^ rR(a, 22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (S0 + maj) | 0;
+      h = g; g = f; f = e; e = (d + temp1) | 0; d = c; c = b; b = a; a = (temp1 + temp2) | 0;
+    }
+    h0 = (h0 + a) | 0;
+    h1 = (h1 + b) | 0;
+    h2 = (h2 + c) | 0;
+    h3 = (h3 + d) | 0;
+    h4 = (h4 + e) | 0;
+    h5 = (h5 + f) | 0;
+    h6 = (h6 + g) | 0;
+    h7 = (h7 + h) | 0;
+  }
+  const hex = (val: number) => (val >>> 0).toString(16).padStart(8, '0');
+  return hex(h0) + hex(h1) + hex(h2) + hex(h3) + hex(h4) + hex(h5) + hex(h6) + hex(h7);
+};
+
 const hashPassword = async (password: string): Promise<string> => {
-  const msgBuffer = new TextEncoder().encode(password);
-  const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
+    try {
+      const msgBuffer = new TextEncoder().encode(password);
+      const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    } catch (e) {
+      console.warn("Subtle crypto failed, falling back to JS SHA-256", e);
+    }
+  }
+  return sha256Fallback(password);
 };
 
 export default function Dashboard() {
@@ -216,6 +293,29 @@ export default function Dashboard() {
   };
   // Load Data
   const loadData = () => {
+    // Sync current user session with latest database state in real-time
+    const sessionStr = sessionStorage.getItem("jenny_session_user");
+    if (sessionStr) {
+      try {
+        const parsed = JSON.parse(sessionStr);
+        const latestUsers = localDB.getUsers();
+        const latestMatched = latestUsers.find(u => u.id === parsed.id);
+        if (!latestMatched) {
+          sessionStorage.removeItem("jenny_session_user");
+          setCurrentUser(null);
+          alert("Your account has been deleted or deactivated by an administrator. You have been signed out.");
+        } else {
+          // If database rights or properties changed, update in-memory state and session string
+          if (JSON.stringify(latestMatched) !== JSON.stringify(currentUser)) {
+            sessionStorage.setItem("jenny_session_user", JSON.stringify(latestMatched));
+            setCurrentUser(latestMatched);
+          }
+        }
+      } catch (err) {
+        console.error("Session sync error:", err);
+      }
+    }
+
     setCategories(localDB.getCategories());
     setSubTypes(localDB.getSubTypes());
     setLocations(localDB.getLocations());
@@ -7049,29 +7149,62 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      {/* Permissions overview badges */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
-                          u.rights.view_stock 
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" 
-                            : "bg-rose-500/10 border-rose-505/20 text-rose-500"
-                        }`}>
-                          View Stock
-                        </span>
-                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
-                          u.rights.generate_bill 
-                            ? "bg-emerald-500/10 border-emerald-505/20 text-emerald-555" 
-                            : "bg-rose-500/10 border-rose-505/20 text-rose-500"
-                        }`}>
-                          Generate Bill
-                        </span>
-                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
-                          u.rights.edit_inventory 
-                            ? "bg-emerald-500/10 border-emerald-505/20 text-emerald-555" 
-                            : "bg-rose-500/10 border-rose-505/20 text-rose-500"
-                        }`}>
-                          Edit Inv
-                        </span>
+                      {/* Permissions overview checkboxes (inline editable!) */}
+                      <div className="flex flex-wrap items-center gap-3">
+                        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            disabled={isPrimaryAdmin}
+                            checked={u.rights.view_stock}
+                            onChange={(e) => {
+                              try {
+                                const newRights = { ...u.rights, view_stock: e.target.checked };
+                                localDB.updateUserRights(u.id, newRights, currentUser.id);
+                                loadData();
+                              } catch (err: any) {
+                                alert(err.message);
+                              }
+                            }}
+                            className="rounded border-zinc-408 text-indigo-650 focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          />
+                          <span className={u.rights.view_stock ? "text-emerald-500 font-bold" : (isDark ? "text-zinc-400" : "text-zinc-500")}>View Stock</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            disabled={isPrimaryAdmin}
+                            checked={u.rights.generate_bill}
+                            onChange={(e) => {
+                              try {
+                                const newRights = { ...u.rights, generate_bill: e.target.checked };
+                                localDB.updateUserRights(u.id, newRights, currentUser.id);
+                                loadData();
+                              } catch (err: any) {
+                                alert(err.message);
+                              }
+                            }}
+                            className="rounded border-zinc-408 text-indigo-650 focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          />
+                          <span className={u.rights.generate_bill ? "text-emerald-555 font-bold" : (isDark ? "text-zinc-400" : "text-zinc-500")}>Generate Bill</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            disabled={isPrimaryAdmin}
+                            checked={u.rights.edit_inventory}
+                            onChange={(e) => {
+                              try {
+                                const newRights = { ...u.rights, edit_inventory: e.target.checked };
+                                localDB.updateUserRights(u.id, newRights, currentUser.id);
+                                loadData();
+                              } catch (err: any) {
+                                alert(err.message);
+                              }
+                            }}
+                            className="rounded border-zinc-408 text-indigo-650 focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          />
+                          <span className={u.rights.edit_inventory ? "text-emerald-555 font-bold" : (isDark ? "text-zinc-400" : "text-zinc-500")}>Edit Inv</span>
+                        </label>
                       </div>
 
                       {/* Actions */}
