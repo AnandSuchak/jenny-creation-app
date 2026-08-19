@@ -793,17 +793,35 @@ export default function Dashboard() {
               e.preventDefault();
               if (!authUsernameInput.trim() || !authPasswordInput.trim()) return;
               try {
-                const users = localDB.getUsers();
-                const matched = users.find(u => u.username.toLowerCase() === authUsernameInput.trim().toLowerCase());
+                let matched: any = undefined;
+                if (isSupabaseConfigured && supabase) {
+                  // Direct cloud query for real-time credentials validation
+                  const { data, error } = await supabase
+                    .from("users")
+                    .select("*")
+                    .eq("username", authUsernameInput.trim().toLowerCase())
+                    .eq("deleted_at", null)
+                    .maybeSingle();
+                  if (error) throw new Error(error.message);
+                  if (data) matched = data;
+                } else {
+                  const users = localDB.getUsers();
+                  matched = users.find(u => u.username.toLowerCase() === authUsernameInput.trim().toLowerCase());
+                }
+
                 if (!matched) {
                   alert("Invalid username or password.");
                   return;
                 }
+
                 const inputHash = await hashPassword(authPasswordInput.trim());
                 if (inputHash === matched.password_hash) {
                   if (matched.require_password_change) {
                     setPasswordChangeUser(matched);
                     setIsPasswordChangeRequired(true);
+                    setAuthUsernameInput("");
+                    setAuthPasswordInput("");
+                  } else {
                     // Generate new session lock token
                     const sessionToken = "SESS-" + Math.random().toString(36).substring(2, 10).toUpperCase() + "-" + Date.now();
                     const updatedUser = localDB.updateUserSessionToken(matched.id, sessionToken);
@@ -812,11 +830,6 @@ export default function Dashboard() {
                     sessionStorage.setItem("jenny_session_user", JSON.stringify(updatedUser));
                     sessionStorage.setItem("jenny_session_token", sessionToken);
                     setCurrentUser(updatedUser);
-                    setAuthUsernameInput("");
-                    setAuthPasswordInput("");
-                    // Trigger reload data to sync
-                    loadData();
-                    setCurrentUser(matched);
                     setAuthUsernameInput("");
                     setAuthPasswordInput("");
                     // Trigger reload data to sync
