@@ -28,7 +28,8 @@ const initialUsers: User[] = [
       edit_inventory: true
     },
     created_at: new Date().toISOString(),
-    deleted_at: null
+    deleted_at: null,
+    require_password_change: true
   }
 ];
 

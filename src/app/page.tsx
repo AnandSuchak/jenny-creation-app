@@ -450,31 +450,41 @@ export default function Dashboard() {
 
   if (isPasswordChangeRequired && passwordChangeUser) {
     return (
-      <div className="min-h-screen text-zinc-200 font-sans relative overflow-hidden flex items-center justify-center p-4">
+      <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
         {/* Solid Background Color Layer behind everything */}
-        <div className="absolute inset-0 -z-30 bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" />
+        <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
         {/* Background Image with blur & opacity overlay */}
         <div 
           className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
           style={{ 
             backgroundImage: "url('/gifting_bg_image.jpg')",
             filter: "blur(18px) brightness(0.95)",
-            opacity: 0.08
+            opacity: isDark ? 0.08 : 0.04
           }}
         />
         {/* Top glowing line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 opacity-80" />
         
         {/* Glassmorphic Password Change Card */}
-        <div className="w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 bg-zinc-900/50 border-zinc-808/80">
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className="p-3 bg-amber-500/10 text-amber-505 rounded-2xl border border-amber-500/20">
-              <Lock className="h-6 w-6" />
+        <div className={`w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 transition duration-200 ${
+          isDark 
+            ? "bg-zinc-900/40 border-zinc-808/80 shadow-zinc-950/80" 
+            : "bg-white/80 border-slate-200/60 shadow-slate-200/50"
+        }`}>
+          {/* Subtle background glow inside card */}
+          <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col items-center text-center gap-3 relative z-10">
+            <span className="p-3.5 bg-gradient-to-tr from-amber-500/10 to-indigo-500/10 text-amber-500 dark:text-amber-400 rounded-2xl border border-amber-500/10 dark:border-amber-500/20 shadow-inner">
+              <Lock className="h-6 w-6 animate-pulse" />
             </span>
-            <h2 className="text-2xl font-black tracking-tight mt-1 text-zinc-100">
+            <h2 className={`text-2xl font-black tracking-tight mt-1 bg-clip-text bg-gradient-to-r ${
+              isDark ? "from-zinc-100 via-zinc-200 to-zinc-400" : "from-slate-800 to-slate-900"
+            }`}>
               Reset Temporary Password
             </h2>
-            <p className="text-xs text-zinc-400 leading-normal max-w-xs font-semibold">
+            <p className={`text-xs leading-normal max-w-xs font-semibold ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
               Your administrator has reset your password. You must set a new password before signing in.
             </p>
           </div>
@@ -510,35 +520,47 @@ export default function Dashboard() {
                 alert("Password reset error: " + err.message);
               }
             }}
-            className="space-y-4"
+            className="space-y-4 relative z-10"
           >
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">New Password</label>
+              <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-550"}`}>
+                New Password
+              </label>
               <input
                 type="password"
                 required
                 placeholder="Enter new password..."
                 value={changePasswordNew}
                 onChange={e => setChangePasswordNew(e.target.value)}
-                className={`w-full px-3.5 py-2 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
+                  isDark 
+                    ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                    : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                }`}
               />
             </div>
             
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-550 mb-1.5">Confirm Password</label>
+              <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
+                Confirm Password
+              </label>
               <input
                 type="password"
                 required
                 placeholder="Confirm new password..."
                 value={changePasswordConfirm}
                 onChange={e => setChangePasswordConfirm(e.target.value)}
-                className={`w-full px-3.5 py-2 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
+                  isDark 
+                    ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                    : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                }`}
               />
             </div>
             
             <button
               type="submit"
-              className="mt-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer"
+              className="mt-3 w-full py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-amber-600/10 transition duration-150 cursor-pointer flex items-center justify-center gap-1.5"
             >
               Save New Password & Sign In
             </button>
@@ -550,31 +572,41 @@ export default function Dashboard() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen text-zinc-200 font-sans relative overflow-hidden flex items-center justify-center p-4">
+      <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
         {/* Solid Background Color Layer behind everything */}
-        <div className="absolute inset-0 -z-30 bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" />
+        <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
         {/* Background Image with blur & opacity overlay */}
         <div 
           className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
           style={{ 
             backgroundImage: "url('/gifting_bg_image.jpg')",
             filter: "blur(18px) brightness(0.95)",
-            opacity: 0.08
+            opacity: isDark ? 0.08 : 0.04
           }}
         />
         {/* Top glowing line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-500 opacity-80" />
         
         {/* Glassmorphic Login Card */}
-        <div className="w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 bg-zinc-900/50 border-zinc-808/80">
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl border border-indigo-500/20">
+        <div className={`w-full max-w-md p-8 rounded-3xl border shadow-2xl relative backdrop-blur-md flex flex-col gap-6 transition duration-200 ${
+          isDark 
+            ? "bg-zinc-900/40 border-zinc-808/80 shadow-zinc-950/80" 
+            : "bg-white/80 border-slate-200/60 shadow-slate-200/50"
+        }`}>
+          {/* Subtle background glow inside card */}
+          <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col items-center text-center gap-3 relative z-10">
+            <span className="p-3.5 bg-gradient-to-tr from-indigo-500/10 to-amber-500/10 text-indigo-505 dark:text-amber-400 rounded-2xl border border-indigo-500/10 dark:border-amber-500/20 shadow-inner">
               <Lock className="h-6 w-6" />
             </span>
-            <h2 className="text-2xl font-black tracking-tight mt-1 text-zinc-100">
+            <h2 className={`text-2xl font-black tracking-tight mt-1 bg-clip-text bg-gradient-to-r ${
+              isDark ? "from-zinc-100 via-zinc-200 to-zinc-400" : "from-slate-800 to-slate-900"
+            }`}>
               Control Center Sign In
             </h2>
-            <p className="text-xs text-zinc-400 leading-normal max-w-xs font-semibold">
+            <p className={`text-xs leading-normal max-w-xs font-semibold ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
               Provide credentials to access Jenny Creation Gifting Inventory & Billing suite.
             </p>
           </div>
@@ -613,44 +645,51 @@ export default function Dashboard() {
                 alert("Auth error: " + err.message);
               }
             }}
-            className="space-y-4"
+            className="space-y-4 relative z-10"
           >
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">Username</label>
+              <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
+                Username
+              </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. superadmin"
+                placeholder="Enter username..."
                 value={authUsernameInput}
                 onChange={e => setAuthUsernameInput(e.target.value)}
-                className={`w-full px-3.5 py-2 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
+                  isDark 
+                    ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                    : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                }`}
               />
             </div>
             
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1.5">Password</label>
+              <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
+                Password
+              </label>
               <input
                 type="password"
                 required
                 placeholder="Enter password..."
                 value={authPasswordInput}
                 onChange={e => setAuthPasswordInput(e.target.value)}
-                className={`w-full px-3.5 py-2 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
+                  isDark 
+                    ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                    : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                }`}
               />
             </div>
             
             <button
               type="submit"
-              className="mt-2 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer"
+              className="mt-3 w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/10 transition duration-150 cursor-pointer flex items-center justify-center gap-1.5"
             >
               Sign In to Dashboard
             </button>
           </form>
-          
-          <div className="text-[10px] text-zinc-400 font-mono text-center flex flex-col gap-0.5 border-t border-dashed border-zinc-808/30 pt-4">
-            <div>Default Gate Credentials:</div>
-            <div>Username: <span className="font-bold text-zinc-300">superadmin</span> • Pass: <span className="font-bold text-zinc-300">123</span></div>
-          </div>
         </div>
       </div>
     );
@@ -6952,20 +6991,20 @@ export default function Dashboard() {
       {/* 9. User Management Modal */}
       {isUserManagementOpen && currentUser?.role === "super_admin" && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className={`w-full max-w-2xl p-6 rounded-3xl border shadow-2xl flex flex-col gap-5 max-h-[90vh] overflow-y-auto ${
-            isDark ? "bg-zinc-900 border-zinc-808/80 shadow-zinc-950/80" : "bg-white border-slate-205 shadow-slate-200/50"
+          <div className={`w-full max-w-2xl p-6 md:p-8 rounded-3xl border shadow-2xl flex flex-col gap-6 max-h-[90vh] overflow-y-auto transition duration-200 ${
+            isDark ? "bg-zinc-900 border-zinc-808/80 shadow-zinc-950/80" : "bg-white border-slate-200 shadow-slate-200/50"
           }`}>
-            <div className="flex justify-between items-start">
-              <div className="flex items-center gap-2.5">
-                <span className="p-2 bg-indigo-500/10 text-indigo-505 rounded-xl">
-                  <Users className="h-5 w-5" />
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex items-center gap-3">
+                <span className="p-3 bg-indigo-500/10 text-indigo-505 rounded-2xl shrink-0">
+                  <Users className="h-6 w-6" />
                 </span>
                 <div>
-                  <h3 className={`text-base font-extrabold ${isDark ? "text-white" : "text-slate-800"}`}>
-                    Operator Accounts & Permissions (RBAC)
+                  <h3 className={`text-lg md:text-xl font-black tracking-tight ${isDark ? "text-white" : "text-slate-800"}`}>
+                    Operator Accounts & Permissions
                   </h3>
-                  <p className={`text-[10px] font-semibold ${isDark ? "text-zinc-550" : "text-zinc-450"}`}>
-                    Manage credentials and allocate permissions for billing, inventory, and stock views.
+                  <p className={`text-xs mt-0.5 leading-relaxed font-semibold ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
+                    Configure credentials and allocate permissions for billing, inventory, and stock views.
                   </p>
                 </div>
               </div>
@@ -6976,55 +7015,57 @@ export default function Dashboard() {
                   setNewUserPassword("");
                   setNewUserRights({ view_stock: true, generate_bill: true, edit_inventory: false });
                 }}
-                className={`p-1.5 rounded-lg border transition duration-150 cursor-pointer ${isDark ? "bg-zinc-950 hover:bg-zinc-855 border-zinc-850 text-zinc-400 hover:text-white" : "bg-slate-50 hover:bg-slate-100 border-slate-205 text-slate-550"}`}
+                className={`p-2 rounded-xl border transition duration-150 cursor-pointer shrink-0 ${isDark ? "bg-zinc-950 hover:bg-zinc-850 border-zinc-850 text-zinc-400 hover:text-white" : "bg-slate-50 hover:bg-slate-100 border-slate-205 text-slate-550"}`}
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* List of current users */}
             <div className="space-y-3">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Active Users ({usersList.length})</span>
-              <div className="grid gap-2 max-h-48 overflow-y-auto scrollbar-thin">
+              <span className={`text-xs font-bold uppercase tracking-wider block ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
+                Active Users ({usersList.length})
+              </span>
+              <div className="grid gap-3 max-h-56 overflow-y-auto scrollbar-thin pr-1">
                 {usersList.map(u => {
                   const isPrimaryAdmin = u.id === "usr-admin";
                   const isSelf = u.id === currentUser?.id;
                   return (
                     <div 
                       key={u.id} 
-                      className={`p-3 rounded-xl border flex items-center justify-between gap-4 text-xs ${
-                        isDark ? "bg-zinc-950/40 border-zinc-808/50" : "bg-slate-50/50 border-slate-200"
+                      className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition duration-150 ${
+                        isDark ? "bg-zinc-950/40 border-zinc-808/50 hover:border-zinc-700" : "bg-slate-50/50 border-slate-200 hover:border-slate-300"
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <div className="flex flex-col">
-                          <span className={`font-bold flex items-center gap-1.5 ${isDark ? "text-zinc-200" : "text-slate-700"}`}>
+                          <span className={`text-sm font-bold flex items-center gap-2 ${isDark ? "text-zinc-200" : "text-slate-800"}`}>
                             {u.username}
                             {isSelf && (
-                              <span className="text-[8px] bg-indigo-500/10 text-indigo-505 font-extrabold px-1 rounded">YOU</span>
+                              <span className="text-[9px] bg-indigo-500/10 text-indigo-505 font-extrabold px-2 py-0.5 rounded-md">YOU</span>
                             )}
                           </span>
-                          <span className="text-[9px] text-zinc-500 font-medium">Role: {u.role === "super_admin" ? "Super Admin" : "Operator"}</span>
+                          <span className="text-xs text-zinc-500 font-medium mt-0.5">Role: {u.role === "super_admin" ? "Super Admin" : "Operator"}</span>
                         </div>
                       </div>
 
                       {/* Permissions overview badges */}
-                      <div className="flex items-center gap-1.5">
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold border ${
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
                           u.rights.view_stock 
                             ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" 
                             : "bg-rose-500/10 border-rose-505/20 text-rose-500"
                         }`}>
                           View Stock
                         </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold border ${
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
                           u.rights.generate_bill 
                             ? "bg-emerald-500/10 border-emerald-505/20 text-emerald-555" 
                             : "bg-rose-500/10 border-rose-505/20 text-rose-500"
                         }`}>
                           Generate Bill
                         </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-extrabold border ${
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
                           u.rights.edit_inventory 
                             ? "bg-emerald-500/10 border-emerald-505/20 text-emerald-555" 
                             : "bg-rose-500/10 border-rose-505/20 text-rose-500"
@@ -7034,7 +7075,7 @@ export default function Dashboard() {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center justify-end gap-1.5 border-t sm:border-t-0 pt-2 sm:pt-0 border-dashed border-zinc-808/30">
                         {!isPrimaryAdmin && (
                           <button
                             type="button"
@@ -7050,10 +7091,10 @@ export default function Dashboard() {
                                 }
                               }
                             }}
-                            className={`p-1.5 rounded-lg transition duration-150 text-amber-500 hover:bg-amber-500/10 cursor-pointer`}
+                            className={`p-2 rounded-xl transition duration-150 text-amber-500 hover:bg-amber-500/10 cursor-pointer border border-amber-500/20 hover:border-amber-500/30`}
                             title="Reset password to default (Mandatory change on next login)"
                           >
-                            <RefreshCw className="h-4 w-4" />
+                            <RefreshCw className="h-4.5 w-4.5" />
                           </button>
                         )}
                         <button
@@ -7070,14 +7111,14 @@ export default function Dashboard() {
                               }
                             }
                           }}
-                          className={`p-1.5 rounded-lg transition duration-150 ${
+                          className={`p-2 rounded-xl transition duration-150 border ${
                             isPrimaryAdmin || isSelf
-                              ? "opacity-30 cursor-not-allowed text-zinc-500"
-                              : "text-rose-500 hover:bg-rose-500/10 cursor-pointer"
+                              ? "opacity-30 cursor-not-allowed text-zinc-500 border-zinc-808/30"
+                              : "text-rose-505 hover:bg-rose-500/10 border-rose-500/20 hover:border-rose-500/30 cursor-pointer"
                           }`}
                           title="Delete Account"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4.5 w-4.5" />
                         </button>
                       </div>
                     </div>
@@ -7103,64 +7144,80 @@ export default function Dashboard() {
                   alert(err.message);
                 }
               }}
-              className="border-t border-dashed border-zinc-808/30 pt-4 space-y-3"
+              className="border-t border-dashed border-zinc-808/30 pt-5 space-y-4"
             >
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Create Operator User</span>
-              <div className="grid grid-cols-2 gap-3">
+              <span className={`text-xs font-bold uppercase tracking-wider block ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
+                Create Operator User
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[9px] font-bold uppercase tracking-wider text-zinc-550 mb-1">Username</label>
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-550"}`}>
+                    Username
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. jennystaff1"
                     value={newUserName}
                     onChange={e => setNewUserName(e.target.value)}
-                    className={`w-full px-2.5 py-1.5 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                    className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-205 ${
+                      isDark 
+                        ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                        : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-bold uppercase tracking-wider text-zinc-550 mb-1">Password</label>
+                  <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
+                    Password
+                  </label>
                   <input
                     type="password"
                     required
                     placeholder="Set temporary password..."
                     value={newUserPassword}
                     onChange={e => setNewUserPassword(e.target.value)}
-                    className={`w-full px-2.5 py-1.5 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                    className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-205 ${
+                      isDark 
+                        ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                        : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                    }`}
                   />
                 </div>
               </div>
 
               {/* Checkboxes for permissions */}
-              <div className={`p-3 rounded-xl border space-y-2 ${
+              <div className={`p-4 rounded-2xl border space-y-3 transition duration-150 ${
                 isDark ? "bg-zinc-950/20 border-zinc-808/50" : "bg-slate-100/30 border-slate-200"
               }`}>
-                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Assign User Rights</span>
-                <div className="grid grid-cols-3 gap-2">
-                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                <span className={`text-[10px] md:text-xs font-bold uppercase tracking-wider block ${isDark ? "text-zinc-400" : "text-slate-500"}`}>
+                  Assign User Rights
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <label className="flex items-center gap-2.5 text-sm font-semibold cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={newUserRights.view_stock}
                       onChange={e => setNewUserRights({ ...newUserRights, view_stock: e.target.checked })}
-                      className="rounded border-zinc-808 text-indigo-650 focus:ring-indigo-500"
+                      className="rounded border-zinc-408 text-indigo-650 focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer"
                     />
                     <span>View Stock</span>
                   </label>
-                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                  <label className="flex items-center gap-2.5 text-sm font-semibold cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={newUserRights.generate_bill}
                       onChange={e => setNewUserRights({ ...newUserRights, generate_bill: e.target.checked })}
-                      className="rounded border-zinc-808 text-indigo-650 focus:ring-indigo-500"
+                      className="rounded border-zinc-408 text-indigo-650 focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer"
                     />
                     <span>Generate Bill</span>
                   </label>
-                  <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none">
+                  <label className="flex items-center gap-2.5 text-sm font-semibold cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={newUserRights.edit_inventory}
                       onChange={e => setNewUserRights({ ...newUserRights, edit_inventory: e.target.checked })}
-                      className="rounded border-zinc-808 text-indigo-650 focus:ring-indigo-500"
+                      className="rounded border-zinc-408 text-indigo-650 focus:ring-indigo-500 h-4.5 w-4.5 cursor-pointer"
                     />
                     <span>Edit Inventory</span>
                   </label>
@@ -7169,9 +7226,9 @@ export default function Dashboard() {
 
               <button
                 type="submit"
-                className="w-full py-2 bg-indigo-650 hover:bg-indigo-600 text-white font-bold rounded-lg text-xs shadow-md transition duration-150 cursor-pointer flex items-center justify-center gap-1"
+                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold rounded-xl text-sm shadow-md transition duration-150 cursor-pointer flex items-center justify-center gap-1.5"
               >
-                <Plus className="h-3.5 w-3.5" /> Create Operator Account
+                <Plus className="h-4.5 w-4.5" /> Create Operator Account
               </button>
             </form>
           </div>
