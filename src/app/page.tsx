@@ -37,7 +37,7 @@ import {
   EyeOff
 } from "lucide-react";
 import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock } from "@/lib/mockData";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 const sha256Fallback = (ascii: string): string => {
   function rR(v: number, a: number) { return (v >>> a) | (v << (32 - a)); }
   const k = [
@@ -382,11 +382,40 @@ export default function Dashboard() {
         loadData();
       });
     }
+
+    // Subscribe to real-time Supabase postgres changes if configured
+    let subscriptionChannel: any = null;
+    if (isSupabaseConfigured && supabase) {
+      try {
+        subscriptionChannel = supabase
+          .channel("supabase-realtime-changes")
+          .on("postgres_changes", { event: "*", schema: "public" }, (payload) => {
+            console.log("Real-time DB update broadcast received from Supabase:", payload);
+            localDB.syncFromSupabase().then(() => {
+              loadData();
+            });
+          })
+          .subscribe();
+      } catch (err) {
+        console.error("Failed to subscribe to realtime changes:", err);
+      }
+    }
+
     const saved = localStorage.getItem("j_creation_theme") as "light" | "dark";
     if (saved) {
       setTheme(saved);
     }
     setIsLoaded(true);
+
+    return () => {
+      if (subscriptionChannel && supabase) {
+        try {
+          supabase.removeChannel(subscriptionChannel);
+        } catch (err) {
+          console.error("Failed to remove channel:", err);
+        }
+      }
+    };
   }, []);
   useEffect(() => {
     setProductsPage(1);
