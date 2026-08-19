@@ -1,3 +1,4 @@
+import { supabase, isSupabaseConfigured } from "./supabase";
 // Mock Database and Client Service for local mode (with localStorage persistence)
 // Mimics PostgreSQL relational schema and soft deletes
 
@@ -380,6 +381,18 @@ const setStorageItem = <T>(key: string, value: T): void => {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(value));
+    // Asynchronously update Supabase if configured
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        try {
+          if (localDB && typeof localDB.syncToSupabase === "function") {
+            localDB.syncToSupabase(key, value);
+          }
+        } catch (e) {
+          console.error("Auto-sync error:", e);
+        }
+      }, 0);
+    }
   } catch (error) {
     console.error(error);
   }
@@ -387,6 +400,83 @@ const setStorageItem = <T>(key: string, value: T): void => {
 
 // Database state management
 class LocalDB {
+  async syncToSupabase(key: string, data: any): Promise<void> {
+    const client = supabase;
+    if (!isSupabaseConfigured || !client) return;
+    try {
+      let tableName = key;
+      if (key === "locations") tableName = "storage_locations";
+      const records = Array.isArray(data) ? data : [data];
+      if (records.length === 0) return;
+      const { error } = await client.from(tableName).upsert(records);
+      if (error) {
+        console.error(`Supabase sync error for table ${tableName}:`, error.message);
+      }
+    } catch (err) {
+      console.error(`Supabase sync catch error for table ${key}:`, err);
+    }
+  }
+
+  async syncFromSupabase(): Promise<void> {
+    const client = supabase;
+    if (!isSupabaseConfigured || !client) return;
+    try {
+      console.log("Starting background database synchronization with Supabase...");
+      const [
+        rUsers,
+        rCategories,
+        rSubTypes,
+        rLocations,
+        rProducts,
+        rStock,
+        rAdditives,
+        rDamaged,
+        rInvoices,
+        rInvoiceItems
+      ] = await Promise.all([
+        client.from("users").select("*"),
+        client.from("categories").select("*"),
+        client.from("sub_types").select("*"),
+        client.from("storage_locations").select("*"),
+        client.from("products").select("*"),
+        client.from("stock").select("*"),
+        client.from("additives").select("*"),
+        client.from("damaged_stock").select("*"),
+        client.from("invoices").select("*"),
+        client.from("invoice_items").select("*")
+      ]);
+
+      const syncTable = async (key: string, cloudData: any[] | null, defaultValue: any) => {
+        let tableName = key;
+        if (key === "locations") tableName = "storage_locations";
+        if (cloudData && cloudData.length > 0) {
+          window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(cloudData));
+        } else {
+          const localData = getStorageItem(key, defaultValue);
+          if (localData && (!Array.isArray(localData) || localData.length > 0)) {
+            await client.from(tableName).upsert(localData);
+          }
+        }
+      };
+
+      await Promise.all([
+        syncTable("users", rUsers.data, initialUsers),
+        syncTable("categories", rCategories.data, initialCategories),
+        syncTable("sub_types", rSubTypes.data, initialSubTypes),
+        syncTable("locations", rLocations.data, initialLocations),
+        syncTable("products", rProducts.data, initialProducts),
+        syncTable("stock", rStock.data, initialStock),
+        syncTable("additives", rAdditives.data, initialAdditives),
+        syncTable("damaged_stock", rDamaged.data, initialDamagedStock),
+        syncTable("invoices", rInvoices.data, initialInvoices),
+        syncTable("invoice_items", rInvoiceItems.data, initialInvoiceItems)
+      ]);
+      console.log("Database synchronization with Supabase completed successfully!");
+    } catch (err) {
+      console.error("Database sync failed:", err);
+    }
+  }
+
   getCurrentSessionUser(): User | null {
     if (typeof window === "undefined") return null;
     try {

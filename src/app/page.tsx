@@ -376,6 +376,12 @@ export default function Dashboard() {
       });
 
     loadData();
+    // Trigger real-time background database sync from Supabase cloud if configured
+    if (isSupabaseConfigured) {
+      localDB.syncFromSupabase().then(() => {
+        loadData();
+      });
+    }
     const saved = localStorage.getItem("j_creation_theme") as "light" | "dark";
     if (saved) {
       setTheme(saved);
