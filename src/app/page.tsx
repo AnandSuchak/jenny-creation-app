@@ -411,6 +411,18 @@ export default function Dashboard() {
       }
     }
 
+    // Fetch initial database from local Next.js JSON server
+    localDB.syncFromServer().then(() => {
+      loadData();
+    });
+
+    // Start periodic 3-second database polling to sync all connected browsers in real-time
+    const syncInterval = setInterval(() => {
+      localDB.syncFromServer().then(() => {
+        loadData();
+      });
+    }, 3000);
+
     const saved = localStorage.getItem("j_creation_theme") as "light" | "dark";
     if (saved) {
       setTheme(saved);
@@ -418,6 +430,7 @@ export default function Dashboard() {
     setIsLoaded(true);
 
     return () => {
+      clearInterval(syncInterval);
       if (subscriptionChannel && supabase) {
         try {
           supabase.removeChannel(subscriptionChannel);

@@ -383,18 +383,32 @@ const setStorageItem = <T>(key: string, value: T): void => {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(value));
-    // Asynchronously update Supabase if configured
-    if (typeof window !== "undefined") {
-      setTimeout(() => {
+    
+    // Post to server JSON database file (only when running in a browser context)
+    if (typeof window !== "undefined" && window.location && window.location.pathname) {
+      setTimeout(async () => {
         try {
-          if (localDB && typeof localDB.syncToSupabase === "function") {
-            localDB.syncToSupabase(key, value);
-          }
+          await fetch("/api/db", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key, value })
+          });
         } catch (e) {
-          console.error("Auto-sync error:", e);
+          console.error("Local JSON database server write failed:", e);
         }
       }, 0);
     }
+
+    // Asynchronously update Supabase if configured
+    setTimeout(() => {
+      try {
+        if (localDB && typeof localDB.syncToSupabase === "function") {
+          localDB.syncToSupabase(key, value);
+        }
+      } catch (e) {
+        console.error("Auto-sync error:", e);
+      }
+    }, 0);
   } catch (error) {
     console.error(error);
   }
@@ -402,6 +416,20 @@ const setStorageItem = <T>(key: string, value: T): void => {
 
 // Database state management
 class LocalDB {
+  async syncFromServer(): Promise<void> {
+    if (typeof window === "undefined" || !window.location || !window.location.pathname) return;
+    try {
+      const res = await fetch("/api/db");
+      if (!res.ok) return;
+      const data = await res.json();
+      for (const key of Object.keys(data)) {
+        window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(data[key]));
+      }
+    } catch (e) {
+      console.error("Local JSON database server sync failed:", e);
+    }
+  }
+
   async syncToSupabase(key: string, data: any): Promise<void> {
     if (typeof window === "undefined") return;
     const client = supabase;
