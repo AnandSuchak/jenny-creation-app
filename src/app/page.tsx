@@ -237,7 +237,7 @@ export default function Dashboard() {
   const [isPreOrder, setIsPreOrder] = useState(false);
   const [invoiceDeliveryDate, setInvoiceDeliveryDate] = useState("");
   const [invoiceAdvancePaid, setInvoiceAdvancePaid] = useState("");
-  const [invoiceItems, setInvoiceItems] = useState<{ productId: string | null; additiveId?: string | null; quantity: number; unitPrice: number; discount: number; customizations?: JarCustomization[] }[]>([
+  const [invoiceItems, setInvoiceItems] = useState<{ productId: string | null; additiveId?: string | null; quantity: number | string; unitPrice: number; discount: number; customizations?: JarCustomization[] }[]>([
     { productId: "", quantity: 1, unitPrice: 0, discount: 0 }
   ]);
   const [isOnlyDryfruits, setIsOnlyDryfruits] = useState(false);
@@ -1370,7 +1370,12 @@ export default function Dashboard() {
     e.preventDefault();
     if (!invoiceCustomerName.trim()) return;
     // Filter out invalid items
-    const validItems = invoiceItems.filter(item => item.productId && item.quantity > 0);
+    const validItems = invoiceItems
+      .filter(item => (item.productId || item.additiveId) && Number(item.quantity) > 0)
+      .map(item => ({
+        ...item,
+        quantity: Number(item.quantity) // Convert to number before saving to database
+      }));
     if (validItems.length === 0) return;
     try {
       let activeId = "";
@@ -2685,7 +2690,8 @@ export default function Dashboard() {
                                                     updated[index].discount = 0;
                                                     updated[index].customizations = [];
                                                     const maxStock = getProductStock(p.id);
-                                                    updated[index].quantity = Math.min(updated[index].quantity, maxStock);
+                                                    const currentQtyNum = Number(updated[index].quantity) || 0;
+                                                    updated[index].quantity = Math.min(currentQtyNum, maxStock);
                                                     if (updated[index].quantity === 0 && maxStock > 0) {
                                                       updated[index].quantity = 1;
                                                     }
@@ -2771,24 +2777,36 @@ export default function Dashboard() {
                               onChange={e => {
                                 const regex = isDryfruitRow ? /[^0-9.]/g : /[^0-9]/g;
                                 const val = e.target.value.replace(regex, '');
-                                let enteredQty = val ? Number(val) : 0;
+                                if (val === '') {
+                                  const updated = [...invoiceItems];
+                                  updated[index].quantity = '';
+                                  setInvoiceItems(updated);
+                                  return;
+                                }
+                                const enteredQty = Number(val);
                                 if (!isPreOrder) {
                                   if (isDryfruitRow && item.additiveId) {
                                     const maxAvailable = additives.find(a => a.id === item.additiveId)?.stock_qty_kg || 0;
                                     if (enteredQty > maxAvailable) {
                                       alert(`Only ${maxAvailable.toFixed(2)} kg of dryfruit is available in stock.`);
-                                      enteredQty = maxAvailable;
+                                      const updated = [...invoiceItems];
+                                      updated[index].quantity = String(maxAvailable);
+                                      setInvoiceItems(updated);
+                                      return;
                                     }
                                   } else if (!isDryfruitRow && item.productId) {
                                     const maxAvailable = getProductStock(item.productId);
                                     if (enteredQty > maxAvailable) {
                                       alert(`Only ${maxAvailable} units are available in stock.`);
-                                      enteredQty = maxAvailable;
+                                      const updated = [...invoiceItems];
+                                      updated[index].quantity = maxAvailable;
+                                      setInvoiceItems(updated);
+                                      return;
                                     }
                                   }
                                 }
                                 const updated = [...invoiceItems];
-                                updated[index].quantity = enteredQty;
+                                updated[index].quantity = val;
                                 setInvoiceItems(updated);
                               }}
                               className={`w-full px-2 py-1.5 border rounded-lg focus:outline-none text-xs font-mono text-left ${
@@ -2841,7 +2859,7 @@ export default function Dashboard() {
                           <div className="col-span-6 md:col-span-2">
                             <label className="block text-[10px] font-semibold text-zinc-500 mb-1 text-right">Total (₹)</label>
                             <div className={`w-full px-2 py-1.5 border rounded-lg text-xs font-mono text-right flex items-center justify-end h-[32px] ${isDark ? "bg-zinc-900/50 border-zinc-808/80 text-zinc-355" : "bg-white border-zinc-205 text-zinc-700 shadow-xs"}`}>
-                              ₹{Math.round(item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100)).toLocaleString("en-IN")}
+                              ₹{Math.round(Number(item.quantity) * item.unitPrice * (1 - (item.discount || 0) / 100)).toLocaleString("en-IN")}
                             </div>
                           </div>
                           {/* Action trigger */}
@@ -3035,7 +3053,7 @@ export default function Dashboard() {
                 <div className={`pt-6 flex flex-col sm:flex-row gap-4 items-center justify-between border-t border-dashed ${isDark ? "border-zinc-808" : "border-slate-205"}`}>
                   <div className={`text-sm font-medium ${isDark ? "text-zinc-400" : "text-slate-550"}`}>
                     Grand Estimated Total: <span className="font-mono font-black text-xl text-emerald-500">₹{
-                      invoiceItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100)), 0).toLocaleString("en-IN")
+                      invoiceItems.reduce((sum, item) => sum + (Number(item.quantity) * item.unitPrice * (1 - (item.discount || 0) / 100)), 0).toLocaleString("en-IN")
                     }</span>
                   </div>
                   <div className="flex gap-2">
@@ -3087,7 +3105,7 @@ export default function Dashboard() {
             <div className="flex flex-col">
               <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Estimated Total</span>
               <span className="font-mono font-black text-lg text-emerald-500">
-                ₹{invoiceItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100)), 0).toLocaleString("en-IN")}
+                ₹{invoiceItems.reduce((sum, item) => sum + (Number(item.quantity) * item.unitPrice * (1 - (item.discount || 0) / 100)), 0).toLocaleString("en-IN")}
               </span>
             </div>
             <div className="flex gap-2">
