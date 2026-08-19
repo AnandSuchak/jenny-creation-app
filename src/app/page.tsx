@@ -454,23 +454,31 @@ export default function Dashboard() {
       }
     }
   }, [currentUser, appMode]);
+  const lastInitializedCategoryRef = React.useRef<string>("");
+
   useEffect(() => {
     if (!newProductCategory || isEditProductMode) {
       setProductVariants([]);
+      lastInitializedCategoryRef.current = "";
       return;
     }
-    const filtered = subTypes.filter(s => s.category_id === newProductCategory && s.deleted_at === null);
-    setProductVariants(
-      filtered.map(s => ({
-        subTypeId: s.id,
-        subTypeName: s.name,
-        price: newProductPrice || 0,
-        locationId: initialLocationId || "",
-        quantity: initialQuantity || 0,
-        selected: true
-      }))
-    );
-  }, [newProductCategory, subTypes, isEditProductMode]);
+    
+    // Only initialize if the category has actually changed
+    if (newProductCategory !== lastInitializedCategoryRef.current) {
+      const filtered = subTypes.filter(s => s.category_id === newProductCategory && s.deleted_at === null);
+      setProductVariants(
+        filtered.map(s => ({
+          subTypeId: s.id,
+          subTypeName: s.name,
+          price: newProductPrice || 0,
+          locationId: initialLocationId || "",
+          quantity: initialQuantity || 0,
+          selected: true
+        }))
+      );
+      lastInitializedCategoryRef.current = newProductCategory;
+    }
+  }, [newProductCategory, subTypes, isEditProductMode, newProductPrice, initialLocationId, initialQuantity]);
   // Dynamic chronological stock shortage calculator & general notifications builder
   const notifications = React.useMemo(() => {
     const alerts: { id: string; invoiceId?: string; type: "shortage" | "low_stock" | "delivery_today"; title: string; message: string; severity: "critical" | "warning" | "info"; dueDate?: string }[] = [];
