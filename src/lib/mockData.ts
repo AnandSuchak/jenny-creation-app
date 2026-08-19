@@ -401,6 +401,7 @@ const setStorageItem = <T>(key: string, value: T): void => {
 // Database state management
 class LocalDB {
   async syncToSupabase(key: string, data: any): Promise<void> {
+    if (typeof window === "undefined") return;
     const client = supabase;
     if (!isSupabaseConfigured || !client) return;
     try {
@@ -418,6 +419,7 @@ class LocalDB {
   }
 
   async syncFromSupabase(): Promise<void> {
+    if (typeof window === "undefined") return;
     const client = supabase;
     if (!isSupabaseConfigured || !client) return;
     try {
