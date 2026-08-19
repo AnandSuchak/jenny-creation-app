@@ -300,6 +300,7 @@ export default function Dashboard() {
   const loadData = () => {
     // Sync current user session with latest database state in real-time
     const sessionStr = sessionStorage.getItem("jenny_session_user");
+    const sessionToken = sessionStorage.getItem("jenny_session_token");
     if (sessionStr) {
       try {
         const parsed = JSON.parse(sessionStr);
@@ -307,13 +308,22 @@ export default function Dashboard() {
         const latestMatched = latestUsers.find(u => u.id === parsed.id);
         if (!latestMatched) {
           sessionStorage.removeItem("jenny_session_user");
+          sessionStorage.removeItem("jenny_session_token");
           setCurrentUser(null);
           alert("Your account has been deleted or deactivated by an administrator. You have been signed out.");
         } else {
-          // If database rights or properties changed, update in-memory state and session string
-          if (JSON.stringify(latestMatched) !== JSON.stringify(currentUser)) {
-            sessionStorage.setItem("jenny_session_user", JSON.stringify(latestMatched));
-            setCurrentUser(latestMatched);
+          // Check for single-session lock token mismatch
+          if (latestMatched.current_session_token && latestMatched.current_session_token !== sessionToken) {
+            sessionStorage.removeItem("jenny_session_user");
+            sessionStorage.removeItem("jenny_session_token");
+            setCurrentUser(null);
+            alert("This user account has been logged in on another browser or device. You have been signed out.");
+          } else {
+            // If database rights or properties changed, update in-memory state and session string
+            if (JSON.stringify(latestMatched) !== JSON.stringify(currentUser)) {
+              sessionStorage.setItem("jenny_session_user", JSON.stringify(latestMatched));
+              setCurrentUser(latestMatched);
+            }
           }
         }
       } catch (err) {
@@ -646,11 +656,16 @@ export default function Dashboard() {
                 const updatedUser = localDB.changeUserPassword(passwordChangeUser.id, newHash);
                 
                 // Clear change states
-                setChangePasswordNew("");
-                setChangePasswordConfirm("");
-                setIsPasswordChangeRequired(false);
-                setPasswordChangeUser(null);
+                // Generate new session lock token
+                const sessionToken = "SESS-" + Math.random().toString(36).substring(2, 10).toUpperCase() + "-" + Date.now();
+                const userWithSession = localDB.updateUserSessionToken(updatedUser.id, sessionToken);
                 
+                // Complete sign in
+                sessionStorage.setItem("jenny_session_user", JSON.stringify(userWithSession));
+                sessionStorage.setItem("jenny_session_token", sessionToken);
+                setCurrentUser(userWithSession);
+                loadData();
+                alert("Password updated and signed in successfully!");
                 // Complete sign in
                 sessionStorage.setItem("jenny_session_user", JSON.stringify(updatedUser));
                 setCurrentUser(updatedUser);
@@ -789,11 +804,18 @@ export default function Dashboard() {
                   if (matched.require_password_change) {
                     setPasswordChangeUser(matched);
                     setIsPasswordChangeRequired(true);
+                    // Generate new session lock token
+                    const sessionToken = "SESS-" + Math.random().toString(36).substring(2, 10).toUpperCase() + "-" + Date.now();
+                    const updatedUser = localDB.updateUserSessionToken(matched.id, sessionToken);
+                    
+                    // Save session
+                    sessionStorage.setItem("jenny_session_user", JSON.stringify(updatedUser));
+                    sessionStorage.setItem("jenny_session_token", sessionToken);
+                    setCurrentUser(updatedUser);
                     setAuthUsernameInput("");
                     setAuthPasswordInput("");
-                  } else {
-                    // Save session
-                    sessionStorage.setItem("jenny_session_user", JSON.stringify(matched));
+                    // Trigger reload data to sync
+                    loadData();
                     setCurrentUser(matched);
                     setAuthUsernameInput("");
                     setAuthPasswordInput("");

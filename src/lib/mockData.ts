@@ -15,6 +15,7 @@ export interface User {
   created_at: string;
   deleted_at: string | null;
   require_password_change?: boolean;
+  current_session_token?: string | null;
 }
 
 const initialUsers: User[] = [
@@ -30,7 +31,8 @@ const initialUsers: User[] = [
     },
     created_at: new Date().toISOString(),
     deleted_at: null,
-    require_password_change: true
+    require_password_change: true,
+    current_session_token: null
   }
 ];
 
@@ -506,7 +508,8 @@ class LocalDB {
       rights,
       created_at: new Date().toISOString(),
       deleted_at: null,
-      require_password_change: false
+      require_password_change: false,
+      current_session_token: null
     };
     list.push(newUser);
     setStorageItem("users", list);
@@ -524,6 +527,17 @@ class LocalDB {
     const updated = list.map(u => u.id === id ? { ...u, deleted_at: new Date().toISOString() } : u);
     setStorageItem("users", updated);
     return true;
+  }
+
+  updateUserSessionToken(id: string, token: string | null): User {
+    const list = getStorageItem<User[]>("users", initialUsers);
+    const idx = list.findIndex(u => u.id === id && u.deleted_at === null);
+    if (idx !== -1) {
+      list[idx].current_session_token = token;
+      setStorageItem("users", list);
+      return list[idx];
+    }
+    throw new Error("User not found.");
   }
 
   updateUserRights(id: string, rights: { view_stock: boolean; generate_bill: boolean; edit_inventory: boolean }, callerUserId: string): User {

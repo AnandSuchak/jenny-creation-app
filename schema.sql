@@ -11,7 +11,8 @@ CREATE TABLE users (
     rights JSONB NOT NULL DEFAULT '{"view_stock": true, "generate_bill": true, "edit_inventory": false}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     deleted_at TIMESTAMP WITH TIME ZONE, -- For soft deletes
-    require_password_change BOOLEAN DEFAULT false
+    require_password_change BOOLEAN DEFAULT false,
+    current_session_token VARCHAR(255) -- Single-session lock token
 );
 
 -- 2. CATEGORIES TABLE
