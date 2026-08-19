@@ -421,9 +421,62 @@ class LocalDB {
     try {
       const res = await fetch("/api/db");
       if (!res.ok) return;
-      const data = await res.json();
-      for (const key of Object.keys(data)) {
-        window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(data[key]));
+      const serverData = await res.json();
+      
+      const keysToSync = [
+        "users",
+        "categories",
+        "sub_types",
+        "locations",
+        "products",
+        "stock",
+        "additives",
+        "damaged_stock",
+        "invoices",
+        "invoice_items"
+      ];
+
+      for (const key of keysToSync) {
+        const localItem = window.localStorage.getItem(`jenny_creation_${key}`);
+        const localList = localItem ? JSON.parse(localItem) : [];
+        const serverList = serverData[key] || [];
+
+        if (!Array.isArray(localList) || !Array.isArray(serverList)) continue;
+        if (localList.length === 0 && serverList.length === 0) continue;
+
+        // Merge records by ID
+        const map = new Map();
+        for (const item of serverList) {
+          if (item && item.id) map.set(item.id, item);
+        }
+        for (const item of localList) {
+          if (!item || !item.id) continue;
+          const existing = map.get(item.id);
+          if (!existing) {
+            map.set(item.id, item);
+          } else {
+            // Compare timestamps
+            const localTime = new Date(item.updated_at || item.created_at || 0).getTime();
+            const serverTime = new Date(existing.updated_at || existing.created_at || 0).getTime();
+            if (localTime > serverTime) {
+              map.set(item.id, item);
+            }
+          }
+        }
+
+        const mergedList = Array.from(map.values());
+        
+        // Update local storage
+        window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(mergedList));
+
+        // If server data was different/outdated, upload merged copy
+        if (JSON.stringify(serverList) !== JSON.stringify(mergedList)) {
+          await fetch("/api/db", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key, value: mergedList })
+          });
+        }
       }
     } catch (e) {
       console.error("Local JSON database server sync failed:", e);
