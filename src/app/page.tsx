@@ -32,7 +32,9 @@ import {
   CheckCircle,
   Calendar,
   Lock,
-  Users
+  Users,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock } from "@/lib/mockData";
 import { isSupabaseConfigured } from "@/lib/supabase";
@@ -266,6 +268,9 @@ export default function Dashboard() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [newUserName, setNewUserName] = useState("");
   const [newUserPassword, setNewUserPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [newUserRights, setNewUserRights] = useState({ view_stock: true, generate_bill: true, edit_inventory: false });
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -626,36 +631,58 @@ export default function Dashboard() {
               <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-550"}`}>
                 New Password
               </label>
-              <input
-                type="password"
-                required
-                placeholder="Enter new password..."
-                value={changePasswordNew}
-                onChange={e => setChangePasswordNew(e.target.value)}
-                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
-                  isDark 
-                    ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
-                    : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
-                }`}
-              />
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  required
+                  placeholder="Enter new password..."
+                  value={changePasswordNew}
+                  onChange={e => setChangePasswordNew(e.target.value)}
+                  className={`w-full pl-4 pr-10 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
+                    isDark 
+                      ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                      : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition duration-150 cursor-pointer ${
+                    isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  {showNewPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                </button>
+              </div>
             </div>
             
             <div>
               <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
                 Confirm Password
               </label>
-              <input
-                type="password"
-                required
-                placeholder="Confirm new password..."
-                value={changePasswordConfirm}
-                onChange={e => setChangePasswordConfirm(e.target.value)}
-                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
-                  isDark 
-                    ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
-                    : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
-                }`}
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  placeholder="Confirm new password..."
+                  value={changePasswordConfirm}
+                  onChange={e => setChangePasswordConfirm(e.target.value)}
+                  className={`w-full pl-4 pr-10 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
+                    isDark 
+                      ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                      : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition duration-150 cursor-pointer ${
+                    isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                </button>
+              </div>
             </div>
             
             <button
@@ -769,18 +796,29 @@ export default function Dashboard() {
               <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? "text-zinc-400" : "text-zinc-555"}`}>
                 Password
               </label>
-              <input
-                type="password"
-                required
-                placeholder="Enter password..."
-                value={authPasswordInput}
-                onChange={e => setAuthPasswordInput(e.target.value)}
-                className={`w-full px-4 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
-                  isDark 
-                    ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
-                    : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
-                }`}
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  required
+                  placeholder="Enter password..."
+                  value={authPasswordInput}
+                  onChange={e => setAuthPasswordInput(e.target.value)}
+                  className={`w-full pl-4 pr-10 py-2.5 text-sm border rounded-xl focus:outline-none focus:ring-2 transition duration-200 ${
+                    isDark 
+                      ? "bg-zinc-950/60 border-zinc-808/80 text-zinc-200 focus:border-indigo-500 focus:ring-indigo-500/10" 
+                      : "bg-white/80 border-slate-205 text-slate-800 focus:border-indigo-500 focus:ring-indigo-500/5 shadow-inner"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition duration-150 cursor-pointer ${
+                    isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-400 hover:text-slate-650"
+                  }`}
+                >
+                  {showLoginPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                </button>
+              </div>
             </div>
             
             <button
