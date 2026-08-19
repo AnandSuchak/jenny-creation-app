@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
+// Force Next.js to run this route dynamically and disable caching
+export const dynamic = "force-dynamic";
+
 const dbFilePath = path.join(process.cwd(), "database.json");
 
 // Helper to read database file
@@ -29,7 +32,13 @@ const writeDB = (data: any) => {
 
 export async function GET() {
   const data = readDB();
-  return NextResponse.json(data);
+  return NextResponse.json(data, {
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0"
+    }
+  });
 }
 
 export async function POST(request: Request) {
@@ -42,7 +51,14 @@ export async function POST(request: Request) {
     const currentData = readDB();
     currentData[key] = value;
     writeDB(currentData);
-    return NextResponse.json({ success: true });
+    
+    return NextResponse.json({ success: true }, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+      }
+    });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
