@@ -478,8 +478,12 @@ class LocalDB {
           });
         }
       }
-    } catch (e) {
-      console.error("Local JSON database server sync failed:", e);
+    } catch (e: any) {
+      if (e instanceof Error && e.message === "Failed to fetch") {
+        console.warn("Local JSON database server sync is temporarily offline (Failed to fetch).");
+      } else {
+        console.error("Local JSON database server sync failed:", e);
+      }
     }
   }
 
