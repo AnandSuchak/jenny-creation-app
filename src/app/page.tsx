@@ -34,7 +34,8 @@ import {
   Lock,
   Users,
   Eye,
-  EyeOff
+  EyeOff,
+  HelpCircle
 } from "lucide-react";
 import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock, StockMovement } from "@/lib/mockData";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
@@ -140,6 +141,7 @@ export default function Dashboard() {
   const [deletedProducts, setDeletedProducts] = useState<Product[]>([]);
   const [deletedInvoices, setDeletedInvoices] = useState<Invoice[]>([]);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [archiveTab, setArchiveTab] = useState<"categories" | "sub_types" | "locations" | "products" | "invoices">("categories");
   // App UI States
   const [activeTab, setActiveTab] = useState<"stock" | "products" | "setup" | "movements">("stock");
@@ -2010,6 +2012,13 @@ export default function Dashboard() {
                 ) : (
                   <Moon className="h-4 w-4 text-indigo-500" />
                 )}
+              </button>
+              <button 
+                onClick={() => setIsHelpModalOpen(true)}
+                className={`p-1.5 rounded-lg border transition duration-150 cursor-pointer ${isDark ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-indigo-400" : "bg-white border-zinc-200 text-zinc-650 hover:text-indigo-600 shadow-sm"}`}
+                title="View interactive page guide & examples"
+              >
+                <HelpCircle className="h-4 w-4" />
               </button>
             </div>
             <p className={`text-sm mt-1 ${isDark ? "text-zinc-400" : "text-zinc-550"}`}>
@@ -7186,6 +7195,172 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+      {/* 5b. Context-Aware Interactive Guide Modal */}
+      {isHelpModalOpen && (() => {
+        let helpData = {
+          title: "General Help Guide",
+          subtitle: "Jenny Creation App",
+          explanation: "Welcome to the helper panel. Navigate to any tab to see context-specific examples.",
+          features: [] as { title: string; desc: string }[],
+          codeTitle: undefined as string | undefined,
+          codeBlock: undefined as string | undefined
+        };
+
+        if (appMode === "billing") {
+          if (billingTab === "form") {
+            helpData = {
+              title: "Invoice Form Station",
+              subtitle: "Billing Console Guide",
+              explanation: "This interface allows quick generation of customer vouchers, tracking of advance payments, and packaging customizations.",
+              features: [
+                { title: "Split Panel Layout", desc: "Customer metadata (left column) stays separated from line items (right column) to optimize vertical scanning." },
+                { title: "Autocomplete Exclusion", desc: "Selected products/dryfruits are hidden from other rows to avoid duplicate invoice rows." },
+                { title: "Decimal Loose Weight", desc: "Loose dryfruit weight fields accept inputs like '0.45' kg without forcing rounding." },
+                { title: "Custom Jar Packages", desc: "Selecting a product configuration containing '2 JAR' or '3 JAR' triggers a filling sub-panel." }
+              ],
+              codeTitle: "Sample Billing Item Structure",
+              codeBlock: `{\n  "product_id": "prod-honey-gifting-2jar",\n  "quantity": 1,\n  "unit_price": 580,\n  "customizations": [\n    { "jar_index": 0, "additive_id": "add-almonds", "weight_grams": 250 },\n    { "jar_index": 1, "additive_id": "add-cashews", "weight_grams": 250 }\n  ]\n}`
+            };
+          } else if (billingTab === "kanban") {
+            helpData = {
+              title: "Kanban Order Board",
+              subtitle: "Billing Console Guide",
+              explanation: "Tracks and updates order progress using status columns and timelines.",
+              features: [
+                { title: "Visual Flow Lanes", desc: "Transition orders from Ordered ➔ Preparing ➔ Completed ➔ Delivered." },
+                { title: "Remaining Days Filter", desc: "Highlights orders due Today, Tomorrow, Overdue, or within customized calendar day scopes." },
+                { title: "Operations Forecast", desc: "Aggregates items due in the selected timeline, summarizing cooking ingredients required in kg." }
+              ],
+              codeTitle: "Daily Dispatch Forecast Output Example",
+              codeBlock: `Timeline Scope: Tomorrow\n-------------------------\n- Honey Crunch Box: 8 units\n- Dry Almonds (Raw): 2.0 kg\n- Dry Cashews (Raw): 2.0 kg`
+            };
+          }
+        } else if (appMode === "inventory") {
+          if (activeTab === "stock") {
+            helpData = {
+              title: "Storage & Stock Levels",
+              subtitle: "Inventory Hub Guide",
+              explanation: "Shows current physical inventory levels of products and raw dryfruits across warehouse facilities.",
+              features: [
+                { title: "Replenish Stock", desc: "Add newly arrived bulk inventory to selected warehouse storage locations." },
+                { title: "Location Transfers", desc: "Move stock items between storage nodes safely (e.g. from Warehouse 1 to Delhi Store)." },
+                { title: "Report Damaged pieces", desc: "Deduct ruined items from location counts and log logs for audit audits." }
+              ],
+              codeTitle: "Physical Stock Level Persistence Model",
+              codeBlock: `{\n  "item_id": "prod-honey-1",\n  "item_type": "product",\n  "location_id": "loc-warehouse-1",\n  "stock_qty": 180\n}`
+            };
+          } else if (activeTab === "products") {
+            helpData = {
+              title: "Products & Variants",
+              subtitle: "Inventory Hub Guide",
+              explanation: "Add and catalog box offerings, set unit prices, and configure variants.",
+              features: [
+                { title: "Item Customizer", desc: "Tag products as requiring jar filling customizations." },
+                { title: "Low-Stock Pulsing Alerts", desc: "Pulsing warnings are triggered if box counts drop under 10 units." },
+                { title: "Catalog Pagination", desc: "Supports card limits: 12, 24, 48, 96, or All." }
+              ],
+              codeTitle: "Product Data Fields Configuration",
+              codeBlock: `{\n  "id": "prod-peacock-tray-2jar",\n  "name": "Peacock Tray (2 Jars)",\n  "category_id": "cat-premium-trays",\n  "price": 850,\n  "has_jars": true\n}`
+            };
+          } else if (activeTab === "movements") {
+            helpData = {
+              title: "Stock Movement Audit Trail",
+              subtitle: "Inventory Hub Guide",
+              explanation: "A read-only ledger capturing every stock change for security and accountability.",
+              features: [
+                { title: "Chronological Tracing", desc: "Each stock replenishment, transfer, or damage report generates a permanent audit footprint." },
+                { title: "Operator Logging", desc: "Logs the name of the signed-in operator who authorised the mutation." },
+                { title: "Legible Tables", desc: "Includes search bars and filter drop-downs by action type." }
+              ],
+              codeTitle: "Audit Log Entry Example",
+              codeBlock: `{\n  "item_name": "Almonds",\n  "movement_type": "transferred",\n  "quantity": 15,\n  "from_location_name": "Main Store",\n  "to_location_name": "Delhi Warehouse",\n  "operator_name": "superadmin",\n  "timestamp": "2026-08-24T11:15:00Z"\n}`
+            };
+          } else if (activeTab === "setup") {
+            helpData = {
+              title: "System Setup Parameters",
+              subtitle: "Inventory Hub Guide",
+              explanation: "Manage configurations governing the catalog structure and shipping hubs.",
+              features: [
+                { title: "System Categories", desc: "Add or soft-delete box catalog categories." },
+                { title: "Dryfruit Additives Prices", desc: "Define pricing per kg for custom jar fillings (e.g. Cashews, Raisins, Pistachios)." },
+                { title: "Warehouse locations", desc: "Add physical warehouses or retail shops." }
+              ],
+              codeTitle: "Additive Pricing Settings",
+              codeBlock: `{\n  "name": "Salted Pistachios",\n  "price_per_kg": 1200,\n  "stock_qty_kg": 45.0\n}`
+            };
+          }
+        } else if (appMode === "admin") {
+          helpData = {
+            title: "Administrative Control Center",
+            subtitle: "Admin Panel Guide",
+            explanation: "Secure gate for super-admins to configure permissions, monitor active log heartbeats, and view high-fidelity charts.",
+            features: [
+              { title: "Role Permission Checks", desc: "Toggle View Stock, Generate Bill, and Edit Inventory privileges for operators." },
+              { title: "Device Session Fingerprints", desc: "Audits active device heartbeats, enforcing single-device login security checks." },
+              { title: "Interactive SVG Trend Line", desc: "Plots 7 days of completed sales on a responsive line chart with interactive nodes." }
+            ],
+            codeTitle: "Active Heartbeat Audit Log",
+            codeBlock: `{\n  "deviceId": "DEV-UZ1ZQ3ZK-856048",\n  "username": "operator1",\n  "ipAddress": "192.168.1.104",\n  "lastSeen": 1787569827220\n}`
+          };
+        }
+
+        return (
+          <div className="fixed inset-0 z-55 overflow-y-auto flex items-start md:items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm">
+            <div className={`${cardClass} w-full max-w-xl p-6 shadow-2xl relative max-h-[85vh] overflow-y-auto flex flex-col gap-5 rounded-2xl`}>
+              <button 
+                onClick={() => setIsHelpModalOpen(false)}
+                className={`absolute top-4 right-4 p-1.5 rounded-lg transition duration-150 cursor-pointer ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900"}`}
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <div>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-500">{helpData.subtitle}</span>
+                <h2 className={`text-xl font-extrabold flex items-center gap-2 mt-0.5 ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                  <HelpCircle className="h-5 w-5 text-indigo-500 shrink-0" /> {helpData.title}
+                </h2>
+                <p className="text-xs text-zinc-550 dark:text-zinc-400 mt-2 leading-relaxed">{helpData.explanation}</p>
+              </div>
+
+              <div className={`p-4 rounded-xl border ${isDark ? "bg-zinc-950/40 border-zinc-808/60" : "bg-slate-50 border-slate-205"}`}>
+                <h3 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${isDark ? "text-zinc-200" : "text-slate-800"}`}>
+                  <span>💡 Core Functionality Guide</span>
+                </h3>
+                <ul className="space-y-3">
+                  {helpData.features.map((feat, fidx) => (
+                    <li key={fidx} className="flex gap-2">
+                      <span className="text-emerald-500 shrink-0 font-bold">✓</span>
+                      <div className="text-xs leading-normal">
+                        <strong className={`font-bold ${isDark ? "text-zinc-300" : "text-slate-800"}`}>{feat.title}:</strong>{" "}
+                        <span className="text-zinc-555 dark:text-zinc-450">{feat.desc}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {helpData.codeBlock && (
+                <div className="flex flex-col gap-2">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                    {helpData.codeTitle || "Data Example"}
+                  </span>
+                  <pre className="p-3.5 rounded-xl bg-zinc-950 text-indigo-300 border border-zinc-850 font-mono text-[10px] leading-relaxed overflow-x-auto select-all max-h-48 scrollbar-thin">
+                    <code>{helpData.codeBlock}</code>
+                  </pre>
+                </div>
+              )}
+
+              <div className="flex justify-end pt-2 border-t border-zinc-808/20">
+                <button 
+                  onClick={() => setIsHelpModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-md transition duration-150 cursor-pointer"
+                >
+                  Got It, Thanks!
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
       {/* 6. Move Stock Modal */}
       {isMoveStockModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto flex items-start md:items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm">
