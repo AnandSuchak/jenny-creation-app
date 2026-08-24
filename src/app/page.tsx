@@ -5139,7 +5139,11 @@ export default function Dashboard() {
                   />
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-indigo-650 hover:bg-indigo-600 text-white font-bold rounded-lg shadow-md transition duration-155"
+                    className={`w-full py-2.5 font-bold rounded-lg transition duration-155 border ${
+                      isDark 
+                        ? "bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-indigo-600 hover:text-white" 
+                        : "bg-white border-indigo-500 text-slate-800 hover:bg-indigo-600 hover:text-white shadow-sm"
+                    }`}
                   >
                     Unlock Administrative Panel
                   </button>
@@ -5344,7 +5348,11 @@ export default function Dashboard() {
                     <div className="pt-2 flex justify-end">
                       <button
                         type="submit"
-                        className="px-5 py-2 text-white font-bold rounded-lg bg-indigo-650 hover:bg-indigo-600 shadow-md transition duration-150"
+                        className={`px-5 py-2 font-bold rounded-lg border transition duration-150 ${
+                          isDark 
+                            ? "bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-indigo-600 hover:text-white" 
+                            : "bg-white border-indigo-500 text-slate-800 hover:bg-indigo-600 hover:text-white shadow-sm"
+                        }`}
                       >
                         Save Configuration Changes
                       </button>
@@ -5407,7 +5415,11 @@ export default function Dashboard() {
                     <div className="pt-2 flex justify-end">
                       <button
                         type="submit"
-                        className="px-5 py-2 text-white font-bold rounded-lg bg-indigo-650 hover:bg-indigo-600 shadow-md transition duration-150"
+                        className={`px-5 py-2 font-bold rounded-lg border transition duration-150 ${
+                          isDark 
+                            ? "bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-indigo-600 hover:text-white" 
+                            : "bg-white border-indigo-500 text-slate-800 hover:bg-indigo-600 hover:text-white shadow-sm"
+                        }`}
                       >
                         Update Access Credentials
                       </button>
@@ -6720,7 +6732,7 @@ export default function Dashboard() {
                           <div 
                             className={`h-7 w-7 rounded-full flex items-center justify-center border font-mono text-[10px] font-bold transition-all duration-200 ${
                               isActive 
-                                ? "bg-indigo-650 text-white border-indigo-650 ring-4 ring-indigo-500/10 scale-105 shadow-md"
+                                ? "bg-indigo-600 text-white border-indigo-600 ring-4 ring-indigo-500/10 scale-105 shadow-md"
                                 : (isCompleted 
                                     ? "bg-indigo-500 text-white border-indigo-500" 
                                     : (isDark ? "bg-zinc-950 text-zinc-500 border-zinc-808" : "bg-white text-slate-400 border-slate-200"))
