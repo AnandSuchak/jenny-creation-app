@@ -5128,7 +5128,7 @@ export default function Dashboard() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    const savedPassword = localStorage.getItem("admin_portal_password") || "admin123";
+                    const savedPassword = localStorage.getItem("admin_portal_password") || "Jenny";
                     if (adminPasswordInput === savedPassword) {
                       setIsAdminUnlocked(true);
                       setAdminPasswordInput("");
@@ -5158,7 +5158,7 @@ export default function Dashboard() {
                   </button>
                 </form>
                 <div className="text-[10px] text-zinc-500 font-mono">
-                  Default Gate Seed: <span className="font-bold">admin123</span>
+                  Default Gate Seed: <span className="font-bold">Jenny</span>
                 </div>
               </div>
             ) : (
@@ -5379,7 +5379,7 @@ export default function Dashboard() {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      const savedPassword = localStorage.getItem("admin_portal_password") || "admin123";
+                      const savedPassword = localStorage.getItem("admin_portal_password") || "Jenny";
                       if (adminCurrentPassword !== savedPassword) {
                         alert("Current password input matches no records!");
                         return;
