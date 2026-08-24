@@ -5958,7 +5958,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => setStockModalType("product")}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-                    stockModalType === "product" ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+                    stockModalType === "product" ? "bg-indigo-600 text-white shadow-sm" : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-550 hover:text-slate-800")
                   }`}
                 >
                   Product Box
@@ -5967,7 +5967,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => setStockModalType("additive")}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-                    stockModalType === "additive" ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+                    stockModalType === "additive" ? "bg-indigo-600 text-white shadow-sm" : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-550 hover:text-slate-800")
                   }`}
                 >
                   Dryfruit Filling
@@ -6418,7 +6418,7 @@ export default function Dashboard() {
                     setDamagedSearchQuery("");
                   }}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-                    damagedModalType === "product" ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+                    damagedModalType === "product" ? "bg-indigo-600 text-white shadow-sm" : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-550 hover:text-slate-800")
                   }`}
                 >
                   Product Box
@@ -6432,7 +6432,7 @@ export default function Dashboard() {
                     setDamagedSearchQuery("");
                   }}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-                    damagedModalType === "additive" ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+                    damagedModalType === "additive" ? "bg-indigo-600 text-white shadow-sm" : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-550 hover:text-slate-800")
                   }`}
                 >
                   Dryfruit Filling
@@ -7199,7 +7199,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => setMoveModalType("product")}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-                    moveModalType === "product" ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+                    moveModalType === "product" ? "bg-indigo-600 text-white shadow-sm" : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-555 hover:text-slate-800")
                   }`}
                 >
                   Product Box
@@ -7208,7 +7208,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => setMoveModalType("additive")}
                   className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-                    moveModalType === "additive" ? "bg-indigo-600 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+                    moveModalType === "additive" ? "bg-indigo-600 text-white shadow-sm" : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-555 hover:text-slate-800")
                   }`}
                 >
                   Dryfruit Filling

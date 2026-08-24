@@ -13,7 +13,7 @@
       "created_at": "2026-08-19T05:04:44.011Z",
       "deleted_at": null,
       "require_password_change": false,
-      "current_session_token": "SESS-NFSRWWW3-1787145253936"
+      "current_session_token": "SESS-YZUGEI6O-1787569151488"
     },
     {
       "id": "usr-1787121906075-kymmx",
@@ -770,18 +770,25 @@
   ],
   "active_devices": [
     {
+      "deviceId": "DEV-A14ISXVZ-703009",
+      "username": "superadmin",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+      "ipAddress": "Unknown IP",
+      "lastSeen": 1787569827192
+    },
+    {
       "deviceId": "DEV-UZ1ZQ3ZK-856048",
       "username": "Guest",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
       "ipAddress": "Unknown IP",
-      "lastSeen": 1787568987178
+      "lastSeen": 1787569827220
     },
     {
       "deviceId": "DEV-3ATOTJP0-884030",
       "username": "anand",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
       "ipAddress": "Unknown IP",
-      "lastSeen": 1787568987194
+      "lastSeen": 1787569827244
     }
   ]
 }
