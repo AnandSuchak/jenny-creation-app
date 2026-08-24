@@ -36,7 +36,7 @@ import {
   Eye,
   EyeOff
 } from "lucide-react";
-import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock } from "@/lib/mockData";
+import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock, StockMovement } from "@/lib/mockData";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 const sha256Fallback = (ascii: string): string => {
   function rR(v: number, a: number) { return (v >>> a) | (v << (32 - a)); }
@@ -142,7 +142,7 @@ export default function Dashboard() {
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [archiveTab, setArchiveTab] = useState<"categories" | "sub_types" | "locations" | "products" | "invoices">("categories");
   // App UI States
-  const [activeTab, setActiveTab] = useState<"stock" | "products" | "setup">("stock");
+  const [activeTab, setActiveTab] = useState<"stock" | "products" | "setup" | "movements">("stock");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
   const [selectedLocationFilter, setSelectedLocationFilter] = useState("all");
@@ -236,6 +236,7 @@ export default function Dashboard() {
   const [connectionStatus, setConnectionStatus] = useState<"synced" | "connecting" | "offline">("synced");
   const [activeDevices, setActiveDevices] = useState<any[]>([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [isPreOrder, setIsPreOrder] = useState(false);
   const [invoiceDeliveryDate, setInvoiceDeliveryDate] = useState("");
@@ -356,6 +357,7 @@ export default function Dashboard() {
     setDeletedProducts(localDB.getDeletedProducts());
     setDeletedInvoices(localDB.getDeletedInvoices());
     setActiveDevices(localDB.getActiveDevices());
+    setStockMovements(localDB.getStockMovements());
   };
   useEffect(() => {
     // Retrieve session user
@@ -936,6 +938,68 @@ export default function Dashboard() {
   const lowStockCount = stock.filter(item => item.quantity < 10).length;
   const totalInvoices = invoices.length;
   const totalRevenue = invoices.reduce((sum, item) => sum + item.total_amount, 0);
+
+  // Derived Last 7 Days Revenue Trend & Top Products Calculations
+  const getAnalyticsData = () => {
+    const dailyRevenue: { [key: string]: number } = {};
+    const dayLabels: string[] = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      dailyRevenue[dateStr] = 0;
+      
+      const dayName = d.toLocaleDateString("en-US", { weekday: "short" });
+      dayLabels.push(dayName);
+    }
+    
+    invoices.forEach(inv => {
+      if (inv.deleted_at === null) {
+        const invDate = inv.issue_date.slice(0, 10);
+        if (dailyRevenue[invDate] !== undefined) {
+          dailyRevenue[invDate] += inv.total_amount;
+        }
+      }
+    });
+    
+    const revenueValues = Object.keys(dailyRevenue).map(key => dailyRevenue[key]);
+    
+    const productSales: { [name: string]: number } = {};
+    invoices.forEach(inv => {
+      if (inv.deleted_at === null && inv.items) {
+        inv.items.forEach(item => {
+          if (item.product_id) {
+            const prod = products.find(p => p.id === item.product_id);
+            if (prod) {
+              productSales[prod.name] = (productSales[prod.name] || 0) + Number(item.quantity);
+            }
+          }
+        });
+      }
+    });
+    
+    const topProducts = Object.keys(productSales)
+      .map(name => ({ name, units: productSales[name] }))
+      .sort((a, b) => b.units - a.units)
+      .slice(0, 4);
+      
+    return { dayLabels, revenueValues, topProducts };
+  };
+  
+  const { dayLabels, revenueValues, topProducts } = getAnalyticsData();
+  const maxRevenue = Math.max(...revenueValues, 100);
+  const chartHeight = 100;
+  const chartWidth = 320;
+  const points = revenueValues.map((val, i) => {
+    const x = (i * (chartWidth / 6));
+    const y = chartHeight - (val / maxRevenue) * (chartHeight - 15) - 5;
+    return { x, y, val };
+  });
+  
+  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const fillD = points.length > 0 ? `${pathD} L ${points[points.length - 1].x} ${chartHeight} L 0 ${chartHeight} Z` : "";
+
   const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1373,6 +1437,60 @@ export default function Dashboard() {
     updatedItems[index].unitPrice = Math.round(basePrice + extraJarsPrice);
     setInvoiceItems(updatedItems);
   };
+
+  const exportInvoicesToCSV = () => {
+    if (invoices.length === 0) {
+      alert("No invoices available to export.");
+      return;
+    }
+    
+    const headers = [
+      "Invoice Number",
+      "Customer Name",
+      "Customer Phone",
+      "Issue Date",
+      "Delivery Date",
+      "Status",
+      "Payment Mode",
+      "Total Amount (INR)",
+      "Advance Paid (INR)",
+      "Items Count"
+    ];
+    
+    const rows = invoices.map(inv => {
+      const escapedName = `"${(inv.customer_name || "").replace(/"/g, '""')}"`;
+      const itemQty = inv.items ? inv.items.reduce((sum, item) => sum + Number(item.quantity), 0) : 0;
+      
+      return [
+        inv.invoice_number || "",
+        escapedName,
+        inv.customer_phone || "",
+        inv.issue_date || "",
+        inv.delivery_date || "",
+        inv.status || "",
+        inv.payment_mode || "",
+        inv.total_amount || 0,
+        inv.advance_paid || 0,
+        itemQty
+      ];
+    });
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `invoices-export-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
     if (!invoiceCustomerName.trim()) return;
@@ -3752,15 +3870,27 @@ export default function Dashboard() {
                         Browse and view printable vouchers of previously generated client invoices.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsHistoryDrawerOpen(false)}
-                      className={`p-1.5 rounded-lg transition duration-150 ${
-                        isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-zinc-550 hover:text-zinc-900"
-                      }`}
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={exportInvoicesToCSV}
+                        className={`p-1.5 rounded-lg border text-emerald-500 hover:bg-emerald-500/10 transition duration-150 cursor-pointer ${
+                          isDark ? "border-emerald-500/20 bg-emerald-500/5" : "border-emerald-200 bg-emerald-50"
+                        }`}
+                        title="Export Invoices to CSV"
+                      >
+                        <FileSpreadsheet className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsHistoryDrawerOpen(false)}
+                        className={`p-1.5 rounded-lg transition duration-150 ${
+                          isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-zinc-550 hover:text-zinc-900"
+                        }`}
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                   {/* Status Stages Micro Summary Grid */}
                   <div className="grid grid-cols-4 gap-2 text-center text-[10px] print:hidden">
@@ -4052,6 +4182,16 @@ export default function Dashboard() {
               }`}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" /> System Setup
+            </button>
+            <button
+              onClick={() => setActiveTab("movements")}
+              className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition duration-200 flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
+                activeTab === "movements"
+                  ? (isDark ? "bg-zinc-800 text-zinc-100 border border-zinc-700/40 shadow-sm" : "bg-white text-zinc-800 border border-slate-200 shadow-sm")
+                  : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-500 hover:text-slate-800")
+              }`}
+            >
+              <History className="h-3.5 w-3.5" /> Stock Movements
             </button>
           </div>
           {/* Inline filters */}
@@ -4876,6 +5016,91 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {activeTab === "movements" && (
+          <div className={`${cardClass} p-6 rounded-2xl border shadow-lg flex flex-col gap-4 animate-fadeIn`}>
+            <div>
+              <h2 className={`text-lg font-extrabold ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>Stock Movement Audit Trail</h2>
+              <p className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5">
+                Detailed history of all stock replenishments, location transfers, and reported damage.
+              </p>
+            </div>
+            
+            <div className="overflow-x-auto border rounded-xl border-zinc-808/10">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className={`border-b ${isDark ? "bg-zinc-900/50 border-zinc-808/30 text-zinc-400" : "bg-slate-50/50 border-slate-100 text-slate-500"} uppercase tracking-wider font-extrabold text-[9px]`}>
+                    <th className="p-3">Timestamp</th>
+                    <th className="p-3">Item Details</th>
+                    <th className="p-3">Action</th>
+                    <th className="p-3">Qty / Weight</th>
+                    <th className="p-3">Source &gt; Destination</th>
+                    <th className="p-3 text-right">Logged By</th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${isDark ? "divide-zinc-808/20" : "divide-slate-100"}`}>
+                  {stockMovements.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-6 text-center text-zinc-500 italic">
+                        No stock movement logs found. Try updating or transferring stock!
+                      </td>
+                    </tr>
+                  ) : (
+                    stockMovements.map((mov) => {
+                      const dateStr = new Date(mov.timestamp).toLocaleString();
+                      
+                      let badgeColor = "";
+                      if (mov.movement_type === "added") badgeColor = "bg-emerald-500/10 text-emerald-600";
+                      else if (mov.movement_type === "removed") badgeColor = "bg-rose-500/10 text-rose-600";
+                      else if (mov.movement_type === "transferred") badgeColor = "bg-blue-500/10 text-blue-600";
+                      else badgeColor = "bg-amber-500/10 text-amber-600";
+                      
+                      return (
+                        <tr key={mov.id} className={`${isDark ? "hover:bg-zinc-850/10" : "hover:bg-slate-50/20"}`}>
+                          <td className="p-3 font-mono text-[10px] text-zinc-550 dark:text-zinc-400">
+                            {dateStr}
+                          </td>
+                          <td className="p-3 font-semibold">
+                            <div className="flex items-center gap-1.5">
+                              <span className={isDark ? "text-zinc-200" : "text-slate-800"}>{mov.item_name}</span>
+                              <span className={`text-[8px] font-bold uppercase px-1 rounded bg-zinc-500/10 text-zinc-500`}>
+                                {mov.item_type}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-3 capitalize font-bold">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${badgeColor}`}>
+                              {mov.movement_type}
+                            </span>
+                          </td>
+                          <td className="p-3 font-bold text-zinc-650 dark:text-zinc-300">
+                            {mov.quantity} {mov.item_type === "dryfruit" ? "kg" : "pcs"}
+                          </td>
+                          <td className="p-3 text-zinc-550 dark:text-zinc-400 font-medium">
+                            {mov.movement_type === "transferred" ? (
+                              <div className="flex items-center gap-1 text-[10px]">
+                                <span className="underline">{mov.from_location_name}</span>
+                                <span>&rarr;</span>
+                                <span className="underline">{mov.to_location_name}</span>
+                              </div>
+                            ) : mov.movement_type === "added" ? (
+                              <span>Received in <span className="underline">{mov.to_location_name}</span></span>
+                            ) : (
+                              <span>Deducted from <span className="underline">{mov.from_location_name}</span></span>
+                            )}
+                          </td>
+                          <td className="p-3 text-right font-semibold text-indigo-500">
+                            {mov.operator_name}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
           </>
         ) : (
           /* ADMIN PAGE VIEW */
@@ -4925,6 +5150,98 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-6 animate-fadeIn">
+                {/* Analytics & Dashboard Performance Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Revenue Line Chart */}
+                  <div className={`${cardClass} p-5 rounded-2xl border shadow-lg flex flex-col justify-between h-64`}>
+                    <div>
+                      <h3 className={`font-bold text-sm flex items-center gap-2 ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                        <TrendingUp className="h-4 w-4 text-emerald-500" /> Revenue Trend (Last 7 Days)
+                      </h3>
+                      <p className="text-[10px] text-zinc-500 mt-0.5">Finalized sales performance tracker.</p>
+                    </div>
+                    
+                    <div className="flex-1 flex items-end justify-center relative mt-4">
+                      {/* Live SVG Graph */}
+                      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-28 overflow-visible">
+                        <defs>
+                          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="#10b981" stopOpacity="0.00" />
+                          </linearGradient>
+                        </defs>
+                        {/* Area under the line */}
+                        <path d={fillD} fill="url(#chartGrad)" />
+                        {/* Line itself */}
+                        <path d={pathD} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                        {/* Points */}
+                        {points.map((p, i) => (
+                          <g key={i} className="group/dot cursor-pointer">
+                            <circle cx={p.x} cy={p.y} r="4" fill={isDark ? "#09090b" : "#ffffff"} stroke="#10b981" strokeWidth="2" />
+                            <circle cx={p.x} cy={p.y} r="8" fill="#10b981" fillOpacity="0" className="hover:fill-opacity-10 transition duration-150" />
+                            {/* Hover tooltip */}
+                            <foreignObject x={p.x - 30} y={p.y - 28} width="60" height="24" className="opacity-0 group-hover/dot:opacity-100 transition duration-200 pointer-events-none">
+                              <div className="bg-zinc-950 text-[9px] text-white rounded px-1 py-0.5 font-bold text-center shadow-md">
+                                ₹{p.val}
+                              </div>
+                            </foreignObject>
+                          </g>
+                        ))}
+                      </svg>
+                    </div>
+                    
+                    {/* Day Labels */}
+                    <div className="flex justify-between border-t border-zinc-808/10 pt-2 text-[9px] text-zinc-500 font-bold uppercase tracking-wider">
+                      {dayLabels.map((lbl, idx) => (
+                        <span key={idx}>{lbl}</span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Top Selling Products CSS Bar Chart */}
+                  <div className={`${cardClass} p-5 rounded-2xl border shadow-lg flex flex-col justify-between h-64`}>
+                    <div>
+                      <h3 className={`font-bold text-sm flex items-center gap-2 ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                        <Package className="h-4 w-4 text-indigo-500" /> Top Products (By Units Sold)
+                      </h3>
+                      <p className="text-[10px] text-zinc-500 mt-0.5">Most purchased inventory items.</p>
+                    </div>
+                    
+                    <div className="flex-1 flex flex-col justify-center gap-3.5 my-3">
+                      {topProducts.length === 0 ? (
+                        <div className="text-center text-zinc-550 text-xs italic py-4">
+                          No sales recorded yet. Completed orders will trigger statistics!
+                        </div>
+                      ) : (
+                        topProducts.map((p, idx) => {
+                          const maxUnits = Math.max(...topProducts.map(tp => tp.units), 1);
+                          const pct = (p.units / maxUnits) * 100;
+                          
+                          let barColor = "bg-indigo-500";
+                          if (idx === 1) barColor = "bg-blue-500";
+                          else if (idx === 2) barColor = "bg-teal-500";
+                          else if (idx === 3) barColor = "bg-purple-500";
+                          
+                          return (
+                            <div key={idx} className="flex flex-col gap-1">
+                              <div className="flex items-center justify-between text-[10px] font-bold">
+                                <span className={isDark ? "text-zinc-350" : "text-slate-700"}>{p.name}</span>
+                                <span className="text-zinc-550">{p.units} units</span>
+                              </div>
+                              <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? "bg-zinc-800" : "bg-slate-100"}`}>
+                                <div 
+                                  className={`h-full rounded-full transition-all duration-500 ${barColor}`} 
+                                  style={{ width: `${pct}%` }} 
+                                />
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 {/* 1. Seller Information Configuration */}
                 <div className={`${cardClass} p-6 rounded-2xl border shadow-lg flex flex-col gap-6`}>
                   <div className="flex items-center justify-between border-b pb-4 border-zinc-808/20">

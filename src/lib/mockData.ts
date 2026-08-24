@@ -157,6 +157,18 @@ export interface Invoice {
   created_by_username?: string;
 }
 
+export interface StockMovement {
+  id: string;
+  item_name: string;
+  item_type: "product" | "dryfruit";
+  quantity: number;
+  movement_type: "added" | "removed" | "transferred" | "damaged";
+  from_location_name?: string;
+  to_location_name?: string;
+  operator_name: string;
+  timestamp: string;
+}
+
 // Initial seed data
 const initialCategories: Category[] = [
   { id: "cat-1", name: "Box", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
@@ -453,7 +465,8 @@ class LocalDB {
         "additives",
         "damaged_stock",
         "invoices",
-        "invoice_items"
+        "invoice_items",
+        "stock_movements"
       ];
 
       for (const key of keysToSync) {
@@ -701,6 +714,35 @@ class LocalDB {
     if (typeof window === "undefined") return [];
     const item = window.localStorage.getItem("jenny_creation_active_devices");
     return item ? JSON.parse(item) : [];
+  }
+
+  getStockMovements(): StockMovement[] {
+    return getStorageItem<StockMovement[]>("stock_movements", []);
+  }
+
+  logStockMovement(
+    itemName: string,
+    itemType: "product" | "dryfruit",
+    quantity: number,
+    movementType: "added" | "removed" | "transferred" | "damaged",
+    fromLocationName?: string,
+    toLocationName?: string,
+    operatorName?: string
+  ): void {
+    const list = getStorageItem<StockMovement[]>("stock_movements", []);
+    const newMovement: StockMovement = {
+      id: `mov-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      item_name: itemName,
+      item_type: itemType,
+      quantity,
+      movement_type: movementType,
+      from_location_name: fromLocationName,
+      to_location_name: toLocationName,
+      operator_name: operatorName || "System",
+      timestamp: new Date().toISOString()
+    };
+    list.unshift(newMovement);
+    setStorageItem("stock_movements", list);
   }
 
   getCategories(): Category[] {
@@ -1119,11 +1161,15 @@ class LocalDB {
             st.deleted_at === null
     );
     
+    const oldQty = existingIndex >= 0 ? list[existingIndex].quantity : 0;
+    const diff = quantity - oldQty;
+    
+    let resultStock: Stock;
     if (existingIndex >= 0) {
       list[existingIndex].quantity = quantity;
       list[existingIndex].updated_at = new Date().toISOString();
       setStorageItem("stock", list);
-      return list[existingIndex];
+      resultStock = list[existingIndex];
     } else {
       const newStock: Stock = {
         id: `st-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -1137,8 +1183,28 @@ class LocalDB {
       };
       list.push(newStock);
       setStorageItem("stock", list);
-      return newStock;
+      resultStock = newStock;
     }
+
+    if (diff !== 0) {
+      const itemName = productId 
+        ? (getStorageItem<Product[]>("products", initialProducts).find(p => p.id === productId)?.name || "Product")
+        : (getStorageItem<Additive[]>("additives", initialAdditives).find(a => a.id === additiveId)?.name || "Dryfruit");
+      
+      const locName = getStorageItem<StorageLocation[]>("locations", initialLocations).find(l => l.id === locationId)?.name || "Storage";
+      
+      this.logStockMovement(
+        itemName,
+        productId ? "product" : "dryfruit",
+        Math.abs(diff),
+        diff > 0 ? "added" : "removed",
+        diff > 0 ? undefined : locName,
+        diff > 0 ? locName : undefined,
+        user?.username || "System"
+      );
+    }
+
+    return resultStock;
   }
 
   // Move stock between locations
@@ -1194,6 +1260,24 @@ class LocalDB {
     }
 
     setStorageItem("stock", list);
+
+    const itemName = productId 
+      ? (getStorageItem<Product[]>("products", initialProducts).find(p => p.id === productId)?.name || "Product")
+      : (getStorageItem<Additive[]>("additives", initialAdditives).find(a => a.id === additiveId)?.name || "Dryfruit");
+
+    const srcLocName = getStorageItem<StorageLocation[]>("locations", initialLocations).find(l => l.id === sourceLocationId)?.name || "Source Loc";
+    const destLocName = getStorageItem<StorageLocation[]>("locations", initialLocations).find(l => l.id === destinationLocationId)?.name || "Dest Loc";
+
+    this.logStockMovement(
+      itemName,
+      productId ? "product" : "dryfruit",
+      quantity,
+      "transferred",
+      srcLocName,
+      destLocName,
+      user?.username || "System"
+    );
+
     return true;
   }
 
@@ -1807,6 +1891,23 @@ class LocalDB {
     };
     list.push(newItem);
     setStorageItem("damaged_stock", list);
+
+    const itemName = productId 
+      ? (getStorageItem<Product[]>("products", initialProducts).find(p => p.id === productId)?.name || "Product")
+      : (getStorageItem<Additive[]>("additives", initialAdditives).find(a => a.id === additiveId)?.name || "Dryfruit");
+
+    const locName = getStorageItem<StorageLocation[]>("locations", initialLocations).find(l => l.id === locationId)?.name || "Location";
+
+    this.logStockMovement(
+      itemName,
+      productId ? "product" : "dryfruit",
+      quantity,
+      "damaged",
+      locName,
+      undefined,
+      user?.username || "System"
+    );
+
     return newItem;
   }
 
