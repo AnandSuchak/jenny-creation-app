@@ -416,12 +416,32 @@ const setStorageItem = <T>(key: string, value: T): void => {
 
 // Database state management
 class LocalDB {
-  async syncFromServer(): Promise<void> {
-    if (typeof window === "undefined" || !window.location || !window.location.pathname) return;
+  async syncFromServer(): Promise<boolean> {
+    if (typeof window === "undefined" || !window.location || !window.location.pathname) return false;
     try {
-      const res = await fetch("/api/db");
-      if (!res.ok) return;
+      const deviceId = window.localStorage.getItem("jenny_device_fingerprint_id") || "DEV-UNKNOWN";
+      let username = "Guest";
+      try {
+        const sessionUser = window.sessionStorage.getItem("jenny_session_user");
+        if (sessionUser) {
+          const parsed = JSON.parse(sessionUser);
+          if (parsed && parsed.username) username = parsed.username;
+        }
+      } catch (err) {}
+
+      const res = await fetch("/api/db", {
+        headers: {
+          "x-device-id": deviceId,
+          "x-username": username,
+          "x-user-agent": navigator.userAgent
+        }
+      });
+      if (!res.ok) return false;
       const serverData = await res.json();
+      
+      if (serverData && serverData.active_devices) {
+        window.localStorage.setItem("jenny_creation_active_devices", JSON.stringify(serverData.active_devices));
+      }
       
       const keysToSync = [
         "users",
@@ -473,17 +493,24 @@ class LocalDB {
         if (JSON.stringify(serverList) !== JSON.stringify(mergedList)) {
           await fetch("/api/db", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              "x-device-id": deviceId,
+              "x-username": username,
+              "x-user-agent": navigator.userAgent
+            },
             body: JSON.stringify({ key, value: mergedList })
           });
         }
       }
+      return true;
     } catch (e: any) {
       if (e instanceof Error && e.message === "Failed to fetch") {
         console.warn("Local JSON database server sync is temporarily offline (Failed to fetch).");
       } else {
         console.error("Local JSON database server sync failed:", e);
       }
+      return false;
     }
   }
 
@@ -668,6 +695,12 @@ class LocalDB {
     list[matchedIdx].require_password_change = false;
     setStorageItem("users", list);
     return list[matchedIdx];
+  }
+
+  getActiveDevices(): any[] {
+    if (typeof window === "undefined") return [];
+    const item = window.localStorage.getItem("jenny_creation_active_devices");
+    return item ? JSON.parse(item) : [];
   }
 
   getCategories(): Category[] {

@@ -30,8 +30,50 @@ const writeDB = (data: any) => {
   }
 };
 
-export async function GET() {
+// Helper to register device heartbeat and prune dead nodes (older than 15s)
+const updateActiveDevices = (currentData: any, request: Request) => {
+  const deviceId = request.headers.get("x-device-id");
+  if (!deviceId) return currentData.active_devices || [];
+
+  const username = request.headers.get("x-username") || "Guest";
+  const userAgent = request.headers.get("x-user-agent") || "Unknown Browser";
+  const ipAddress = request.headers.get("x-ip-address") || "Unknown IP";
+
+  const now = Date.now();
+  let devices = currentData.active_devices || [];
+  if (!Array.isArray(devices)) devices = [];
+
+  // Filter out expired devices (inactive for > 15s)
+  devices = devices.filter((d: any) => d && d.deviceId && (now - d.lastSeen) < 15000);
+
+  // Update or insert current device session
+  const existingIdx = devices.findIndex((d: any) => d.deviceId === deviceId);
+  if (existingIdx > -1) {
+    devices[existingIdx] = {
+      deviceId,
+      username,
+      userAgent,
+      ipAddress,
+      lastSeen: now
+    };
+  } else {
+    devices.push({
+      deviceId,
+      username,
+      userAgent,
+      ipAddress,
+      lastSeen: now
+    });
+  }
+
+  currentData.active_devices = devices;
+  return devices;
+};
+
+export async function GET(request: Request) {
   const data = readDB();
+  updateActiveDevices(data, request);
+  writeDB(data);
   return NextResponse.json(data, {
     headers: {
       "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -50,6 +92,7 @@ export async function POST(request: Request) {
     }
     const currentData = readDB();
     currentData[key] = value;
+    updateActiveDevices(currentData, request);
     writeDB(currentData);
     
     return NextResponse.json({ success: true }, {

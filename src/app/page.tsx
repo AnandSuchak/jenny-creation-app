@@ -233,6 +233,9 @@ export default function Dashboard() {
   const [damagedModalType, setDamagedModalType] = useState<"product" | "additive">("product");
   const [damagedAdditiveId, setDamagedAdditiveId] = useState("");
   const [isEditingInvoice, setIsEditingInvoice] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<"synced" | "connecting" | "offline">("synced");
+  const [activeDevices, setActiveDevices] = useState<any[]>([]);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
   const [isPreOrder, setIsPreOrder] = useState(false);
   const [invoiceDeliveryDate, setInvoiceDeliveryDate] = useState("");
@@ -352,6 +355,7 @@ export default function Dashboard() {
     setDeletedLocations(localDB.getDeletedLocations());
     setDeletedProducts(localDB.getDeletedProducts());
     setDeletedInvoices(localDB.getDeletedInvoices());
+    setActiveDevices(localDB.getActiveDevices());
   };
   useEffect(() => {
     // Retrieve session user
@@ -412,14 +416,17 @@ export default function Dashboard() {
     }
 
     // Fetch initial database from local Next.js JSON server
-    localDB.syncFromServer().then(() => {
-      loadData();
+    setConnectionStatus("connecting");
+    localDB.syncFromServer().then((ok) => {
+      setConnectionStatus(ok ? "synced" : "offline");
+      if (ok) loadData();
     });
 
     // Start periodic 3-second database polling to sync all connected browsers in real-time
     const syncInterval = setInterval(() => {
-      localDB.syncFromServer().then(() => {
-        loadData();
+      localDB.syncFromServer().then((ok) => {
+        setConnectionStatus(ok ? "synced" : "offline");
+        if (ok) loadData();
       });
     }, 3000);
 
@@ -567,7 +574,7 @@ export default function Dashboard() {
     products.forEach(p => {
       const activeLocStocks = stock.filter(st => st.product_id === p.id && st.deleted_at === null);
       const totalQty = activeLocStocks.reduce((sum, s) => sum + s.quantity, 0);
-      if (totalQty < 5) {
+      if (totalQty < 10) {
         alerts.push({
           id: `alert-lowstock-prod-${p.id}`,
           type: "low_stock",
@@ -579,7 +586,7 @@ export default function Dashboard() {
     });
 
     additives.forEach(a => {
-      if ((a.stock_qty_kg || 0) < 5) {
+      if ((a.stock_qty_kg || 0) < 10) {
         alerts.push({
           id: `alert-lowstock-add-${a.id}`,
           type: "low_stock",
@@ -1957,6 +1964,26 @@ export default function Dashboard() {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            {/* Connection Status Badge */}
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-bold tracking-wide uppercase select-none ${
+              connectionStatus === "synced"
+                ? (isDark ? "bg-emerald-955/20 border-emerald-800/30 text-emerald-455" : "bg-emerald-50 border-emerald-200 text-emerald-600")
+                : connectionStatus === "connecting"
+                  ? (isDark ? "bg-amber-955/20 border-amber-800/30 text-amber-455" : "bg-amber-50 border-amber-200 text-amber-600")
+                  : (isDark ? "bg-rose-955/20 border-rose-800/30 text-rose-455" : "bg-rose-50 border-rose-200 text-rose-600")
+            }`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${
+                connectionStatus === "synced"
+                  ? "bg-emerald-500 animate-pulse"
+                  : connectionStatus === "connecting"
+                    ? "bg-amber-500 animate-pulse"
+                    : "bg-rose-500 animate-pulse"
+              }`} />
+              <span>
+                {connectionStatus === "synced" ? "Synced" : connectionStatus === "connecting" ? "Syncing..." : "Offline"}
+              </span>
+            </div>
+
             {/* User Profile & Logout Segment */}
             <div className={`flex items-center gap-2.5 p-1 pl-3.5 pr-2.5 rounded-2xl border ${
               isDark ? "bg-zinc-950/40 border-zinc-808/80" : "bg-white border-slate-205 shadow-sm"
@@ -5069,6 +5096,89 @@ export default function Dashboard() {
                       </button>
                     </div>
                   </form>
+                </div>
+
+                {/* 3. Connected Devices Session Audit */}
+                <div className={`${cardClass} p-6 rounded-2xl border shadow-lg flex flex-col gap-4`}>
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-850 dark:text-zinc-100 flex items-center gap-2">
+                      <Users className="h-5 w-5 text-indigo-500" /> Active Devices & Session Audit
+                    </h2>
+                    <p className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5">
+                      Monitors all live browser tabs and devices polling the database server. Expired sessions are pruned automatically after 15 seconds.
+                    </p>
+                  </div>
+                  
+                  <div className="overflow-x-auto border rounded-xl border-zinc-808/10">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className={`border-b ${isDark ? "bg-zinc-900/50 border-zinc-808/30 text-zinc-400" : "bg-slate-50/50 border-slate-100 text-slate-500"} uppercase tracking-wider font-extrabold text-[9px]`}>
+                          <th className="p-3">User Session</th>
+                          <th className="p-3">Device Fingerprint</th>
+                          <th className="p-3">Browser / Platform</th>
+                          <th className="p-3 text-right">Last Sync Ping</th>
+                        </tr>
+                      </thead>
+                      <tbody className={`divide-y ${isDark ? "divide-zinc-808/20" : "divide-slate-100"}`}>
+                        {activeDevices.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="p-6 text-center text-zinc-500 italic">
+                              No active devices registered.
+                            </td>
+                          </tr>
+                        ) : (
+                          activeDevices.map((d) => {
+                            const isCurrent = d.deviceId === deviceId;
+                            const isSuperAdmin = d.username === "superadmin" || d.username === "Anand";
+                            const lastSeenTime = new Date(d.lastSeen).toLocaleTimeString();
+                            
+                            let browserName = "Unknown Browser";
+                            if (d.userAgent) {
+                              if (d.userAgent.includes("Firefox")) browserName = "Firefox";
+                              else if (d.userAgent.includes("Edg")) browserName = "Edge";
+                              else if (d.userAgent.includes("Chrome")) browserName = "Chrome";
+                              else if (d.userAgent.includes("Safari")) browserName = "Safari";
+                              else browserName = "Browser Client";
+                            }
+                            
+                            return (
+                              <tr key={d.deviceId} className={`${isDark ? "hover:bg-zinc-850/10" : "hover:bg-slate-50/20"}`}>
+                                <td className="p-3 font-semibold">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={`h-1.5 w-1.5 rounded-full bg-emerald-500`} />
+                                    <span className={isDark ? "text-zinc-200" : "text-slate-800"}>{d.username}</span>
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-black uppercase ${
+                                      isSuperAdmin 
+                                        ? "bg-indigo-500/10 text-indigo-500" 
+                                        : "bg-amber-500/10 text-amber-600"
+                                    }`}>
+                                      {isSuperAdmin ? "Admin" : "Operator"}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3 font-mono text-[10px] text-zinc-500">
+                                  <div className="flex items-center gap-1.5">
+                                    <span>{d.deviceId}</span>
+                                    {isCurrent && (
+                                      <span className="text-[8px] bg-emerald-500/10 text-emerald-600 px-1 rounded font-black uppercase">
+                                        You
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="p-3 text-zinc-550 dark:text-zinc-400">
+                                  {browserName}
+                                </td>
+                                <td className="p-3 text-right font-mono text-zinc-500">
+                                  {lastSeenTime}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}

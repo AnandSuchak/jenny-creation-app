@@ -767,5 +767,21 @@
       "updated_at": "2026-08-02T11:17:51.710Z",
       "deleted_at": null
     }
+  ],
+  "active_devices": [
+    {
+      "deviceId": "DEV-UZ1ZQ3ZK-856048",
+      "username": "Guest",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "ipAddress": "Unknown IP",
+      "lastSeen": 1787557107187
+    },
+    {
+      "deviceId": "DEV-3ATOTJP0-884030",
+      "username": "anand",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+      "ipAddress": "Unknown IP",
+      "lastSeen": 1787557107208
+    }
   ]
 }
