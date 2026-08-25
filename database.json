@@ -13,7 +13,7 @@
       "created_at": "2026-08-19T05:04:44.011Z",
       "deleted_at": null,
       "require_password_change": false,
-      "current_session_token": "SESS-7Q69Q1WT-1787595323454"
+      "current_session_token": "SESS-C94MYCPK-1787639751581"
     },
     {
       "id": "usr-1787121906075-kymmx",
@@ -785,11 +785,11 @@
   ],
   "active_devices": [
     {
-      "deviceId": "DEV-A14ISXVZ-703009",
-      "username": "superadmin",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+      "deviceId": "DEV-UZ1ZQ3ZK-856048",
+      "username": "Guest",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
       "ipAddress": "Unknown IP",
-      "lastSeen": 1787595838120
+      "lastSeen": 1787647255476
     }
   ]
 }
