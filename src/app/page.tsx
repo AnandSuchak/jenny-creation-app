@@ -372,6 +372,11 @@ export default function Dashboard() {
       }
     }
 
+    // Migrate old admin_portal_password from admin123 to Jenny if stored
+    if (localStorage.getItem("admin_portal_password") === "admin123") {
+      localStorage.setItem("admin_portal_password", "Jenny");
+    }
+
     // Generate/retrieve device tracking ID signature
     let currentDeviceId = localStorage.getItem("jenny_device_fingerprint_id");
     if (!currentDeviceId) {
