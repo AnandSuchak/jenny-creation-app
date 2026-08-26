@@ -2030,7 +2030,7 @@ export default function Dashboard() {
             <p className={`text-sm mt-1 ${isDark ? "text-zinc-400" : "text-zinc-550"}`}>
               High-fidelity Inventory & Order Management System
             </p>
-            {!isSupabaseConfigured && (
+            {(!isSupabaseConfigured || currentUser?.role === "super_admin") && (
               <div className="flex items-center gap-2 mt-2">
                 <button 
                   onClick={() => {
