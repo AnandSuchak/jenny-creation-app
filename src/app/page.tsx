@@ -692,7 +692,6 @@ export default function Dashboard() {
                 const newHash = await hashPassword(changePasswordNew.trim());
                 const updatedUser = localDB.changeUserPassword(passwordChangeUser.id, newHash);
                 
-                // Clear change states
                 // Generate new session lock token
                 const sessionToken = "SESS-" + Math.random().toString(36).substring(2, 10).toUpperCase() + "-" + Date.now();
                 const userWithSession = localDB.updateUserSessionToken(updatedUser.id, sessionToken);
@@ -701,11 +700,13 @@ export default function Dashboard() {
                 sessionStorage.setItem("jenny_session_user", JSON.stringify(userWithSession));
                 sessionStorage.setItem("jenny_session_token", sessionToken);
                 setCurrentUser(userWithSession);
-                loadData();
-                alert("Password updated and signed in successfully!");
-                // Complete sign in
-                sessionStorage.setItem("jenny_session_user", JSON.stringify(updatedUser));
-                setCurrentUser(updatedUser);
+                
+                // Clear change states
+                setIsPasswordChangeRequired(false);
+                setPasswordChangeUser(null);
+                setChangePasswordNew("");
+                setChangePasswordConfirm("");
+                
                 loadData();
                 alert("Password updated and signed in successfully!");
               } catch (err: any) {
