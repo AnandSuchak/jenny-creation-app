@@ -1,5 +1,21 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "usr-admin",
+      "username": "superadmin",
+      "password_hash": "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+      "role": "super_admin",
+      "rights": {
+        "view_stock": true,
+        "generate_bill": true,
+        "edit_inventory": true
+      },
+      "created_at": "2026-08-26T14:10:00.000Z",
+      "deleted_at": null,
+      "require_password_change": false,
+      "current_session_token": null
+    }
+  ],
   "categories": [],
   "sub_types": [],
   "locations": [],
@@ -14,7 +30,7 @@
       "username": "Guest",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
       "ipAddress": "Unknown IP",
-      "lastSeen": 1787733624171
+      "lastSeen": 1787733672179
     }
   ],
   "stock_movements": [
@@ -38,6 +54,5 @@
       "operator_name": "superadmin",
       "timestamp": "2026-08-25T08:51:55.932Z"
     }
-  ],
-  "damaged_stock": []
+  ]
 }
