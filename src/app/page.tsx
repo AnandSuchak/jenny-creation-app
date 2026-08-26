@@ -837,7 +837,7 @@ export default function Dashboard() {
                     .from("users")
                     .select("*")
                     .eq("username", authUsernameInput.trim().toLowerCase())
-                    .eq("deleted_at", null)
+                    .is("deleted_at", null)
                     .maybeSingle();
                   if (error) throw new Error(error.message);
                   if (data) matched = data;
