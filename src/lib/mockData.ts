@@ -627,7 +627,7 @@ class LocalDB {
 
     const newUser: User = {
       id: `usr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      username: username.trim(),
+      username: username.trim().toLowerCase(),
       password_hash: passwordHash,
       role,
       rights,
@@ -1922,7 +1922,8 @@ class LocalDB {
     setStorageItem("invoice_items", []);
     setStorageItem("additives", []);
     setStorageItem("damaged_stock", []);
-    setStorageItem("users", []);
+    setStorageItem("users", initialUsers);
+    setStorageItem("stock_movements", []);
   }
 
   getSellerSettings(): SellerSettings {
