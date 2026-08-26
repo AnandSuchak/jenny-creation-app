@@ -575,12 +575,18 @@ class LocalDB {
         client.from("invoice_items").select("*")
       ]);
 
+      const hasCloudUsers = rUsers.data && rUsers.data.length > 0;
+
       const syncTable = async (key: string, cloudData: any[] | null, defaultValue: any) => {
         let tableName = key;
         if (key === "locations") tableName = "storage_locations";
         if (cloudData && cloudData.length > 0) {
           window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(cloudData));
+        } else if (hasCloudUsers && key !== "users") {
+          // Cloud is initialized but this table is empty (intentionally cleared), sync local to empty
+          window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify([]));
         } else {
+          // Fresh DB initialization: upload local seeds to cloud
           const localData = getStorageItem(key, defaultValue);
           if (localData && (!Array.isArray(localData) || localData.length > 0)) {
             await client.from(tableName).upsert(localData);
