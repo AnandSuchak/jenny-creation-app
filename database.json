@@ -13,7 +13,7 @@
       "created_at": "2026-08-19T05:04:44.011Z",
       "deleted_at": null,
       "require_password_change": false,
-      "current_session_token": "SESS-C94MYCPK-1787639751581"
+      "current_session_token": "SESS-FLTT8CZI-1787647724440"
     },
     {
       "id": "usr-1787121906075-kymmx",
@@ -190,6 +190,14 @@
       "name": "2 Jar",
       "created_at": "2026-08-02T11:12:02.824Z",
       "updated_at": "2026-08-02T11:12:02.824Z",
+      "deleted_at": null
+    },
+    {
+      "id": "sub-1787647876844-iv97h",
+      "category_id": "cat-1785344802138",
+      "name": "3 jar",
+      "created_at": "2026-08-25T08:51:16.844Z",
+      "updated_at": "2026-08-25T08:51:16.844Z",
       "deleted_at": null
     }
   ],
@@ -427,6 +435,34 @@
       "created_at": "2026-08-19T13:22:57.527Z",
       "updated_at": "2026-08-19T13:22:57.527Z",
       "deleted_at": null
+    },
+    {
+      "id": "prod-1787647915931-w5ne9",
+      "name": "abx (2 Jar)",
+      "category_id": "cat-1785344802138",
+      "sub_type_id": "sub-1785669122824-haj37",
+      "photos": [
+        "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 200,
+      "supplier_code": "12122",
+      "created_at": "2026-08-25T08:51:55.931Z",
+      "updated_at": "2026-08-25T08:51:55.931Z",
+      "deleted_at": null
+    },
+    {
+      "id": "prod-1787647915932-mte3w",
+      "name": "abx (3 jar)",
+      "category_id": "cat-1785344802138",
+      "sub_type_id": "sub-1787647876844-iv97h",
+      "photos": [
+        "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+      ],
+      "price": 300,
+      "supplier_code": "12122",
+      "created_at": "2026-08-25T08:51:55.932Z",
+      "updated_at": "2026-08-25T08:51:55.932Z",
+      "deleted_at": null
     }
   ],
   "stock": [
@@ -578,6 +614,36 @@
       "created_at": "2026-08-19T13:22:57.527Z",
       "updated_at": "2026-08-19T13:22:57.527Z",
       "deleted_at": null
+    },
+    {
+      "id": "st-1787647802387-w8r82",
+      "product_id": null,
+      "additive_id": "add-1787647802387-d9jc1",
+      "storage_location_id": "loc-1785331622196",
+      "quantity": 20,
+      "created_at": "2026-08-25T08:50:02.387Z",
+      "updated_at": "2026-08-25T08:50:02.387Z",
+      "deleted_at": null
+    },
+    {
+      "id": "st-1787647915932-ezz4q",
+      "product_id": "prod-1787647915931-w5ne9",
+      "additive_id": null,
+      "storage_location_id": "loc-1785331626767",
+      "quantity": 100,
+      "created_at": "2026-08-25T08:51:55.932Z",
+      "updated_at": "2026-08-25T08:51:55.932Z",
+      "deleted_at": null
+    },
+    {
+      "id": "st-1787647915933-bfreu",
+      "product_id": "prod-1787647915932-mte3w",
+      "additive_id": null,
+      "storage_location_id": "loc-1785331626767",
+      "quantity": 100,
+      "created_at": "2026-08-25T08:51:55.933Z",
+      "updated_at": "2026-08-25T08:51:55.933Z",
+      "deleted_at": null
     }
   ],
   "additives": [
@@ -627,6 +693,15 @@
       "price_per_kg": 1500,
       "created_at": "2026-08-03T17:23:21.431Z",
       "updated_at": "2026-08-03T17:23:21.431Z",
+      "deleted_at": null
+    },
+    {
+      "id": "add-1787647802387-d9jc1",
+      "name": "almond kesar",
+      "price_per_kg": 1600,
+      "stock_qty_kg": 20,
+      "created_at": "2026-08-25T08:50:02.387Z",
+      "updated_at": "2026-08-25T08:50:02.387Z",
       "deleted_at": null
     }
   ],
@@ -786,10 +861,39 @@
   "active_devices": [
     {
       "deviceId": "DEV-UZ1ZQ3ZK-856048",
-      "username": "Guest",
+      "username": "superadmin",
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
       "ipAddress": "Unknown IP",
-      "lastSeen": 1787647375484
+      "lastSeen": 1787670033461
+    },
+    {
+      "deviceId": "DEV-A14ISXVZ-703009",
+      "username": "Guest",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+      "ipAddress": "Unknown IP",
+      "lastSeen": 1787670032442
+    }
+  ],
+  "stock_movements": [
+    {
+      "id": "mov-1787647915933-v00a1",
+      "item_name": "abx (3 jar)",
+      "item_type": "product",
+      "quantity": 100,
+      "movement_type": "added",
+      "to_location_name": "2",
+      "operator_name": "superadmin",
+      "timestamp": "2026-08-25T08:51:55.933Z"
+    },
+    {
+      "id": "mov-1787647915932-x4xav",
+      "item_name": "abx (2 Jar)",
+      "item_type": "product",
+      "quantity": 100,
+      "movement_type": "added",
+      "to_location_name": "2",
+      "operator_name": "superadmin",
+      "timestamp": "2026-08-25T08:51:55.932Z"
     }
   ]
 }
