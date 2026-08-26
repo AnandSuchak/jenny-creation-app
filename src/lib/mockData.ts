@@ -1923,6 +1923,27 @@ class LocalDB {
     setStorageItem("additives", []);
     setStorageItem("damaged_stock", []);
     setStorageItem("stock_movements", []);
+
+    // If Supabase is connected, wipe the cloud tables in correct dependency order
+    if (isSupabaseConfigured && supabase) {
+      const client = supabase;
+      setTimeout(async () => {
+        try {
+          await client.from("invoice_items").delete().neq("id", "_");
+          await client.from("invoices").delete().neq("id", "_");
+          await client.from("damaged_stock").delete().neq("id", "_");
+          await client.from("stock").delete().neq("id", "_");
+          await client.from("products").delete().neq("id", "_");
+          await client.from("sub_types").delete().neq("id", "_");
+          await client.from("categories").delete().neq("id", "_");
+          await client.from("storage_locations").delete().neq("id", "_");
+          await client.from("additives").delete().neq("id", "_");
+          console.log("Supabase cloud database tables successfully truncated.");
+        } catch (err) {
+          console.error("Failed to truncate Supabase cloud tables:", err);
+        }
+      }, 0);
+    }
   }
 
   getSellerSettings(): SellerSettings {
