@@ -24,35 +24,6 @@
   "additives": [],
   "invoices": [],
   "invoice_items": [],
-  "active_devices": [
-    {
-      "deviceId": "DEV-A14ISXVZ-703009",
-      "username": "Guest",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-      "ipAddress": "Unknown IP",
-      "lastSeen": 1787733672179
-    }
-  ],
-  "stock_movements": [
-    {
-      "id": "mov-1787647915933-v00a1",
-      "item_name": "abx (3 jar)",
-      "item_type": "product",
-      "quantity": 100,
-      "movement_type": "added",
-      "to_location_name": "2",
-      "operator_name": "superadmin",
-      "timestamp": "2026-08-25T08:51:55.933Z"
-    },
-    {
-      "id": "mov-1787647915932-x4xav",
-      "item_name": "abx (2 Jar)",
-      "item_type": "product",
-      "quantity": 100,
-      "movement_type": "added",
-      "to_location_name": "2",
-      "operator_name": "superadmin",
-      "timestamp": "2026-08-25T08:51:55.932Z"
-    }
-  ]
+  "active_devices": [],
+  "stock_movements": []
 }

@@ -1922,7 +1922,6 @@ class LocalDB {
     setStorageItem("invoice_items", []);
     setStorageItem("additives", []);
     setStorageItem("damaged_stock", []);
-    setStorageItem("users", initialUsers);
     setStorageItem("stock_movements", []);
   }
 
