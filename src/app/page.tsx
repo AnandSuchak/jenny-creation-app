@@ -571,17 +571,17 @@ export default function Dashboard() {
         const simDateObj = new Date(simulationDate);
         const diffTime = delDate.getTime() - simDateObj.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays <= 2) {
-          alerts.push({
-            id: `alert-shortage-${inv.id}`,
-            invoiceId: inv.id,
-            type: "shortage",
-            title: `ORD-${inv.invoice_number || inv.order_id} Shortage`,
-            message: `${inv.customer_name} scheduled on ${inv.delivery_date} needs: ${shortageItems.join(", ")}. Please restock!`,
-            dueDate: inv.delivery_date,
-            severity: "critical"
-          });
-        }
+        const dayLabel = diffDays > 0 ? `Delivery in ${diffDays} day${diffDays > 1 ? 's' : ''}` : diffDays === 0 ? 'Delivery Today' : 'Past Due';
+
+        alerts.push({
+          id: `alert-shortage-${inv.id}`,
+          invoiceId: inv.id,
+          type: "shortage",
+          title: `ORD-${inv.invoice_number || inv.order_id} Shortage (${dayLabel})`,
+          message: `${inv.customer_name} order scheduled on ${inv.delivery_date} has dryfruit/stock shortage: ${shortageItems.join(", ")}. Daily reminder active until restocked.`,
+          dueDate: inv.delivery_date,
+          severity: "critical"
+        });
       }
     });
 
