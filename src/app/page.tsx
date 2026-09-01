@@ -5888,13 +5888,40 @@ export default function Dashboard() {
                   Photo URL(s) <span className="text-[10px] text-zinc-500 font-normal">(JPG or PNG format)</span>
                 </label>
                 <div className="space-y-2">
-                  <input 
-                    type="text" 
-                    placeholder="e.g. /gift_box_2jar.jpg"
-                    value={newProductPhotos}
-                    onChange={e => setNewProductPhotos(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${inputClass}`}
-                  />
+                  {newProductPhotos.trim().startsWith("data:image/") ? (
+                    <div className={`p-2.5 rounded-lg border flex items-center justify-between gap-3 ${isDark ? "bg-zinc-950 border-emerald-500/40" : "bg-emerald-50/50 border-emerald-200"}`}>
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <img 
+                          src={newProductPhotos} 
+                          alt="Local preview" 
+                          className="h-10 w-10 object-cover rounded-lg border border-emerald-500/30 shrink-0" 
+                        />
+                        <div className="overflow-hidden">
+                          <span className={`text-xs font-bold block truncate ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>
+                            ✓ Image Loaded from Local Drive
+                          </span>
+                          <span className="text-[10px] text-zinc-500 font-mono block truncate">
+                            Base64 Encoded Image Data
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setNewProductPhotos("")}
+                        className="text-xs text-rose-500 hover:text-rose-400 font-semibold px-2 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 transition duration-150 shrink-0"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <input 
+                      type="text" 
+                      placeholder="e.g. /gift_box_2jar.jpg or paste URL"
+                      value={newProductPhotos}
+                      onChange={e => setNewProductPhotos(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${inputClass}`}
+                    />
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
@@ -5956,12 +5983,6 @@ export default function Dashboard() {
                       </div>
                     </div>
                   </div>
-                )}
-                {/* Formatting warning */}
-                {newProductPhotos && !newProductPhotos.split(",").every(url => url.trim().startsWith("data:image/") || url.trim().match(/\.(jpg|jpeg|png)$/i)) && (
-                  <span className="text-[10px] text-rose-500 font-semibold block mt-1.5 flex items-center gap-1">
-                    ⚠️ Please ensure paths end with a valid image format (.jpg or .png) or are uploaded from drive
-                  </span>
                 )}
               </div>
               {/* EDIT MODE: Single product configuration */}
