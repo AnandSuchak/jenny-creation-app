@@ -1014,6 +1014,32 @@ export default function Dashboard() {
   const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const fillD = points.length > 0 ? `${pathD} L ${points[points.length - 1].x} ${chartHeight} L 0 ${chartHeight} Z` : "";
 
+  const parseProductPhotoUrls = (input: string): string[] => {
+    if (!input || !input.trim()) return [];
+    const trimmed = input.trim();
+    if (trimmed.startsWith("data:image/") || trimmed.startsWith("blob:")) {
+      return [trimmed];
+    }
+    return trimmed
+      .split(/\n+/)
+      .flatMap(line => line.split(","))
+      .map(url => url.trim())
+      .filter(Boolean);
+  };
+
+  const getValidPhotoSrc = (photos?: string[]): string => {
+    if (!photos || photos.length === 0 || !photos[0]) return "/gift_box_2jar.jpg";
+    const first = photos[0].trim();
+    if (
+      first === "data:image/jpeg;base64" ||
+      first === "data:image/png;base64" ||
+      (first.startsWith("data:image") && first.length < 35)
+    ) {
+      return "/gift_box_2jar.jpg";
+    }
+    return first;
+  };
+
   const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1033,7 +1059,7 @@ export default function Dashboard() {
     e.preventDefault();
     if (!newProductName || !newProductCategory) return;
     if (newProductPhotos) {
-      const urls = newProductPhotos.split(",").map(url => url.trim()).filter(Boolean);
+      const urls = parseProductPhotoUrls(newProductPhotos);
       const isValidImage = (url: string) => {
         if (!url) return true;
         return (
@@ -1053,9 +1079,7 @@ export default function Dashboard() {
         return;
       }
     }
-    const photoUrls = newProductPhotos 
-      ? newProductPhotos.split(",").map(url => url.trim()).filter(Boolean) 
-      : [];
+    const photoUrls = parseProductPhotoUrls(newProductPhotos);
     if (isEditProductMode) {
       if (!newProductSubtype) return;
       localDB.updateProduct(editProductId, newProductName, newProductCategory, newProductSubtype, photoUrls, Number(newProductPrice), newProductSupplierCode);
@@ -2797,7 +2821,7 @@ export default function Dashboard() {
                             const selectedItem = invoiceItems.find(it => it.productId === p.id);
                             const currentQty = selectedItem ? Number(selectedItem.quantity) || 0 : 0;
                             const totalStock = stock.filter(s => s.product_id === p.id).reduce((sum, s) => sum + s.quantity, 0);
-                            const photoSrc = p.photos && p.photos.length > 0 && p.photos[0] ? p.photos[0] : "/gift_box_2jar.jpg";
+                            const photoSrc = getValidPhotoSrc(p.photos);
 
                             return (
                               <div
@@ -4879,11 +4903,14 @@ export default function Dashboard() {
               >
                 {/* Product Photo */}
                 <div className={`h-48 w-full relative overflow-hidden ${isDark ? "bg-zinc-900" : "bg-zinc-100"}`}>
-                  {prod.photos && prod.photos[0] ? (
+                  {prod.photos ? (
                     <img 
-                      src={prod.photos[0]} 
+                      src={getValidPhotoSrc(prod.photos)} 
                       alt={prod.name} 
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-zinc-400">
@@ -4900,7 +4927,7 @@ export default function Dashboard() {
                         setNewProductName(prod.name);
                         setNewProductCategory(prod.category_id);
                         setNewProductSubtype(prod.sub_type_id);
-                        setNewProductPhotos(prod.photos.join(", "));
+                        setNewProductPhotos(prod.photos && prod.photos[0] ? prod.photos[0] : "");
                         setNewProductPrice(prod.price || 0);
                         setNewProductSupplierCode(prod.supplier_code || "");
                         setIsProductModalOpen(true);
@@ -7982,9 +8009,12 @@ export default function Dashboard() {
                 <div className={`h-56 w-full rounded-xl overflow-hidden border ${isDark ? "bg-zinc-950 border-zinc-808" : "bg-slate-50 border-slate-200"}`}>
                   {detailProduct.photos && detailProduct.photos[0] ? (
                     <img 
-                      src={detailProduct.photos[0]} 
+                      src={getValidPhotoSrc(detailProduct.photos)} 
                       alt={detailProduct.name} 
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-zinc-450">
@@ -8083,11 +8113,14 @@ export default function Dashboard() {
                       className={`flex-none w-48 p-2.5 rounded-xl border cursor-pointer transition duration-200 hover:scale-[1.02] flex items-center gap-3 ${isDark ? "bg-zinc-950 border-zinc-808 hover:border-zinc-700 hover:bg-zinc-900/60" : "bg-slate-50 border-slate-200 hover:border-slate-300 hover:bg-white"}`}
                     >
                       <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border bg-zinc-900 border-zinc-800">
-                        {simProd.photos && simProd.photos[0] ? (
+                        {simProd.photos ? (
                           <img 
-                            src={simProd.photos[0]} 
+                            src={getValidPhotoSrc(simProd.photos)} 
                             alt={simProd.name} 
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-zinc-550">
