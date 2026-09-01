@@ -1031,9 +1031,8 @@ export default function Dashboard() {
     if (!photos || photos.length === 0 || !photos[0]) return "/gift_box_2jar.jpg";
     const first = photos[0].trim();
     if (
-      first === "data:image/jpeg;base64" ||
-      first === "data:image/png;base64" ||
-      (first.startsWith("data:image") && first.length < 35)
+      first.startsWith("data:image") &&
+      (!first.includes(";base64,") || first.length < 50)
     ) {
       return "/gift_box_2jar.jpg";
     }
@@ -4557,11 +4556,14 @@ export default function Dashboard() {
                       return (
                         <tr key={`${st.id}-${idx}`} className={`transition duration-150 group ${isDark ? "hover:bg-zinc-900/25" : "hover:bg-zinc-100/40"}`}>
                           <td className="py-4 px-6 flex items-center gap-3">
-                            {prod.photos && prod.photos[0] ? (
+                            {prod.photos ? (
                               <img 
-                                src={prod.photos[0]} 
+                                src={getValidPhotoSrc(prod.photos)} 
                                 alt={prod.name} 
                                 className={`h-10 w-10 object-cover rounded-lg border ${isDark ? "bg-zinc-900 border-zinc-800" : "bg-slate-100 border-slate-200"}`}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
+                                }}
                               />
                             ) : (
                               <div className={`h-10 w-10 rounded-lg border flex items-center justify-center text-zinc-400 ${isDark ? "bg-zinc-900/20 border-zinc-800" : "bg-slate-50 border-slate-200"}`}>
@@ -8007,7 +8009,7 @@ export default function Dashboard() {
               {/* Product Photo - col-span-5 */}
               <div className="md:col-span-5 flex flex-col gap-3">
                 <div className={`h-56 w-full rounded-xl overflow-hidden border ${isDark ? "bg-zinc-950 border-zinc-808" : "bg-slate-50 border-slate-200"}`}>
-                  {detailProduct.photos && detailProduct.photos[0] ? (
+                  {detailProduct.photos ? (
                     <img 
                       src={getValidPhotoSrc(detailProduct.photos)} 
                       alt={detailProduct.name} 
