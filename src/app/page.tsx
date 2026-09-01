@@ -35,7 +35,10 @@ import {
   Users,
   Eye,
   EyeOff,
-  HelpCircle
+  HelpCircle,
+  Grid,
+  Minus,
+  ShoppingCart
 } from "lucide-react";
 import { localDB, Product, Stock, Invoice, Category, SubType, StorageLocation, Additive, JarCustomization, DamagedStock, StockMovement } from "@/lib/mockData";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
@@ -247,6 +250,9 @@ export default function Dashboard() {
     { productId: "", quantity: 1, unitPrice: 0, discount: 0 }
   ]);
   const [isOnlyDryfruits, setIsOnlyDryfruits] = useState(false);
+  const [billingViewMode, setBillingViewMode] = useState<"visual" | "list">("visual");
+  const [visualCatalogSearch, setVisualCatalogSearch] = useState("");
+  const [visualCategoryFilter, setVisualCategoryFilter] = useState("all");
   const [setupName, setSetupName] = useState("");
   const [setupCategoryId, setSetupCategoryId] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
@@ -1011,9 +1017,8 @@ export default function Dashboard() {
   const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    if (ext !== "jpg" && ext !== "jpeg" && ext !== "png") {
-      alert("Validation Error: Please select a JPG or PNG image file.");
+    if (!file.type.startsWith("image/") && !file.name.match(/\.(jpg|jpeg|png|webp|avif|gif|svg)$/i)) {
+      alert("Validation Error: Please select a valid image file (JPG, PNG, WebP, GIF, SVG, or AVIF).");
       return;
     }
     const reader = new FileReader();
@@ -1028,15 +1033,28 @@ export default function Dashboard() {
     e.preventDefault();
     if (!newProductName || !newProductCategory) return;
     if (newProductPhotos) {
-      const urls = newProductPhotos.split(",").map(url => url.trim());
-      const allValid = urls.every(url => url.startsWith("data:image/") || url.match(/\.(jpg|jpeg|png)$/i));
+      const urls = newProductPhotos.split(",").map(url => url.trim()).filter(Boolean);
+      const isValidImage = (url: string) => {
+        if (!url) return true;
+        return (
+          url.startsWith("data:image/") ||
+          url.startsWith("blob:") ||
+          url.startsWith("http://") ||
+          url.startsWith("https://") ||
+          url.startsWith("/") ||
+          url.startsWith("file://") ||
+          url.match(/^[a-zA-Z]:\\/) ||
+          url.match(/\.(jpg|jpeg|png|webp|avif|gif|svg)(\?.*)?$/i)
+        );
+      };
+      const allValid = urls.every(isValidImage);
       if (!allValid) {
-        alert("Validation Error: Please ensure all image paths end with a valid format (.jpg, .jpeg, or .png) or are uploaded from drive.");
+        alert("Validation Error: Please ensure all image paths or URLs are valid image formats (JPG, PNG, WebP, GIF, SVG) or uploaded files.");
         return;
       }
     }
     const photoUrls = newProductPhotos 
-      ? newProductPhotos.split(",").map(url => url.trim()) 
+      ? newProductPhotos.split(",").map(url => url.trim()).filter(Boolean) 
       : [];
     if (isEditProductMode) {
       if (!newProductSubtype) return;
@@ -1497,6 +1515,50 @@ export default function Dashboard() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const addOrUpdateProductQty = (productId: string, deltaOrExactQty: number, isExact = false) => {
+    const targetProd = products.find(p => p.id === productId);
+    if (!targetProd) return;
+
+    let itemsCopy = invoiceItems.filter(item => item.productId !== "" && item.productId !== null);
+    const existingIdx = itemsCopy.findIndex(item => item.productId === productId);
+
+    let newQty = 0;
+    if (existingIdx > -1) {
+      const currentQty = Number(itemsCopy[existingIdx].quantity) || 0;
+      newQty = isExact ? deltaOrExactQty : currentQty + deltaOrExactQty;
+    } else {
+      newQty = isExact ? deltaOrExactQty : deltaOrExactQty;
+    }
+
+    if (newQty <= 0) {
+      if (existingIdx > -1) {
+        itemsCopy.splice(existingIdx, 1);
+      }
+    } else {
+      if (existingIdx > -1) {
+        itemsCopy[existingIdx] = {
+          ...itemsCopy[existingIdx],
+          quantity: newQty,
+          unitPrice: targetProd.price || 0
+        };
+      } else {
+        itemsCopy.push({
+          productId: productId,
+          additiveId: null,
+          quantity: newQty,
+          unitPrice: targetProd.price || 0,
+          discount: 0
+        });
+      }
+    }
+
+    if (itemsCopy.length === 0) {
+      setInvoiceItems([{ productId: "", quantity: 1, unitPrice: 0, discount: 0 }]);
+    } else {
+      setInvoiceItems(itemsCopy);
+    }
   };
 
   const handleCreateInvoice = (e: React.FormEvent) => {
@@ -2615,8 +2677,36 @@ export default function Dashboard() {
                   {/* Right Column: Invoice Line Items */}
                   <div className="lg:col-span-8 space-y-5">
                     <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className={`text-xs font-semibold uppercase tracking-wider ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>Invoice Line Items</label>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-3">
+                      <label className={`text-xs font-semibold uppercase tracking-wider ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>Invoice Line Items</label>
+                      <div className={`p-0.5 rounded-lg border flex items-center gap-1 ${isDark ? "bg-zinc-950 border-zinc-808" : "bg-slate-150 border-slate-205"}`}>
+                        <button
+                          type="button"
+                          onClick={() => setBillingViewMode("visual")}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1.5 transition duration-150 ${
+                            billingViewMode === "visual"
+                              ? "bg-indigo-600 text-white shadow-sm"
+                              : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-600 hover:text-slate-900")
+                          }`}
+                        >
+                          <Grid className="h-3.5 w-3.5" />
+                          <span>Amazon Grid</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBillingViewMode("list")}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1.5 transition duration-150 ${
+                            billingViewMode === "list"
+                              ? "bg-indigo-600 text-white shadow-sm"
+                              : (isDark ? "text-zinc-400 hover:text-zinc-200" : "text-slate-600 hover:text-slate-900")
+                          }`}
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          <span>List View</span>
+                        </button>
+                      </div>
+                    </div>
                     <label className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-400 cursor-pointer select-none">
                       <input 
                         type="checkbox"
@@ -2633,6 +2723,180 @@ export default function Dashboard() {
                       <span>Apply Item Discounts</span>
                     </label>
                   </div>
+
+                  {billingViewMode === "visual" && (
+                    <div className="space-y-4 mb-4">
+                      {/* Search & Category Filter Pills */}
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                        <div className="relative flex-1">
+                          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-500" />
+                          <input
+                            type="text"
+                            placeholder="Search products by name or code..."
+                            value={visualCatalogSearch}
+                            onChange={(e) => setVisualCatalogSearch(e.target.value)}
+                            className={`w-full pl-9 pr-3 py-1.5 text-xs border rounded-xl focus:outline-none ${inputClass}`}
+                          />
+                          {visualCatalogSearch && (
+                            <button
+                              type="button"
+                              onClick={() => setVisualCatalogSearch("")}
+                              className="absolute right-2.5 top-2 text-zinc-500 hover:text-zinc-300"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Category Filter Pills */}
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                          <button
+                            type="button"
+                            onClick={() => setVisualCategoryFilter("all")}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap border transition duration-150 ${
+                              visualCategoryFilter === "all"
+                                ? "bg-indigo-600 border-indigo-600 text-white"
+                                : (isDark ? "bg-zinc-950 border-zinc-808 text-zinc-400 hover:text-zinc-200" : "bg-slate-100 border-slate-205 text-slate-600 hover:text-slate-900")
+                            }`}
+                          >
+                            All ({products.length})
+                          </button>
+                          {categories.map(cat => {
+                            const count = products.filter(p => p.category_id === cat.id).length;
+                            return (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => setVisualCategoryFilter(cat.id)}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap border transition duration-150 ${
+                                  visualCategoryFilter === cat.id
+                                    ? "bg-indigo-600 border-indigo-600 text-white"
+                                    : (isDark ? "bg-zinc-950 border-zinc-808 text-zinc-400 hover:text-zinc-200" : "bg-slate-100 border-slate-205 text-slate-600 hover:text-slate-900")
+                                }`}
+                              >
+                                {cat.name} ({count})
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Amazon Visual Product Cards Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 max-h-[460px] overflow-y-auto pr-1 scrollbar-thin">
+                        {products
+                          .filter(p => {
+                            const matchCat = visualCategoryFilter === "all" || p.category_id === visualCategoryFilter;
+                            const matchQuery = !visualCatalogSearch.trim() || 
+                              p.name.toLowerCase().includes(visualCatalogSearch.toLowerCase()) || 
+                              (p.supplier_code && p.supplier_code.toLowerCase().includes(visualCatalogSearch.toLowerCase()));
+                            return matchCat && matchQuery;
+                          })
+                          .map(p => {
+                            const cat = categories.find(c => c.id === p.category_id);
+                            const sub = subTypes.find(s => s.id === p.sub_type_id);
+                            const selectedItem = invoiceItems.find(it => it.productId === p.id);
+                            const currentQty = selectedItem ? Number(selectedItem.quantity) || 0 : 0;
+                            const totalStock = stock.filter(s => s.product_id === p.id).reduce((sum, s) => sum + s.quantity, 0);
+                            const photoSrc = p.photos && p.photos.length > 0 && p.photos[0] ? p.photos[0] : "/gift_box_2jar.jpg";
+
+                            return (
+                              <div
+                                key={p.id}
+                                className={`p-3 rounded-2xl border flex flex-col justify-between transition-all duration-150 relative ${
+                                  currentQty > 0
+                                    ? (isDark ? "bg-indigo-950/20 border-indigo-500/70 shadow-lg shadow-indigo-950/40" : "bg-indigo-50/50 border-indigo-500/60 shadow-md shadow-indigo-100")
+                                    : (isDark ? "bg-zinc-950/40 border-zinc-808/60 hover:border-zinc-700" : "bg-white border-slate-205 hover:border-slate-300 shadow-sm")
+                                }`}
+                              >
+                                {currentQty > 0 && (
+                                  <div className="absolute top-2 right-2 z-10 bg-indigo-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow flex items-center gap-1">
+                                    <Check className="h-3 w-3" /> Selected ({currentQty})
+                                  </div>
+                                )}
+                                <div>
+                                  {/* Product Thumbnail Image */}
+                                  <div className="h-28 w-full rounded-xl overflow-hidden mb-2.5 bg-zinc-900 border border-zinc-800/60 relative group">
+                                    <img
+                                      src={photoSrc}
+                                      alt={p.name}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                      onError={(e) => {
+                                        (e.target as HTMLElement).style.display = "none";
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
+                                      <span className="text-[10px] font-extrabold text-white bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
+                                        ₹{(p.price || 0).toLocaleString("en-IN")}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Badges & Titles */}
+                                  <div className="space-y-1 mb-3">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                                        {cat?.name || "Box"}
+                                      </span>
+                                      {sub && (
+                                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-zinc-500/10 text-zinc-400">
+                                          {sub.name}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <h4 className={`text-xs font-extrabold line-clamp-1 ${isDark ? "text-zinc-100" : "text-slate-800"}`} title={p.name}>
+                                      {p.name}
+                                    </h4>
+                                    <div className="flex items-center justify-between text-[10px] text-zinc-500 font-semibold">
+                                      <span>{p.supplier_code ? `SKU: ${p.supplier_code}` : "Standard"}</span>
+                                      <span className={totalStock > 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold"}>
+                                        {totalStock > 0 ? `${totalStock} in stock` : "Out of stock"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Amazon Style Plus / Minus Quantity Control Bar */}
+                                <div className="mt-2 pt-2 border-t border-dashed border-zinc-808/40">
+                                  {currentQty === 0 ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => addOrUpdateProductQty(p.id, 1)}
+                                      className="w-full py-1.5 px-3 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition duration-150 flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                                    >
+                                      <Plus className="h-3.5 w-3.5" />
+                                      <span>Add to Bill</span>
+                                    </button>
+                                  ) : (
+                                    <div className="flex items-center justify-between p-1 rounded-xl bg-indigo-600/15 border border-indigo-500/30">
+                                      <button
+                                        type="button"
+                                        onClick={() => addOrUpdateProductQty(p.id, -1)}
+                                        className="h-7 w-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition duration-150 active:scale-90"
+                                        title="Decrease quantity"
+                                      >
+                                        <Minus className="h-3.5 w-3.5" />
+                                      </button>
+                                      <div className="flex flex-col items-center">
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-400">Qty</span>
+                                        <span className="text-xs font-black text-white">{currentQty}</span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => addOrUpdateProductQty(p.id, 1)}
+                                        className="h-7 w-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition duration-150 active:scale-90"
+                                        title="Increase quantity"
+                                      >
+                                        <Plus className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-3">
                     {invoiceItems.map((item, index) => {
                       const isDryfruitRow = isOnlyDryfruits || (item.additiveId !== null && item.productId === null);
@@ -5622,7 +5886,7 @@ export default function Dashboard() {
                       <Plus className="h-4 w-4" /> Local Drive
                       <input 
                         type="file" 
-                        accept="image/png, image/jpeg" 
+                        accept="image/*" 
                         onChange={handleLocalImageUpload}
                         className="hidden" 
                       />
