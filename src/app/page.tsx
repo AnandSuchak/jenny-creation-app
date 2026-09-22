@@ -2910,19 +2910,29 @@ export default function Dashboard() {
                                       <button
                                         type="button"
                                         onClick={() => addOrUpdateProductQty(p.id, -1)}
-                                        className="h-7 w-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition duration-150 active:scale-90"
+                                        className="h-7 w-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition duration-150 active:scale-90 shrink-0"
                                         title="Decrease quantity"
                                       >
                                         <Minus className="h-3.5 w-3.5" />
                                       </button>
-                                      <div className="flex flex-col items-center">
-                                        <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-400">Qty</span>
-                                        <span className="text-xs font-black text-white">{currentQty}</span>
+                                      <div className="flex flex-col items-center px-1 flex-1">
+                                        <span className="text-[8px] font-bold uppercase tracking-wider text-indigo-400">Qty</span>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          value={currentQty === 0 ? "" : currentQty}
+                                          onChange={(e) => {
+                                            const val = parseInt(e.target.value, 10);
+                                            addOrUpdateProductQty(p.id, isNaN(val) ? 0 : val, true);
+                                          }}
+                                          className="w-12 text-center text-xs font-black bg-transparent text-white border-b border-indigo-500/40 focus:border-indigo-400 focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                          title="Type exact quantity manually"
+                                        />
                                       </div>
                                       <button
                                         type="button"
                                         onClick={() => addOrUpdateProductQty(p.id, 1)}
-                                        className="h-7 w-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition duration-150 active:scale-90"
+                                        className="h-7 w-7 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition duration-150 active:scale-90 shrink-0"
                                         title="Increase quantity"
                                       >
                                         <Plus className="h-3.5 w-3.5" />
