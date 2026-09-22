@@ -400,11 +400,19 @@ const setStorageItem = <T>(key: string, value: T): void => {
     if (typeof window !== "undefined" && window.location && window.location.pathname) {
       setTimeout(async () => {
         try {
-          await fetch("/api/db", {
+          const res = await fetch("/api/db", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ key, value })
           });
+          if (res.ok) {
+            try {
+              const resData = await res.json();
+              if (resData && resData._last_updated) {
+                window.localStorage.setItem("jenny_db_last_known_version", String(resData._last_updated));
+              }
+            } catch (e) {}
+          }
         } catch (e) {
           console.error("Local JSON database server write failed:", e);
         }
@@ -428,7 +436,7 @@ const setStorageItem = <T>(key: string, value: T): void => {
 
 // Database state management
 class LocalDB {
-  async syncFromServer(): Promise<boolean> {
+  async syncFromServer(): Promise<{ ok: boolean; updated: boolean } | boolean> {
     if (typeof window === "undefined" || !window.location || !window.location.pathname) return false;
     try {
       const deviceId = window.localStorage.getItem("jenny_device_fingerprint_id") || "DEV-UNKNOWN";
@@ -441,11 +449,14 @@ class LocalDB {
         }
       } catch (err) {}
 
+      const lastKnownVersion = window.localStorage.getItem("jenny_db_last_known_version") || "0";
+
       const res = await fetch("/api/db", {
         headers: {
           "x-device-id": deviceId,
           "x-username": username,
-          "x-user-agent": navigator.userAgent
+          "x-user-agent": navigator.userAgent,
+          "x-known-version": lastKnownVersion
         }
       });
       if (!res.ok) return false;
@@ -454,7 +465,16 @@ class LocalDB {
       if (serverData && serverData.active_devices) {
         window.localStorage.setItem("jenny_creation_active_devices", JSON.stringify(serverData.active_devices));
       }
-      
+
+      // If server confirms data is unmodified, skip heavy merging and return early
+      if (serverData && serverData.unmodified === true) {
+        return { ok: true, updated: false };
+      }
+
+      if (serverData && serverData._last_updated) {
+        window.localStorage.setItem("jenny_db_last_known_version", String(serverData._last_updated));
+      }
+
       const keysToSync = [
         "users",
         "categories",
@@ -468,6 +488,8 @@ class LocalDB {
         "invoice_items",
         "stock_movements"
       ];
+
+      let anyUpdated = false;
 
       for (const key of keysToSync) {
         const localItem = window.localStorage.getItem(`jenny_creation_${key}`);
@@ -499,12 +521,14 @@ class LocalDB {
 
         const mergedList = Array.from(map.values());
         
-        // Update local storage
-        window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(mergedList));
+        if (JSON.stringify(localList) !== JSON.stringify(mergedList)) {
+          anyUpdated = true;
+          window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(mergedList));
+        }
 
         // If server data was different/outdated, upload merged copy
         if (JSON.stringify(serverList) !== JSON.stringify(mergedList)) {
-          await fetch("/api/db", {
+          const postRes = await fetch("/api/db", {
             method: "POST",
             headers: { 
               "Content-Type": "application/json",
@@ -514,9 +538,15 @@ class LocalDB {
             },
             body: JSON.stringify({ key, value: mergedList })
           });
+          try {
+            const postData = await postRes.json();
+            if (postData && postData._last_updated) {
+              window.localStorage.setItem("jenny_db_last_known_version", String(postData._last_updated));
+            }
+          } catch (e) {}
         }
       }
-      return true;
+      return { ok: true, updated: anyUpdated };
     } catch (e: any) {
       if (e instanceof Error && e.message === "Failed to fetch") {
         console.warn("Local JSON database server sync is temporarily offline (Failed to fetch).");

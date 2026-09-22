@@ -430,20 +430,33 @@ export default function Dashboard() {
       }
     }
 
+    // Helper to process syncFromServer result
+    const handleSyncResult = (res: any) => {
+      const ok = typeof res === "boolean" ? res : (res && res.ok);
+      const updated = typeof res === "boolean" ? res : (res && res.updated !== false);
+      setConnectionStatus(ok ? "synced" : "offline");
+      if (ok && updated) loadData();
+    };
+
     // Fetch initial database from local Next.js JSON server
     setConnectionStatus("connecting");
-    localDB.syncFromServer().then((ok) => {
-      setConnectionStatus(ok ? "synced" : "offline");
-      if (ok) loadData();
-    });
+    localDB.syncFromServer().then(handleSyncResult);
 
-    // Start periodic 3-second database polling to sync all connected browsers in real-time
+    // Start periodic 5-second database polling (paused when tab is in background)
     const syncInterval = setInterval(() => {
-      localDB.syncFromServer().then((ok) => {
-        setConnectionStatus(ok ? "synced" : "offline");
-        if (ok) loadData();
-      });
-    }, 3000);
+      if (typeof document !== "undefined" && document.hidden) return;
+      localDB.syncFromServer().then(handleSyncResult);
+    }, 5000);
+
+    // Trigger instant check when user switches back to this tab
+    const handleVisibilityChange = () => {
+      if (typeof document !== "undefined" && !document.hidden) {
+        localDB.syncFromServer().then(handleSyncResult);
+      }
+    };
+    if (typeof window !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    }
 
     const saved = localStorage.getItem("j_creation_theme") as "light" | "dark";
     if (saved) {
@@ -453,6 +466,9 @@ export default function Dashboard() {
 
     return () => {
       clearInterval(syncInterval);
+      if (typeof window !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      }
       if (subscriptionChannel && supabase) {
         try {
           supabase.removeChannel(subscriptionChannel);

@@ -72,8 +72,38 @@ const updateActiveDevices = (currentData: any, request: Request) => {
 
 export async function GET(request: Request) {
   const data = readDB();
-  updateActiveDevices(data, request);
+  const activeDevices = updateActiveDevices(data, request);
+  
+  // Ensure _last_updated timestamp exists
+  if (!data._last_updated) {
+    try {
+      data._last_updated = fs.existsSync(dbFilePath) 
+        ? fs.statSync(dbFilePath).mtimeMs 
+        : Date.now();
+    } catch {
+      data._last_updated = Date.now();
+    }
+  }
+
   writeDB(data);
+
+  const knownVersion = request.headers.get("x-known-version");
+  
+  // If client sent a known version and it matches current data version,
+  // return a lightweight (100 byte) response instead of full database payload!
+  if (knownVersion && String(knownVersion) === String(data._last_updated)) {
+    return NextResponse.json(
+      { unmodified: true, _last_updated: data._last_updated, active_devices: activeDevices },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0"
+        }
+      }
+    );
+  }
+
   return NextResponse.json(data, {
     headers: {
       "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -92,10 +122,16 @@ export async function POST(request: Request) {
     }
     const currentData = readDB();
     currentData[key] = value;
+    
+    // Update data version timestamp whenever non-device data changes
+    if (key !== "active_devices") {
+      currentData._last_updated = Date.now();
+    }
+
     updateActiveDevices(currentData, request);
     writeDB(currentData);
     
-    return NextResponse.json({ success: true }, {
+    return NextResponse.json({ success: true, _last_updated: currentData._last_updated }, {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         "Pragma": "no-cache",
