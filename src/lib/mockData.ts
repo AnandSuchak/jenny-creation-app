@@ -29,9 +29,54 @@ const initialUsers: User[] = [
       generate_bill: true,
       edit_inventory: true
     },
-    created_at: new Date().toISOString(),
+    created_at: "2026-08-26T14:10:00.000Z",
     deleted_at: null,
-    require_password_change: true,
+    require_password_change: false,
+    current_session_token: null
+  },
+  {
+    id: "usr-anand",
+    username: "anand",
+    password_hash: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+    role: "operator",
+    rights: {
+      view_stock: true,
+      generate_bill: true,
+      edit_inventory: true
+    },
+    created_at: "2026-09-01T13:06:29.216Z",
+    deleted_at: null,
+    require_password_change: false,
+    current_session_token: null
+  },
+  {
+    id: "usr-krupa",
+    username: "krupa",
+    password_hash: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+    role: "operator",
+    rights: {
+      view_stock: true,
+      generate_bill: true,
+      edit_inventory: true
+    },
+    created_at: "2026-09-01T13:06:29.216Z",
+    deleted_at: null,
+    require_password_change: false,
+    current_session_token: null
+  },
+  {
+    id: "usr-jenny",
+    username: "jenny",
+    password_hash: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+    role: "operator",
+    rights: {
+      view_stock: true,
+      generate_bill: true,
+      edit_inventory: true
+    },
+    created_at: "2026-09-01T13:06:29.216Z",
+    deleted_at: null,
+    require_password_change: false,
     current_session_token: null
   }
 ];
@@ -530,10 +575,15 @@ class LocalDB {
           if (!item || !item.id) continue;
           const existing = map.get(item.id);
           if (!existing) {
-            // Do NOT resurrect deleted local items unless created AFTER serverLastCleared
-            const localCreated = new Date(item.created_at || item.updated_at || 0).getTime();
-            if (serverLastCleared > 0 && localCreated > serverLastCleared) {
+            // For "users", ALWAYS keep local users so user accounts are never lost or dropped
+            if (key === "users") {
               map.set(item.id, item);
+            } else {
+              // For data catalog entities, do NOT resurrect items deleted before serverLastCleared
+              const localCreated = new Date(item.created_at || item.updated_at || 0).getTime();
+              if (serverLastCleared === 0 || localCreated > serverLastCleared) {
+                map.set(item.id, item);
+              }
             }
           } else {
             // Compare timestamps
