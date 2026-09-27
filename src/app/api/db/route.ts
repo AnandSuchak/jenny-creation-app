@@ -93,7 +93,7 @@ export async function GET(request: Request) {
   // return a lightweight (100 byte) response instead of full database payload!
   if (knownVersion && String(knownVersion) === String(data._last_updated)) {
     return NextResponse.json(
-      { unmodified: true, _last_updated: data._last_updated, active_devices: activeDevices },
+      { unmodified: true, _last_updated: data._last_updated, _last_cleared: data._last_cleared || 0, active_devices: activeDevices },
       {
         headers: {
           "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
@@ -121,17 +121,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing key" }, { status: 400 });
     }
     const currentData = readDB();
-    currentData[key] = value;
-    
-    // Update data version timestamp whenever non-device data changes
-    if (key !== "active_devices") {
-      currentData._last_updated = Date.now();
+
+    if (key === "_clear_all" || key === "_last_cleared") {
+      const clearTime = typeof value === "number" ? value : Date.now();
+      currentData._last_cleared = clearTime;
+      currentData._last_updated = clearTime;
+      currentData.categories = [];
+      currentData.sub_types = [];
+      currentData.locations = [];
+      currentData.products = [];
+      currentData.stock = [];
+      currentData.invoices = [];
+      currentData.invoice_items = [];
+      currentData.additives = [];
+      currentData.damaged_stock = [];
+      currentData.stock_movements = [];
+    } else {
+      currentData[key] = value;
+      if (key !== "active_devices") {
+        currentData._last_updated = Date.now();
+      }
     }
 
     updateActiveDevices(currentData, request);
     writeDB(currentData);
     
-    return NextResponse.json({ success: true, _last_updated: currentData._last_updated }, {
+    return NextResponse.json({ 
+      success: true, 
+      _last_updated: currentData._last_updated,
+      _last_cleared: currentData._last_cleared 
+    }, {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         "Pragma": "no-cache",

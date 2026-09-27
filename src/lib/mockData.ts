@@ -466,6 +466,28 @@ class LocalDB {
         window.localStorage.setItem("jenny_creation_active_devices", JSON.stringify(serverData.active_devices));
       }
 
+      const localLastCleared = Number(window.localStorage.getItem("jenny_last_cleared_at") || "0");
+      const serverLastCleared = Number(serverData._last_cleared || "0");
+
+      if (serverLastCleared > localLastCleared) {
+        window.localStorage.setItem("jenny_last_cleared_at", String(serverLastCleared));
+        const keysToWipe = [
+          "categories",
+          "sub_types",
+          "locations",
+          "products",
+          "stock",
+          "additives",
+          "damaged_stock",
+          "invoices",
+          "invoice_items",
+          "stock_movements"
+        ];
+        for (const k of keysToWipe) {
+          window.localStorage.setItem(`jenny_creation_${k}`, JSON.stringify([]));
+        }
+      }
+
       // If server confirms data is unmodified, skip heavy merging and return early
       if (serverData && serverData.unmodified === true) {
         return { ok: true, updated: false };
@@ -508,7 +530,11 @@ class LocalDB {
           if (!item || !item.id) continue;
           const existing = map.get(item.id);
           if (!existing) {
-            map.set(item.id, item);
+            // Do NOT resurrect deleted local items unless created AFTER serverLastCleared
+            const localCreated = new Date(item.created_at || item.updated_at || 0).getTime();
+            if (serverLastCleared > 0 && localCreated > serverLastCleared) {
+              map.set(item.id, item);
+            }
           } else {
             // Compare timestamps
             const localTime = new Date(item.deleted_at || item.updated_at || item.created_at || 0).getTime();
@@ -1949,6 +1975,10 @@ class LocalDB {
 
   clearAll(): void {
     if (typeof window === "undefined") return;
+    const clearTimestamp = Date.now();
+    window.localStorage.setItem("jenny_last_cleared_at", String(clearTimestamp));
+    window.localStorage.setItem("jenny_db_last_known_version", "0");
+
     setStorageItem("categories", []);
     setStorageItem("sub_types", []);
     setStorageItem("locations", []);
@@ -1959,6 +1989,12 @@ class LocalDB {
     setStorageItem("additives", []);
     setStorageItem("damaged_stock", []);
     setStorageItem("stock_movements", []);
+
+    fetch("/api/db", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: "_clear_all", value: clearTimestamp })
+    }).catch(err => console.error("Server sandbox clear POST failed:", err));
 
     // If Supabase is connected, wipe the cloud tables in correct dependency order
     if (isSupabaseConfigured && supabase) {
