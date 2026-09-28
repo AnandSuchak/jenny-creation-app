@@ -1096,8 +1096,7 @@ export default function Dashboard() {
     }
     const photoUrls = parseProductPhotoUrls(newProductPhotos);
     if (isEditProductMode) {
-      if (!newProductSubtype) return;
-      localDB.updateProduct(editProductId, newProductName, newProductCategory, newProductSubtype, photoUrls, Number(newProductPrice), newProductSupplierCode);
+      localDB.updateProduct(editProductId, newProductName, newProductCategory, newProductSubtype || "", photoUrls, Number(newProductPrice), newProductSupplierCode);
     } else {
       // Bulk create variants if sub-types exist
       if (productVariants.length > 0) {
@@ -1116,8 +1115,7 @@ export default function Dashboard() {
         });
       } else {
         // Fallback: single product creation
-        if (!newProductSubtype) return;
-        const newP = localDB.addProduct(newProductName, newProductCategory, newProductSubtype, photoUrls, Number(newProductPrice), newProductSupplierCode);
+        const newP = localDB.addProduct(newProductName, newProductCategory, newProductSubtype || "", photoUrls, Number(newProductPrice), newProductSupplierCode);
         if (isMultiLocationStock) {
           initialStocks.forEach(st => {
             if (st.locationId && st.quantity > 0) {
@@ -1693,7 +1691,7 @@ export default function Dashboard() {
   };
   // Helper resolvers
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "Unknown";
-  const getSubTypeName = (id: string) => subTypes.find(s => s.id === id)?.name || "Unknown";
+  const getSubTypeName = (id: string) => (!id ? "Standard" : (subTypes.find(s => s.id === id)?.name || "Standard"));
   const getLocationName = (id: string) => locations.find(l => l.id === id)?.name || "Unknown";
   const getProduct = (id: string) => products.find(p => p.id === id);
   const getProductStock = (productId: string) => {
@@ -6015,14 +6013,15 @@ export default function Dashboard() {
               {isEditProductMode && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>Sub-Type</label>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                      Sub-Type <span className={`text-[10px] lowercase font-normal ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>(optional)</span>
+                    </label>
                     <select 
-                      required
                       value={newProductSubtype}
                       onChange={e => setNewProductSubtype(e.target.value)}
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${inputClass}`}
                     >
-                      <option value="">Select Subtype</option>
+                      <option value="">None / Standard (No Sub-Type)</option>
                       {subTypes.filter(s => s.category_id === newProductCategory).map(s => (
                         <option key={s.id} value={s.id}>{s.name}</option>
                       ))}
@@ -6141,24 +6140,24 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     <>
-                      {/* Warning if category has no subtypes */}
+                      {/* Info message if category has no sub-types */}
                       {newProductCategory && productVariants.length === 0 && (
-                        <div className={`p-3 rounded-lg border text-center text-xs ${isDark ? "bg-amber-950/20 border-amber-900/30 text-amber-450" : "bg-amber-50 border-amber-100 text-amber-700"}`}>
-                          No active sub-types registered for this category yet. 
-                          Please register sub-types first in the "System Setup" tab to create variants, or add a single item below.
+                        <div className={`p-3 rounded-lg border text-center text-xs ${isDark ? "bg-indigo-950/20 border-indigo-900/30 text-indigo-400" : "bg-indigo-50 border-indigo-100 text-indigo-700"}`}>
+                          No sub-types registered for this category. You can specify a single product price and stock below without a sub-type.
                         </div>
                       )}
                       {/* FALLBACK: Single item input */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>Sub-Type</label>
+                          <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                            Sub-Type <span className={`text-[10px] lowercase font-normal ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>(optional)</span>
+                          </label>
                           <select 
-                            required
                             value={newProductSubtype}
                             onChange={e => setNewProductSubtype(e.target.value)}
                             className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${inputClass}`}
                           >
-                            <option value="">Select Subtype</option>
+                            <option value="">None / Standard (No Sub-Type)</option>
                             {subTypes.filter(s => s.category_id === newProductCategory).map(s => (
                               <option key={s.id} value={s.id}>{s.name}</option>
                             ))}
