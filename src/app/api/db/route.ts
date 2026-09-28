@@ -126,14 +126,11 @@ export async function POST(request: Request) {
       const clearTime = typeof value === "number" ? value : Date.now();
       currentData._last_cleared = clearTime;
       currentData._last_updated = clearTime;
-      currentData.categories = [];
-      currentData.sub_types = [];
-      currentData.locations = [];
+      // Only clear test transactional data; PRESERVE categories, sub_types, locations, additives, users
       currentData.products = [];
       currentData.stock = [];
       currentData.invoices = [];
       currentData.invoice_items = [];
-      currentData.additives = [];
       currentData.damaged_stock = [];
       currentData.stock_movements = [];
     } else {

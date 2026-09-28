@@ -311,14 +311,16 @@ export default function Dashboard() {
   // Load Data
   const loadData = () => {
     // Sync current user session with latest database state in real-time
-    const sessionStr = sessionStorage.getItem("jenny_session_user");
-    const sessionToken = sessionStorage.getItem("jenny_session_token");
+    const sessionStr = localStorage.getItem("jenny_session_user") || sessionStorage.getItem("jenny_session_user");
+    const sessionToken = localStorage.getItem("jenny_session_token") || sessionStorage.getItem("jenny_session_token");
     if (sessionStr) {
       try {
         const parsed = JSON.parse(sessionStr);
         const latestUsers = localDB.getUsers();
         const latestMatched = latestUsers.find(u => u.id === parsed.id);
         if (!latestMatched) {
+          localStorage.removeItem("jenny_session_user");
+          localStorage.removeItem("jenny_session_token");
           sessionStorage.removeItem("jenny_session_user");
           sessionStorage.removeItem("jenny_session_token");
           setCurrentUser(null);
@@ -326,6 +328,8 @@ export default function Dashboard() {
         } else {
           // Check for single-session lock token mismatch
           if (latestMatched.current_session_token && latestMatched.current_session_token !== sessionToken) {
+            localStorage.removeItem("jenny_session_user");
+            localStorage.removeItem("jenny_session_token");
             sessionStorage.removeItem("jenny_session_user");
             sessionStorage.removeItem("jenny_session_token");
             setCurrentUser(null);
@@ -333,6 +337,7 @@ export default function Dashboard() {
           } else {
             // If database rights or properties changed, update in-memory state and session string
             if (JSON.stringify(latestMatched) !== JSON.stringify(currentUser)) {
+              localStorage.setItem("jenny_session_user", JSON.stringify(latestMatched));
               sessionStorage.setItem("jenny_session_user", JSON.stringify(latestMatched));
               setCurrentUser(latestMatched);
             }
@@ -369,7 +374,7 @@ export default function Dashboard() {
   };
   useEffect(() => {
     // Retrieve session user
-    const sessionStr = sessionStorage.getItem("jenny_session_user");
+    const sessionStr = localStorage.getItem("jenny_session_user") || sessionStorage.getItem("jenny_session_user");
     if (sessionStr) {
       try {
         setCurrentUser(JSON.parse(sessionStr));
@@ -719,6 +724,8 @@ export default function Dashboard() {
                 const userWithSession = localDB.updateUserSessionToken(updatedUser.id, sessionToken);
                 
                 // Complete sign in
+                localStorage.setItem("jenny_session_user", JSON.stringify(userWithSession));
+                localStorage.setItem("jenny_session_token", sessionToken);
                 sessionStorage.setItem("jenny_session_user", JSON.stringify(userWithSession));
                 sessionStorage.setItem("jenny_session_token", sessionToken);
                 setCurrentUser(userWithSession);
@@ -887,6 +894,8 @@ export default function Dashboard() {
                     const updatedUser = localDB.updateUserSessionToken(matched.id, sessionToken);
                     
                     // Save session
+                    localStorage.setItem("jenny_session_user", JSON.stringify(updatedUser));
+                    localStorage.setItem("jenny_session_token", sessionToken);
                     sessionStorage.setItem("jenny_session_user", JSON.stringify(updatedUser));
                     sessionStorage.setItem("jenny_session_token", sessionToken);
                     setCurrentUser(updatedUser);
@@ -1109,8 +1118,9 @@ export default function Dashboard() {
           // Format full variant name: e.g. "Luxury Gift Box (2 Jar)"
           const fullName = `${newProductName} (${variant.subTypeName})`;
           const newP = localDB.addProduct(fullName, newProductCategory, variant.subTypeId, photoUrls, Number(variant.price), newProductSupplierCode);
-          if (variant.locationId && variant.quantity > 0) {
-            localDB.updateStock(newP.id, variant.locationId, Number(variant.quantity));
+          const defaultLocId = variant.locationId || (locations.length > 0 ? locations[0].id : "");
+          if (defaultLocId && Number(variant.quantity) > 0) {
+            localDB.updateStock(newP.id, defaultLocId, Number(variant.quantity));
           }
         });
       } else {
@@ -1118,13 +1128,15 @@ export default function Dashboard() {
         const newP = localDB.addProduct(newProductName, newProductCategory, newProductSubtype || "", photoUrls, Number(newProductPrice), newProductSupplierCode);
         if (isMultiLocationStock) {
           initialStocks.forEach(st => {
-            if (st.locationId && st.quantity > 0) {
-              localDB.updateStock(newP.id, st.locationId, Number(st.quantity));
+            const locId = st.locationId || (locations.length > 0 ? locations[0].id : "");
+            if (locId && Number(st.quantity) > 0) {
+              localDB.updateStock(newP.id, locId, Number(st.quantity));
             }
           });
         } else {
-          if (initialLocationId && initialQuantity > 0) {
-            localDB.updateStock(newP.id, initialLocationId, Number(initialQuantity));
+          const defaultLocId = initialLocationId || (locations.length > 0 ? locations[0].id : "");
+          if (defaultLocId && Number(initialQuantity) > 0) {
+            localDB.updateStock(newP.id, defaultLocId, Number(initialQuantity));
           }
         }
       }
@@ -2255,7 +2267,10 @@ export default function Dashboard() {
                 type="button"
                 onClick={() => {
                   if (confirm("Are you sure you want to sign out?")) {
+                    localStorage.removeItem("jenny_session_user");
+                    localStorage.removeItem("jenny_session_token");
                     sessionStorage.removeItem("jenny_session_user");
+                    sessionStorage.removeItem("jenny_session_token");
                     setCurrentUser(null);
                     setAppMode("billing");
                   }

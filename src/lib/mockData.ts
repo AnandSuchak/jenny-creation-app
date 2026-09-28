@@ -487,7 +487,7 @@ class LocalDB {
       const deviceId = window.localStorage.getItem("jenny_device_fingerprint_id") || "DEV-UNKNOWN";
       let username = "Guest";
       try {
-        const sessionUser = window.sessionStorage.getItem("jenny_session_user");
+        const sessionUser = window.localStorage.getItem("jenny_session_user") || window.sessionStorage.getItem("jenny_session_user");
         if (sessionUser) {
           const parsed = JSON.parse(sessionUser);
           if (parsed && parsed.username) username = parsed.username;
@@ -516,13 +516,10 @@ class LocalDB {
 
       if (serverLastCleared > localLastCleared) {
         window.localStorage.setItem("jenny_last_cleared_at", String(serverLastCleared));
+        // Only wipe test transactional data, PRESERVE structural data (categories, sub_types, locations, additives, users)
         const keysToWipe = [
-          "categories",
-          "sub_types",
-          "locations",
           "products",
           "stock",
-          "additives",
           "damaged_stock",
           "invoices",
           "invoice_items",
@@ -721,7 +718,7 @@ class LocalDB {
   getCurrentSessionUser(): User | null {
     if (typeof window === "undefined") return null;
     try {
-      const sessionStr = window.sessionStorage.getItem("jenny_session_user");
+      const sessionStr = window.localStorage.getItem("jenny_session_user") || window.sessionStorage.getItem("jenny_session_user");
       return sessionStr ? JSON.parse(sessionStr) : null;
     } catch {
       return null;
@@ -2055,14 +2052,11 @@ class LocalDB {
     window.localStorage.setItem("jenny_last_cleared_at", String(clearTimestamp));
     window.localStorage.setItem("jenny_db_last_known_version", "0");
 
-    setStorageItem("categories", []);
-    setStorageItem("sub_types", []);
-    setStorageItem("locations", []);
+    // Only clear transactional data; PRESERVE structural data (categories, sub_types, locations, additives, users)
     setStorageItem("products", []);
     setStorageItem("stock", []);
     setStorageItem("invoices", []);
     setStorageItem("invoice_items", []);
-    setStorageItem("additives", []);
     setStorageItem("damaged_stock", []);
     setStorageItem("stock_movements", []);
 
@@ -2072,7 +2066,7 @@ class LocalDB {
       body: JSON.stringify({ key: "_clear_all", value: clearTimestamp })
     }).catch(err => console.error("Server sandbox clear POST failed:", err));
 
-    // If Supabase is connected, wipe the cloud tables in correct dependency order
+    // If Supabase is connected, wipe only transactional cloud tables
     if (isSupabaseConfigured && supabase) {
       const client = supabase;
       setTimeout(async () => {
@@ -2082,13 +2076,9 @@ class LocalDB {
           await client.from("damaged_stock").delete().neq("id", "_");
           await client.from("stock").delete().neq("id", "_");
           await client.from("products").delete().neq("id", "_");
-          await client.from("sub_types").delete().neq("id", "_");
-          await client.from("categories").delete().neq("id", "_");
-          await client.from("storage_locations").delete().neq("id", "_");
-          await client.from("additives").delete().neq("id", "_");
-          console.log("Supabase cloud database tables successfully truncated.");
+          console.log("Supabase transactional tables successfully truncated.");
         } catch (err) {
-          console.error("Failed to truncate Supabase cloud tables:", err);
+          console.error("Failed to truncate Supabase transactional tables:", err);
         }
       }, 0);
     }
