@@ -61,25 +61,39 @@
       "current_session_token": null
     }
   ],
-  "categories": [],
-  "sub_types": [],
-  "locations": [],
+  "categories": [
+    { "id": "cat-1", "name": "Box", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "cat-2", "name": "Puttha", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "cat-3", "name": "Laser Cutting", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "cat-4", "name": "Basket", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null }
+  ],
+  "sub_types": [
+    { "id": "sub-1", "category_id": "cat-1", "name": "2 JAR", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "sub-2", "category_id": "cat-2", "name": "6 Box", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "sub-3", "category_id": "cat-3", "name": "Peacock Design", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "sub-4", "category_id": "cat-4", "name": "Peacock Design", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null }
+  ],
+  "locations": [
+    { "id": "loc-1", "name": "Warehouse 1", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "loc-2", "name": "Warehouse 2", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "loc-3", "name": "Warehouse 3", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "loc-4", "name": "Warehouse 4", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "loc-5", "name": "Display", "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null }
+  ],
   "products": [],
   "stock": [],
-  "additives": [],
+  "additives": [
+    { "id": "add-1", "name": "Kaju", "price_per_kg": 800, "stock_qty_kg": 10, "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "add-2", "name": "Badam", "price_per_kg": 900, "stock_qty_kg": 15, "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "add-3", "name": "Pista", "price_per_kg": 1200, "stock_qty_kg": 5, "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "add-4", "name": "Kismis", "price_per_kg": 400, "stock_qty_kg": 8, "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null },
+    { "id": "add-5", "name": "Rabdi Kaju", "price_per_kg": 1400, "stock_qty_kg": 12, "created_at": "2026-09-28T20:00:00.000Z", "updated_at": "2026-09-28T20:00:00.000Z", "deleted_at": null }
+  ],
   "invoices": [],
   "invoice_items": [],
-  "active_devices": [
-    {
-      "deviceId": "DEV-A14ISXVZ-703009",
-      "username": "anand",
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Edg/152.0.0.0",
-      "ipAddress": "Unknown IP",
-      "lastSeen": 1788268861559
-    }
-  ],
+  "active_devices": [],
   "stock_movements": [],
   "damaged_stock": [],
   "_last_cleared": 1790607330201,
-  "_last_updated": 1790607330201
+  "_last_updated": 1790610000000
 }

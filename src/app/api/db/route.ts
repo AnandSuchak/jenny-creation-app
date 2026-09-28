@@ -7,17 +7,62 @@ export const dynamic = "force-dynamic";
 
 const dbFilePath = path.join(process.cwd(), "database.json");
 
+const defaultCategories = [
+  { id: "cat-1", name: "Box", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "cat-2", name: "Puttha", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "cat-3", name: "Laser Cutting", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "cat-4", name: "Basket", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null }
+];
+
+const defaultSubTypes = [
+  { id: "sub-1", category_id: "cat-1", name: "2 JAR", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "sub-2", category_id: "cat-2", name: "6 Box", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "sub-3", category_id: "cat-3", name: "Peacock Design", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "sub-4", category_id: "cat-4", name: "Peacock Design", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null }
+];
+
+const defaultLocations = [
+  { id: "loc-1", name: "Warehouse 1", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "loc-2", name: "Warehouse 2", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "loc-3", name: "Warehouse 3", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "loc-4", name: "Warehouse 4", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "loc-5", name: "Display", created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null }
+];
+
+const defaultAdditives = [
+  { id: "add-1", name: "Kaju", price_per_kg: 800, stock_qty_kg: 10, created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "add-2", name: "Badam", price_per_kg: 900, stock_qty_kg: 15, created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "add-3", name: "Pista", price_per_kg: 1200, stock_qty_kg: 5, created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "add-4", name: "Kismis", price_per_kg: 400, stock_qty_kg: 8, created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null },
+  { id: "add-5", name: "Rabdi Kaju", price_per_kg: 1400, stock_qty_kg: 12, created_at: "2026-09-28T20:00:00.000Z", updated_at: "2026-09-28T20:00:00.000Z", deleted_at: null }
+];
+
 // Helper to read database file
 const readDB = () => {
   if (!fs.existsSync(dbFilePath)) {
-    return {};
+    return {
+      categories: defaultCategories,
+      sub_types: defaultSubTypes,
+      locations: defaultLocations,
+      additives: defaultAdditives
+    };
   }
   try {
     const content = fs.readFileSync(dbFilePath, "utf8");
-    return JSON.parse(content);
+    const data = JSON.parse(content);
+    if (!data.categories || data.categories.length === 0) data.categories = defaultCategories;
+    if (!data.sub_types || data.sub_types.length === 0) data.sub_types = defaultSubTypes;
+    if (!data.locations || data.locations.length === 0) data.locations = defaultLocations;
+    if (!data.additives || data.additives.length === 0) data.additives = defaultAdditives;
+    return data;
   } catch (e) {
     console.error("Error reading database file:", e);
-    return {};
+    return {
+      categories: defaultCategories,
+      sub_types: defaultSubTypes,
+      locations: defaultLocations,
+      additives: defaultAdditives
+    };
   }
 };
 
