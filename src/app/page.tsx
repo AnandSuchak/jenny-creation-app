@@ -5335,13 +5335,13 @@ export default function Dashboard() {
                   {additives.map((add, idx) => (
                     <div key={`${add.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
                       <div>
-                        <span className={`font-medium block ${isDark ? "text-zinc-300" : "text-zinc-705"}`}>{add.name}</span>
-                        <div className="flex gap-2 text-[10px] text-zinc-500 font-mono mt-0.5">
-                          <span>₹{add.price_per_kg}/kg</span>
-                          <span>•</span>
-                          <span>Stock: <span className={`font-bold ${add.stock_qty_kg <= 2 ? "text-rose-500 font-extrabold" : "text-emerald-500"}`}>{add.stock_qty_kg || 0} kg</span></span>
-                          <span>•</span>
-                          <span>₹{Math.round(add.price_per_kg / 10)}/100g</span>
+                        <span className={`font-medium block text-sm ${isDark ? "text-zinc-200" : "text-zinc-800"}`}>{add.name}</span>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-500 mt-1">
+                          <span className="whitespace-nowrap font-semibold text-amber-600 dark:text-amber-400">₹{add.price_per_kg}/kg</span>
+                          <span className="text-zinc-300 dark:text-zinc-600 select-none">•</span>
+                          <span className="whitespace-nowrap">Stock:&nbsp;<span className={`font-bold ${add.stock_qty_kg <= 2 ? "text-rose-500 font-extrabold" : "text-emerald-500"}`}>{add.stock_qty_kg || 0}&nbsp;kg</span></span>
+                          <span className="text-zinc-300 dark:text-zinc-600 select-none">•</span>
+                          <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">₹{Math.round(add.price_per_kg / 10)}/100g</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
