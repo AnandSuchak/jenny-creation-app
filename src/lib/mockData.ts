@@ -1891,9 +1891,10 @@ class LocalDB {
     return list.map(a => {
       const activeStocks = stocks.filter(st => st.additive_id === a.id && st.deleted_at === null);
       const totalStock = activeStocks.reduce((sum, s) => sum + s.quantity, 0);
+      const finalQty = activeStocks.length > 0 ? totalStock : (a.stock_qty_kg || 0);
       return {
         ...a,
-        stock_qty_kg: totalStock
+        stock_qty_kg: finalQty
       };
     });
   }
@@ -1958,6 +1959,31 @@ class LocalDB {
       list[idx].stock_qty_kg = Number(stockQtyKg);
       list[idx].updated_at = new Date().toISOString();
       setStorageItem("additives", list);
+
+      // Keep location stock table in sync
+      const stocks = getStorageItem<Stock[]>("stock", initialStock);
+      const locations = getStorageItem<StorageLocation[]>("locations", initialLocations);
+      const firstLoc = locations.find(l => l.deleted_at === null) || locations[0];
+      if (firstLoc) {
+        const stIdx = stocks.findIndex(s => s.additive_id === id && s.deleted_at === null);
+        if (stIdx >= 0) {
+          stocks[stIdx].quantity = Number(stockQtyKg);
+          stocks[stIdx].updated_at = new Date().toISOString();
+        } else if (Number(stockQtyKg) > 0) {
+          stocks.push({
+            id: `st-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+            product_id: null,
+            additive_id: id,
+            storage_location_id: firstLoc.id,
+            quantity: Number(stockQtyKg),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            deleted_at: null
+          });
+        }
+        setStorageItem("stock", stocks);
+      }
+
       return list[idx];
     }
     return null;

@@ -1755,13 +1755,22 @@ export default function Dashboard() {
     productsPage * productsPerPage
   );
   const filteredStock = stock.filter(st => {
-    if (!st.product_id) return false;
-    const prod = getProduct(st.product_id);
-    if (!prod) return false;
-    const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategoryFilter === "all" || prod.category_id === selectedCategoryFilter;
-    const matchesLocation = selectedLocationFilter === "all" || st.storage_location_id === selectedLocationFilter;
-    return matchesSearch && matchesCategory && matchesLocation;
+    if (st.deleted_at !== null) return false;
+    if (st.product_id) {
+      const prod = getProduct(st.product_id);
+      if (!prod) return false;
+      const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategoryFilter === "all" || prod.category_id === selectedCategoryFilter;
+      const matchesLocation = selectedLocationFilter === "all" || st.storage_location_id === selectedLocationFilter;
+      return matchesSearch && matchesCategory && matchesLocation;
+    } else if (st.additive_id) {
+      const add = additives.find(a => a.id === st.additive_id);
+      if (!add) return false;
+      const matchesSearch = add.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesLocation = selectedLocationFilter === "all" || st.storage_location_id === selectedLocationFilter;
+      return matchesSearch && matchesLocation;
+    }
+    return false;
   });
   const totalStockPages = Math.ceil(filteredStock.length / stockPerPage) || 1;
   const paginatedStock = filteredStock.slice(
@@ -4574,41 +4583,47 @@ export default function Dashboard() {
                 </thead>
                 <tbody className={`divide-y text-sm ${isDark ? "divide-zinc-808" : "divide-zinc-150"}`}>
                   {paginatedStock.map((st, idx) => {
-                      if (!st.product_id) return null;
-                      const prod = getProduct(st.product_id);
-                      if (!prod) return null;
+                      const prod = st.product_id ? getProduct(st.product_id) : null;
+                      const add = st.additive_id ? additives.find(a => a.id === st.additive_id) : null;
+                      if (!prod && !add) return null;
+
+                      const itemName = prod ? prod.name : add!.name;
+                      const itemCategory = prod ? getCategoryName(prod.category_id) : "Dryfruit Ingredient";
+                      const itemSubtype = prod ? getSubTypeName(prod.sub_type_id) : "-";
+                      const itemQty = prod ? `${st.quantity} units` : `${st.quantity.toFixed(2)} kg`;
+
                       return (
                         <tr key={`${st.id}-${idx}`} className={`transition duration-150 group ${isDark ? "hover:bg-zinc-900/25" : "hover:bg-zinc-100/40"}`}>
                           <td className="py-4 px-6 flex items-center gap-3">
-                            {prod.photos ? (
+                            {prod && prod.photos ? (
                               <img 
                                 src={getValidPhotoSrc(prod.photos)} 
-                                alt={prod.name} 
+                                alt={itemName} 
                                 className={`h-10 w-10 object-cover rounded-lg border ${isDark ? "bg-zinc-900 border-zinc-800" : "bg-slate-100 border-slate-200"}`}
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
                                 }}
                               />
                             ) : (
-                              <div className={`h-10 w-10 rounded-lg border flex items-center justify-center text-zinc-400 ${isDark ? "bg-zinc-900/20 border-zinc-800" : "bg-slate-50 border-slate-200"}`}>
-                                <Package className="h-5 w-5" />
+                              <div className={`h-10 w-10 rounded-lg border flex items-center justify-center text-zinc-400 ${isDark ? "bg-zinc-900/20 border-zinc-808" : "bg-slate-50 border-slate-200"}`}>
+                                <Package className="h-5 w-5 text-indigo-500" />
                               </div>
                             )}
                             <div>
                               <div className={`font-semibold transition duration-150 ${isDark ? "text-zinc-200 group-hover:text-indigo-400" : "text-zinc-800 group-hover:text-indigo-600"}`}>
-                                {prod.name}
+                                {itemName}
                               </div>
-                              <div className="text-xs text-zinc-500 font-mono">ID: {prod.id}</div>
+                              <div className="text-xs text-zinc-500 font-mono">ID: {st.product_id || st.additive_id}</div>
                             </div>
                           </td>
                           <td className={`py-4 px-4 ${isDark ? "text-zinc-350" : "text-zinc-700"}`}>
                             <span className="flex items-center gap-1.5">
                               <Tag className="h-3.5 w-3.5 text-zinc-500" />
-                              {getCategoryName(prod.category_id)}
+                              {itemCategory}
                             </span>
                           </td>
                           <td className={`py-4 px-4 ${isDark ? "text-zinc-400" : "text-zinc-600"}`}>
-                            {getSubTypeName(prod.sub_type_id)}
+                            {itemSubtype}
                           </td>
                           <td className="py-4 px-4">
                             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border ${isDark ? "bg-zinc-800/80 border-zinc-700 text-zinc-300" : "bg-zinc-100 border-zinc-200/80 text-zinc-650"}`}>
@@ -4617,7 +4632,7 @@ export default function Dashboard() {
                             </span>
                           </td>
                           <td className={`py-4 px-4 text-right font-mono font-bold ${isDark ? "text-zinc-205" : "text-zinc-800"}`}>
-                            {st.quantity}
+                            {itemQty}
                           </td>
                           <td className="py-4 px-6 text-center">
                             <div className="flex items-center justify-center gap-2">
@@ -4625,7 +4640,7 @@ export default function Dashboard() {
                                 <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-rose-500/10 text-rose-450 border border-rose-500/20">
                                   Out of Stock
                                 </span>
-                              ) : st.quantity < 10 ? (
+                              ) : st.quantity < (prod ? 10 : 2) ? (
                                 <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-amber-500/10 text-amber-555 border border-amber-500/20">
                                   Low Stock
                                 </span>
@@ -4636,8 +4651,13 @@ export default function Dashboard() {
                               )}
                               <button 
                                 onClick={() => {
-                                  setStockModalType("product");
-                                  setStockProductId(st.product_id || "");
+                                  if (st.product_id) {
+                                    setStockModalType("product");
+                                    setStockProductId(st.product_id);
+                                  } else {
+                                    setStockModalType("additive");
+                                    setStockAdditiveId(st.additive_id || "");
+                                  }
                                   setStockLocationId(st.storage_location_id);
                                   setStockQuantity(st.quantity);
                                   setIsStockModalOpen(true);
