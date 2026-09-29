@@ -641,10 +641,20 @@ class LocalDB {
       if (records.length === 0) return;
       const { error } = await client.from(tableName).upsert(records);
       if (error) {
-        console.error(`Supabase sync error for table ${tableName}:`, error.message);
+        // Fallback for stock table if Supabase schema cache lacks additive_id column
+        if (key === "stock" && error.message.includes("additive_id")) {
+          const productOnlyStock = records
+            .filter(r => r.product_id != null)
+            .map(({ additive_id, ...rest }) => rest);
+          if (productOnlyStock.length > 0) {
+            await client.from(tableName).upsert(productOnlyStock);
+          }
+        } else {
+          console.warn(`Supabase sync notice for table ${tableName}:`, error.message);
+        }
       }
     } catch (err) {
-      console.error(`Supabase sync catch error for table ${key}:`, err);
+      console.warn(`Supabase sync notice for table ${key}:`, err);
     }
   }
 
@@ -684,7 +694,14 @@ class LocalDB {
         let tableName = key;
         if (key === "locations") tableName = "storage_locations";
         if (cloudData && cloudData.length > 0) {
-          window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(cloudData));
+          let sanitizedData = cloudData;
+          if (key === "invoices") {
+            sanitizedData = cloudData.map((inv: any) => ({
+              ...inv,
+              issue_date: inv.issue_date || inv.created_at || new Date().toISOString()
+            }));
+          }
+          window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(sanitizedData));
         } else if (hasCloudUsers && key !== "users") {
           // Cloud is initialized but this table is empty (intentionally cleared), sync local to empty
           window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify([]));

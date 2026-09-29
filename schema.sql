@@ -57,16 +57,22 @@ CREATE TABLE storage_locations (
     deleted_at TIMESTAMP WITH TIME ZONE -- For soft deletes
 );
 
--- 6. STOCK TABLE (Physical counts per product per location)
+-- 6. STOCK TABLE (Physical counts per product or dryfruit additive per location)
 CREATE TABLE stock (
     id VARCHAR(255) PRIMARY KEY,
-    product_id VARCHAR(255) REFERENCES products(id) ON DELETE RESTRICT NOT NULL,
+    product_id VARCHAR(255) REFERENCES products(id) ON DELETE RESTRICT,
+    additive_id VARCHAR(255) REFERENCES additives(id) ON DELETE RESTRICT,
     storage_location_id VARCHAR(255) REFERENCES storage_locations(id) ON DELETE RESTRICT NOT NULL,
-    quantity INTEGER NOT NULL DEFAULT 0 CHECK (quantity >= 0),
+    quantity NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     deleted_at TIMESTAMP WITH TIME ZONE -- For soft deletes
 );
+
+-- Quick migration query if stock table was created previously without additive_id:
+-- ALTER TABLE stock ALTER COLUMN product_id DROP NOT NULL;
+-- ALTER TABLE stock ADD COLUMN IF NOT EXISTS additive_id VARCHAR(255);
+-- ALTER TABLE stock ALTER COLUMN quantity TYPE NUMERIC(12, 2);
 
 -- 7. ADDITIVES TABLE (Dry fruit stock items)
 CREATE TABLE additives (

@@ -435,28 +435,39 @@ export default function Dashboard() {
       }
     }
 
-    // Helper to process syncFromServer result
-    const handleSyncResult = (res: any) => {
-      const ok = typeof res === "boolean" ? res : (res && res.ok);
-      const updated = typeof res === "boolean" ? res : (res && res.updated !== false);
-      setConnectionStatus(ok ? "synced" : "offline");
-      if (ok && updated) loadData();
+    // Helper to process database sync result
+    const performSync = async () => {
+      if (isSupabaseConfigured) {
+        try {
+          await localDB.syncFromSupabase();
+          setConnectionStatus("synced");
+          loadData();
+        } catch (err) {
+          setConnectionStatus("offline");
+        }
+      } else {
+        const res = await localDB.syncFromServer();
+        const ok = typeof res === "boolean" ? res : (res && res.ok);
+        const updated = typeof res === "boolean" ? res : (res && res.updated !== false);
+        setConnectionStatus(ok ? "synced" : "offline");
+        if (ok && updated) loadData();
+      }
     };
 
-    // Fetch initial database from local Next.js JSON server
+    // Fetch initial database
     setConnectionStatus("connecting");
-    localDB.syncFromServer().then(handleSyncResult);
+    performSync();
 
     // Start periodic 5-second database polling (paused when tab is in background)
     const syncInterval = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
-      localDB.syncFromServer().then(handleSyncResult);
+      performSync();
     }, 5000);
 
     // Trigger instant check when user switches back to this tab
     const handleVisibilityChange = () => {
       if (typeof document !== "undefined" && !document.hidden) {
-        localDB.syncFromServer().then(handleSyncResult);
+        performSync();
       }
     };
     if (typeof window !== "undefined") {
@@ -995,9 +1006,12 @@ export default function Dashboard() {
     
     invoices.forEach(inv => {
       if (inv.deleted_at === null) {
-        const invDate = inv.issue_date.slice(0, 10);
-        if (dailyRevenue[invDate] !== undefined) {
-          dailyRevenue[invDate] += inv.total_amount;
+        const rawDate = inv.issue_date || inv.created_at || inv.delivery_date;
+        if (rawDate && typeof rawDate === "string") {
+          const invDate = rawDate.slice(0, 10);
+          if (dailyRevenue[invDate] !== undefined) {
+            dailyRevenue[invDate] += inv.total_amount;
+          }
         }
       }
     });
@@ -1540,7 +1554,7 @@ export default function Dashboard() {
         inv.invoice_number || "",
         escapedName,
         inv.customer_phone || "",
-        inv.issue_date || "",
+        inv.issue_date || inv.created_at || "",
         inv.delivery_date || "",
         inv.status || "",
         inv.payment_mode || "",
@@ -4310,8 +4324,8 @@ export default function Dashboard() {
                       });
 
                       filtered.sort((a, b) => {
-                        const timeA = new Date(a.issue_date).getTime();
-                        const timeB = new Date(b.issue_date).getTime();
+                        const timeA = new Date(a.issue_date || a.created_at || 0).getTime();
+                        const timeB = new Date(b.issue_date || b.created_at || 0).getTime();
                         return invoiceHistorySortOrder === "latest" ? timeB - timeA : timeA - timeB;
                       });
 
@@ -4344,7 +4358,7 @@ export default function Dashboard() {
                                   </span>
                                 </div>
                                 <span className={`text-[10px] ${isDark ? "text-zinc-500" : "text-slate-400 font-medium"}`}>
-                                  {new Date(inv.issue_date).toLocaleDateString("en-IN", {
+                                  {new Date(inv.issue_date || inv.created_at || Date.now()).toLocaleDateString("en-IN", {
                                     month: "short",
                                     day: "numeric",
                                     year: "numeric"
@@ -7084,7 +7098,7 @@ export default function Dashboard() {
                       Invoice No: {inv.invoice_number}
                     </span>
                     <p className={`text-[11px] mt-1.5 ${isDark ? "text-zinc-500" : "text-slate-450"}`}>
-                      Date: {new Date(inv.issue_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      Date: {new Date(inv.issue_date || inv.created_at || Date.now()).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
                 </div>
@@ -7149,7 +7163,7 @@ export default function Dashboard() {
                 }`}>
                   <div>
                     <span className="text-[10px] text-zinc-500 block uppercase font-bold tracking-wider">Order Date:</span>
-                    <span>{new Date(inv.issue_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    <span>{new Date(inv.issue_date || inv.created_at || Date.now()).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-zinc-500 block uppercase font-bold tracking-wider">Order # / Ref:</span>
