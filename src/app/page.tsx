@@ -4392,8 +4392,24 @@ export default function Dashboard() {
                                     {inv.status}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 uppercase tracking-wider group-hover:text-indigo-400 transition duration-150">
-                                  View Voucher &rarr;
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (window.confirm(`Delete invoice ${inv.invoice_number}?`)) {
+                                        localDB.softDelete("invoices", inv.id);
+                                        loadData();
+                                      }
+                                    }}
+                                    title="Delete Invoice"
+                                    className="p-1 rounded text-rose-500 hover:bg-rose-500/10 transition cursor-pointer"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                  <div className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 uppercase tracking-wider group-hover:text-indigo-400 transition duration-150">
+                                    View Voucher &rarr;
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -7379,6 +7395,20 @@ export default function Dashboard() {
                   </select>
                 </div>
                 <div className="flex justify-end gap-3 w-full sm:w-auto">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to delete invoice ${inv.invoice_number}?`)) {
+                        localDB.softDelete("invoices", inv.id);
+                        setPreviewInvoiceId("");
+                        setIsPreviewModalOpen(false);
+                        loadData();
+                      }
+                    }}
+                    className="px-4 py-2 text-xs bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg shadow-sm transition duration-150 flex items-center justify-center gap-1.5 flex-1 sm:flex-initial cursor-pointer"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete Invoice
+                  </button>
                   <button 
                     type="button" 
                     onClick={() => {

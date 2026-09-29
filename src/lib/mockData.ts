@@ -968,55 +968,53 @@ class LocalDB {
   // Soft Delete generic
   softDelete(table: string, id: string): boolean {
     const now = new Date().toISOString();
+    let found = false;
     if (table === "products") {
       const list = getStorageItem<Product[]>("products", initialProducts);
       const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
       setStorageItem("products", updated);
-      return true;
-    }
-    if (table === "stock") {
+      found = true;
+    } else if (table === "stock") {
       const list = getStorageItem<Stock[]>("stock", initialStock);
       const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
       setStorageItem("stock", updated);
-      return true;
-    }
-    if (table === "invoices") {
+      found = true;
+    } else if (table === "invoices") {
       const list = getStorageItem<Invoice[]>("invoices", initialInvoices);
       const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
       setStorageItem("invoices", updated);
-      return true;
-    }
-    if (table === "categories") {
+      found = true;
+    } else if (table === "categories") {
       const list = getStorageItem<Category[]>("categories", initialCategories);
       const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
       setStorageItem("categories", updated);
-      return true;
-    }
-    if (table === "sub_types") {
+      found = true;
+    } else if (table === "sub_types") {
       const list = getStorageItem<SubType[]>("sub_types", initialSubTypes);
       const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
       setStorageItem("sub_types", updated);
-      return true;
-    }
-    if (table === "locations") {
+      found = true;
+    } else if (table === "locations") {
       const list = getStorageItem<StorageLocation[]>("locations", initialLocations);
       const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
       setStorageItem("locations", updated);
-      return true;
-    }
-    if (table === "additives") {
+      found = true;
+    } else if (table === "additives") {
       const list = getStorageItem<Additive[]>("additives", initialAdditives);
       const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
       setStorageItem("additives", updated);
-      return true;
-    }
-    if (table === "damaged_stock") {
+      found = true;
+    } else if (table === "damaged_stock") {
       const list = getStorageItem<DamagedStock[]>("damaged_stock", initialDamagedStock);
       const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
       setStorageItem("damaged_stock", updated);
-      return true;
+      found = true;
     }
-    return false;
+
+    if (found && isSupabaseConfigured) {
+      this.syncToSupabase(table, getStorageItem(table, [])).catch(err => console.warn("Supabase sync notice on soft delete:", err));
+    }
+    return found;
   }
 
   restore(table: string, id: string): boolean {
