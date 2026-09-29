@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { 
+  Zap,
+  Shield,
   Package, 
   MapPin, 
   Tag, 
@@ -238,6 +240,10 @@ export default function Dashboard() {
   const [damagedModalType, setDamagedModalType] = useState<"product" | "additive">("product");
   const [damagedAdditiveId, setDamagedAdditiveId] = useState("");
   const [isEditingInvoice, setIsEditingInvoice] = useState(false);
+  const [isLowDataMode, setIsLowDataMode] = useState<boolean>(true);
+  const [isManualSyncing, setIsManualSyncing] = useState<boolean>(false);
+  const [lastSyncedTime, setLastSyncedTime] = useState<string>("Just now");
+  const [backupSnapshots, setBackupSnapshots] = useState<any[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<"synced" | "connecting" | "offline">("synced");
   const [activeDevices, setActiveDevices] = useState<any[]>([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -409,6 +415,13 @@ export default function Dashboard() {
           .catch(() => setDeviceIpAddress("Unknown"));
       });
 
+    setIsLowDataMode(localDB.isLowDataMode());
+    try {
+      localDB.runAutomatedDailyBackup();
+      setBackupSnapshots(localDB.getBackupSnapshots());
+    } catch (err) {
+      console.warn("Backup engine init warning:", err);
+    }
     loadData();
     // Trigger real-time background database sync from Supabase cloud if configured
     if (isSupabaseConfigured) {
@@ -462,7 +475,7 @@ export default function Dashboard() {
     const syncInterval = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
       performSync();
-    }, 5000);
+    }, 60000); // Smart 60-second bandwidth-saving interval
 
     // Trigger instant check when user switches back to this tab
     const handleVisibilityChange = () => {
@@ -2418,6 +2431,49 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+            {/* ⚡ Low Data Mode Toggle (ON by default) */}
+            <button
+              type="button"
+              onClick={() => {
+                const nextMode = !isLowDataMode;
+                setIsLowDataMode(nextMode);
+                localDB.setLowDataMode(nextMode);
+              }}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition duration-150 cursor-pointer ${
+                isLowDataMode 
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/30 hover:bg-amber-500/20"
+                  : "bg-emerald-500/10 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/20"
+              }`}
+              title="Toggle Low Data Mode (Hide heavy base64 photos to save Vercel data)"
+            >
+              <Zap className="h-3.5 w-3.5" />
+              <span>Low Data: {isLowDataMode ? "ON ⚡" : "OFF"}</span>
+            </button>
+
+            {/* 🔄 Instant Manual Sync Button */}
+            <button
+              type="button"
+              onClick={async () => {
+                setIsManualSyncing(true);
+                if (isSupabaseConfigured) {
+                  await localDB.syncFromSupabase();
+                  loadData();
+                } else {
+                  await localDB.syncFromServer();
+                  loadData();
+                }
+                setIsManualSyncing(false);
+                setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+              }}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition duration-150 cursor-pointer ${
+                isDark ? "bg-indigo-950/40 border-indigo-500/30 text-indigo-400 hover:bg-indigo-900/50" : "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+              }`}
+              title={`Trigger instant database sync with Supabase Cloud (Last: ${lastSyncedTime})`}
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isManualSyncing ? "animate-spin text-indigo-500" : ""}`} />
+              <span>{isManualSyncing ? "Syncing..." : "Sync Now"}</span>
+            </button>
+
             <button 
               onClick={() => setIsArchiveModalOpen(true)}
               className={`px-3.5 py-2 text-sm border rounded-lg flex items-center gap-2 transition duration-200 cursor-pointer ${isDark ? "bg-zinc-900/40 border-amber-950/40 text-amber-500/90 hover:text-amber-400 hover:bg-zinc-850" : "bg-white border-amber-200 text-amber-600 hover:text-amber-700 shadow-sm"}`}
@@ -2891,14 +2947,21 @@ export default function Dashboard() {
                                 <div>
                                   {/* Product Thumbnail Image */}
                                   <div className="h-28 w-full rounded-xl overflow-hidden mb-2.5 bg-zinc-900 border border-zinc-800/60 relative group">
-                                    <img
-                                      src={photoSrc}
-                                      alt={p.name}
-                                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                                      onError={(e) => {
-                                        (e.target as HTMLElement).style.display = "none";
-                                      }}
-                                    />
+                                    {isLowDataMode ? (
+                                      <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 text-zinc-400 text-[10px] font-bold">
+                                        <Package className="h-5 w-5 mb-1 text-indigo-400 opacity-60" />
+                                        <span>Photo Hidden (Low Data)</span>
+                                      </div>
+                                    ) : (
+                                      <img
+                                        src={photoSrc}
+                                        alt={p.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                                        onError={(e) => {
+                                          (e.target as HTMLElement).style.display = "none";
+                                        }}
+                                      />
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
                                       <span className="text-[10px] font-extrabold text-white bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
                                         ₹{(p.price || 0).toLocaleString("en-IN")}
@@ -4994,19 +5057,26 @@ export default function Dashboard() {
               >
                 {/* Product Photo */}
                 <div className={`h-48 w-full relative overflow-hidden ${isDark ? "bg-zinc-900" : "bg-zinc-100"}`}>
-                  {prod.photos ? (
-                    <img 
-                      src={getValidPhotoSrc(prod.photos)} 
-                      alt={prod.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-400">
-                      <Package className="h-12 w-12" />
+                  {isLowDataMode ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 text-zinc-400 text-xs font-bold gap-1">
+                      <Package className="h-8 w-8 text-indigo-400 opacity-60" />
+                      <span>Photo Hidden (Low Data Mode)</span>
                     </div>
+                  ) : (
+                    prod.photos ? (
+                      <img 
+                        src={getValidPhotoSrc(prod.photos)} 
+                        alt={prod.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-zinc-400">
+                        <Package className="h-12 w-12" />
+                      </div>
+                    )
                   )}
                   <div className="absolute top-3 right-3 flex gap-1.5">
 {currentUser?.rights.edit_inventory && (
@@ -5409,6 +5479,99 @@ export default function Dashboard() {
                     <div className="text-center text-zinc-550 text-xs italic py-4">No additives created</div>
                   )}
                 </div>
+              </div>
+            </div>
+
+            {/* 💾 3-Day Rolling Backup Hub */}
+            <div className={`col-span-1 md:col-span-2 xl:col-span-4 ${cardClass} p-6 border shadow-xl`}>
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-zinc-808/30">
+                <div>
+                  <h3 className={`font-bold text-lg flex items-center gap-2 ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                    <Database className="h-5 w-5 text-indigo-500" />
+                    <span>3-Day Rolling Backup Manager (Automated FIFO)</span>
+                  </h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Automatically maintains 3 daily rolling snapshots of invoices and catalog data. Oldest snapshots are automatically purged when Day 4 is created.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const snap = localDB.createBackupSnapshot();
+                    setBackupSnapshots(localDB.getBackupSnapshots());
+                    alert(`✅ Backup snapshot created for ${snap.date_str} (${snap.size_kb} KB)!`);
+                  }}
+                  className="px-3.5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <Plus className="h-4 w-4" /> Create Snapshot Now
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {backupSnapshots.length === 0 ? (
+                  <div className="col-span-3 text-center py-6 text-xs text-zinc-500 italic">
+                    No active rolling backups found. Click "Create Snapshot Now" or wait for daily automated trigger.
+                  </div>
+                ) : (
+                  backupSnapshots.map((snap: any, sIdx: number) => (
+                    <div 
+                      key={snap.id}
+                      className={`p-4 rounded-xl border flex flex-col justify-between gap-3 ${
+                        isDark ? "bg-zinc-950/40 border-zinc-808" : "bg-slate-50 border-slate-200"
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-black font-mono text-indigo-500">
+                            📅 {snap.date_str} {sIdx === 0 && "(Latest)"}
+                          </span>
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-zinc-500/10 text-zinc-500">
+                            {snap.size_kb} KB
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-zinc-550 dark:text-zinc-400">
+                          <strong>{snap.invoices_count}</strong> Invoices • <strong>{snap.catalog_count}</strong> Catalog Items
+                        </p>
+                        <p className="text-[9px] font-mono text-zinc-500 mt-1">
+                          Created: {new Date(snap.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 border-t pt-2.5 border-dashed border-zinc-808/30">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snap.data, null, 2));
+                            const downloadAnchor = document.createElement("a");
+                            downloadAnchor.setAttribute("href", dataStr);
+                            downloadAnchor.setAttribute("download", `jenny_backup_${snap.date_str}.json`);
+                            document.body.appendChild(downloadAnchor);
+                            downloadAnchor.click();
+                            downloadAnchor.remove();
+                          }}
+                          className="flex-1 py-1.5 text-[11px] font-bold border rounded-lg text-center transition cursor-pointer text-indigo-500 border-indigo-500/20 hover:bg-indigo-500/10"
+                        >
+                          📥 Download JSON
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`Restore backup from ${snap.date_str}? Current unbacked data will be overwritten.`)) {
+                              const ok = localDB.restoreBackupSnapshot(snap.id);
+                              if (ok) {
+                                loadData();
+                                alert(`Snapshot from ${snap.date_str} restored successfully!`);
+                              }
+                            }
+                          }}
+                          className="px-3 py-1.5 text-[11px] font-bold border rounded-lg text-center transition cursor-pointer text-amber-500 border-amber-500/20 hover:bg-amber-500/10"
+                        >
+                          🔄 Restore
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -6122,7 +6285,7 @@ export default function Dashboard() {
                         <div className={`border rounded-xl overflow-x-auto max-h-60 overflow-y-auto ${isDark ? "border-zinc-808 bg-zinc-950/20" : "border-slate-200 bg-slate-50/20"}`}>
                           <table className="w-full min-w-[550px] text-left border-collapse text-xs">
                             <thead>
-                              <tr className={`border-b text-[10px] font-semibold uppercase tracking-wider ${isDark ? "bg-zinc-900 text-zinc-400 border-zinc-800" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                              <tr className={`sticky top-0 z-20 border-b-2 text-[10px] font-bold uppercase tracking-wider shadow-xs ${isDark ? "bg-zinc-900 text-zinc-300 border-zinc-700" : "bg-slate-100 text-slate-700 border-slate-300"}`}>
                                 <th className="py-2 px-3 text-center w-8">On</th>
                                 <th className="py-2 px-3">Sub-Type</th>
                                 <th className="py-2 px-3 w-24">Price (₹)</th>
@@ -6160,7 +6323,7 @@ export default function Dashboard() {
                                         updated[idx].price = Number(e.target.value);
                                         setProductVariants(updated);
                                       }}
-                                      className={`w-full px-2 py-1 border rounded focus:outline-none font-mono text-xs ${inputClass}`}
+                                      className={`w-full px-2 py-1.5 border-2 rounded-lg focus:outline-none font-mono text-xs font-bold shadow-xs ${isDark ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-indigo-500" : "bg-white border-slate-300 text-slate-900 focus:border-indigo-500"}`}
                                     />
                                   </td>
                                   <td className="py-2 px-3">
@@ -6193,7 +6356,7 @@ export default function Dashboard() {
                                         updated[idx].quantity = Number(e.target.value);
                                         setProductVariants(updated);
                                       }}
-                                      className={`w-full px-2 py-1 border rounded focus:outline-none font-mono text-xs ${inputClass}`}
+                                      className={`w-full px-2 py-1.5 border-2 rounded-lg focus:outline-none font-mono text-xs font-bold shadow-xs ${isDark ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-indigo-500" : "bg-white border-slate-300 text-slate-900 focus:border-indigo-500"}`}
                                     />
                                   </td>
                                 </tr>

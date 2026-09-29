@@ -2127,6 +2127,108 @@ class LocalDB {
     setStorageItem("damaged_stock", initialDamagedStock);
     setStorageItem("users", initialUsers);
   }
+
+  // --- AUTOMATED 3-DAY ROLLING BACKUP ENGINE (FIFO MAX 3 DAYS) ---
+  getBackupSnapshots(): any[] {
+    if (typeof window === "undefined") return [];
+    return getStorageItem<any[]>("backup_snapshots", []);
+  }
+
+  createBackupSnapshot(): any {
+    if (typeof window === "undefined") return null;
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10);
+    const createdAt = now.toISOString();
+
+    const invoices = getStorageItem<Invoice[]>("invoices", initialInvoices).filter(i => i.deleted_at === null);
+    const invoiceItems = getStorageItem<InvoiceItem[]>("invoice_items", initialInvoiceItems).filter(i => i.deleted_at === null);
+    const categories = getStorageItem<Category[]>("categories", initialCategories).filter(c => c.deleted_at === null);
+    const subTypes = getStorageItem<SubType[]>("sub_types", initialSubTypes).filter(s => s.deleted_at === null);
+    const products = getStorageItem<Product[]>("products", initialProducts).filter(p => p.deleted_at === null);
+    const additives = getStorageItem<Additive[]>("additives", initialAdditives).filter(a => a.deleted_at === null);
+    const locations = getStorageItem<StorageLocation[]>("locations", initialLocations).filter(l => l.deleted_at === null);
+
+    const snapshotData = {
+      invoices,
+      invoice_items: invoiceItems,
+      categories,
+      sub_types: subTypes,
+      products,
+      additives,
+      locations
+    };
+
+    const jsonString = JSON.stringify(snapshotData);
+    const sizeKb = Math.round(jsonString.length / 1024 * 10) / 10;
+
+    const newSnapshot = {
+      id: `snap-${dateStr}-${Date.now().toString(36)}`,
+      date_str: dateStr,
+      created_at: createdAt,
+      invoices_count: invoices.length,
+      catalog_count: products.length + categories.length + subTypes.length + additives.length,
+      size_kb: sizeKb,
+      data: snapshotData
+    };
+
+    const snapshots = this.getBackupSnapshots();
+    // Filter out any existing snapshot for today to replace it with latest state
+    const filtered = snapshots.filter((s: any) => s.date_str !== dateStr);
+    
+    // Add new snapshot at top (latest first)
+    const updated = [newSnapshot, ...filtered];
+
+    // Enforce 3-day rolling FIFO limit (keep only 3 latest daily snapshots, delete older ones)
+    const rollingSnapshots = updated.slice(0, 3);
+    setStorageItem("backup_snapshots", rollingSnapshots);
+
+    return newSnapshot;
+  }
+
+  runAutomatedDailyBackup(): void {
+    if (typeof window === "undefined") return;
+    const snapshots = this.getBackupSnapshots();
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const hasTodayBackup = snapshots.some((s: any) => s.date_str === todayStr);
+
+    if (!hasTodayBackup) {
+      this.createBackupSnapshot();
+      console.log(`[Backup Engine] Automatically created daily rolling backup for ${todayStr}. Total active rolling snapshots: ${Math.min(snapshots.length + 1, 3)}/3`);
+    }
+  }
+
+  restoreBackupSnapshot(snapshotId: string): boolean {
+    if (typeof window === "undefined") return false;
+    const snapshots = this.getBackupSnapshots();
+    const target = snapshots.find((s: any) => s.id === snapshotId);
+    if (!target || !target.data) return false;
+
+    if (target.data.invoices) setStorageItem("invoices", target.data.invoices);
+    if (target.data.invoice_items) setStorageItem("invoice_items", target.data.invoice_items);
+    if (target.data.categories) setStorageItem("categories", target.data.categories);
+    if (target.data.sub_types) setStorageItem("sub_types", target.data.sub_types);
+    if (target.data.products) setStorageItem("products", target.data.products);
+    if (target.data.additives) setStorageItem("additives", target.data.additives);
+    if (target.data.locations) setStorageItem("locations", target.data.locations);
+
+    if (isSupabaseConfigured) {
+      this.syncToSupabase("invoices", target.data.invoices);
+      this.syncToSupabase("products", target.data.products);
+    }
+    return true;
+  }
+
+  // --- LOW DATA MODE PREFERENCE (DEFAULT ON) ---
+  isLowDataMode(): boolean {
+    if (typeof window === "undefined") return true; // ON by default
+    const pref = window.localStorage.getItem("jenny_low_data_mode");
+    return pref === null ? true : pref === "true";
+  }
+
+  setLowDataMode(enabled: boolean): void {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("jenny_low_data_mode", enabled ? "true" : "false");
+  }
 }
 
 export const localDB = new LocalDB();
