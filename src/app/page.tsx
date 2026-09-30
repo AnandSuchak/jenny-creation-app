@@ -1069,15 +1069,24 @@ export default function Dashboard() {
 
   const parseProductPhotoUrls = (input: string): string[] => {
     if (!input || !input.trim()) return [];
-    const trimmed = input.trim();
-    if (trimmed.startsWith("data:image/") || trimmed.startsWith("blob:")) {
-      return [trimmed];
+    const lines = input.trim().split(/\n+/).map(l => l.trim()).filter(Boolean);
+    const result: string[] = [];
+    for (const line of lines) {
+      if (
+        line.startsWith("data:image/") || 
+        line.startsWith("blob:") || 
+        line.startsWith("http://") || 
+        line.startsWith("https://") || 
+        line.startsWith("/")
+      ) {
+        result.push(line);
+      } else if (line.includes(",")) {
+        line.split(",").map(s => s.trim()).filter(Boolean).forEach(url => result.push(url));
+      } else {
+        result.push(line);
+      }
     }
-    return trimmed
-      .split(/\n+/)
-      .flatMap(line => line.split(","))
-      .map(url => url.trim())
-      .filter(Boolean);
+    return result;
   };
 
   const getValidPhotoSrc = (photos?: string[]): string => {
@@ -1137,16 +1146,21 @@ export default function Dashboard() {
     if (newProductPhotos) {
       const urls = parseProductPhotoUrls(newProductPhotos);
       const isValidImage = (url: string) => {
-        if (!url) return true;
+        if (!url || !url.trim()) return true;
+        const u = url.trim();
         return (
-          url.startsWith("data:image/") ||
-          url.startsWith("blob:") ||
-          url.startsWith("http://") ||
-          url.startsWith("https://") ||
-          url.startsWith("/") ||
-          url.startsWith("file://") ||
-          url.match(/^[a-zA-Z]:\\/) ||
-          url.match(/\.(jpg|jpeg|png|webp|avif|gif|svg)(\?.*)?$/i)
+          u.length > 0 && (
+            u.startsWith("data:image/") ||
+            u.startsWith("blob:") ||
+            u.startsWith("http://") ||
+            u.startsWith("https://") ||
+            u.startsWith("/") ||
+            u.startsWith("file://") ||
+            u.match(/^[a-zA-Z]:\\/) ||
+            u.match(/\.(jpg|jpeg|png|webp|avif|gif|svg|bmp)(\?.*)?$/i) ||
+            u.includes("/product-photos/") ||
+            u.includes("unsplash.com")
+          )
         );
       };
       const allValid = urls.every(isValidImage);
