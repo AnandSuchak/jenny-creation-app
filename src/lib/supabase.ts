@@ -14,42 +14,65 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+let cachedBucketAvailable: boolean | null = null;
+
+/**
+ * Checks if the Supabase Storage bucket 'product-photos' exists and is accessible.
+ */
+export async function isProductPhotosBucketAvailable(): Promise<boolean> {
+  if (!isSupabaseConfigured || !supabase) return false;
+  if (cachedBucketAvailable === true) return true;
+
+  try {
+    const { data, error } = await supabase.storage.getBucket("product-photos");
+    if (!error && data) {
+      cachedBucketAvailable = true;
+      return true;
+    }
+  } catch (e) {}
+
+  cachedBucketAvailable = false;
+  return false;
+}
+
+/**
+ * Resets the cached bucket check (useful when user runs SQL migration to create bucket)
+ */
+export function resetStorageBucketCache() {
+  cachedBucketAvailable = null;
+}
+
 /**
  * Uploads a local PC image file directly to Supabase Storage bucket ('product-photos')
- * and returns a public CDN URL.
+ * and returns a public CDN URL. If bucket is not ready, returns empty string gracefully.
  */
 export async function uploadProductPhotoToSupabase(file: File): Promise<string> {
   if (!isSupabaseConfigured || !supabase) return "";
+
+  // Perform quick pre-check to avoid network HTTP 400 errors in browser console
+  const bucketReady = await isProductPhotosBucketAvailable();
+  if (!bucketReady) {
+    // Retry bucket check once in case user just created it
+    resetStorageBucketCache();
+    const retryReady = await isProductPhotosBucketAvailable();
+    if (!retryReady) return "";
+  }
+
   try {
     const fileExt = file.name.split(".").pop() || "jpg";
     const fileName = `prod_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    // Attempt upload to Supabase Storage bucket 'product-photos'
-    let { data, error } = await supabase.storage
+    // Upload to Supabase Storage bucket 'product-photos'
+    const { data, error } = await supabase.storage
       .from("product-photos")
       .upload(filePath, file, {
         cacheControl: "3600",
         upsert: true
       });
 
-    // If bucket not found, attempt auto-creation
-    if (error && (error.message.includes("not found") || error.message.includes("Bucket"))) {
-      try {
-        await supabase.storage.createBucket("product-photos", { public: true });
-        const retryRes = await supabase.storage
-          .from("product-photos")
-          .upload(filePath, file, {
-            cacheControl: "3600",
-            upsert: true
-          });
-        data = retryRes.data;
-        error = retryRes.error;
-      } catch (bErr) {}
-    }
-
     if (error) {
-      // Supabase storage bucket not configured or permissions disabled, fallback to compressed WebP
+      cachedBucketAvailable = false;
       return "";
     }
 
@@ -59,6 +82,7 @@ export async function uploadProductPhotoToSupabase(file: File): Promise<string> 
 
     return publicUrlData?.publicUrl || "";
   } catch (err) {
+    cachedBucketAvailable = false;
     return "";
   }
 }
