@@ -179,3 +179,17 @@ BEGIN
         END IF;
     END LOOP;
 END $$;
+
+-- ==============================================================================
+-- 🖼️ SUPABASE STORAGE BUCKET CREATION FOR PRODUCT PHOTOS
+-- ==============================================================================
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('product-photos', 'product-photos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow public read & write access to product-photos bucket
+DROP POLICY IF EXISTS "Public Read/Write for Product Photos" ON storage.objects;
+CREATE POLICY "Public Read/Write for Product Photos" ON storage.objects
+FOR ALL TO anon, authenticated
+USING (bucket_id = 'product-photos')
+WITH CHECK (bucket_id = 'product-photos');
