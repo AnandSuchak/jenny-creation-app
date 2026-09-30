@@ -24,10 +24,14 @@ export async function isProductPhotosBucketAvailable(): Promise<boolean> {
   if (cachedBucketAvailable === true) return true;
 
   try {
-    const { data, error } = await supabase.storage.getBucket("product-photos");
-    if (!error && data) {
-      cachedBucketAvailable = true;
-      return true;
+    // listBuckets returns HTTP 200 OK (array of buckets) without throwing HTTP 400 when a specific bucket is missing
+    const { data, error } = await supabase.storage.listBuckets();
+    if (!error && Array.isArray(data)) {
+      const exists = data.some((b: any) => b.id === "product-photos" || b.name === "product-photos");
+      if (exists) {
+        cachedBucketAvailable = true;
+        return true;
+      }
     }
   } catch (e) {}
 
@@ -51,12 +55,7 @@ export async function uploadProductPhotoToSupabase(file: File): Promise<string> 
 
   // Perform quick pre-check to avoid network HTTP 400 errors in browser console
   const bucketReady = await isProductPhotosBucketAvailable();
-  if (!bucketReady) {
-    // Retry bucket check once in case user just created it
-    resetStorageBucketCache();
-    const retryReady = await isProductPhotosBucketAvailable();
-    if (!retryReady) return "";
-  }
+  if (!bucketReady) return "";
 
   try {
     const fileExt = file.name.split(".").pop() || "jpg";
