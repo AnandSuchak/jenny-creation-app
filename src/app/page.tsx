@@ -5127,7 +5127,7 @@ export default function Dashboard() {
                         setNewProductName(prod.name);
                         setNewProductCategory(prod.category_id);
                         setNewProductSubtype(prod.sub_type_id);
-                        setNewProductPhotos(prod.photos && prod.photos[0] ? prod.photos[0] : "");
+                        setNewProductPhotos(Array.isArray(prod.photos) ? prod.photos.join("\n") : (prod.photos || ""));
                         setNewProductPrice(prod.price || 0);
                         setNewProductSupplierCode(prod.supplier_code || "");
                         setIsProductModalOpen(true);

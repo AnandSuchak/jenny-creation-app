@@ -446,7 +446,7 @@ const pruneLegacyBase64Images = (): void => {
         const cleaned = prods.map((p: any) => {
           if (Array.isArray(p.photos)) {
             const sanitizedPhotos = p.photos.map((url: string) => 
-              typeof url === "string" && url.startsWith("data:image/") ? "/gift_box_2jar.jpg" : url
+              typeof url === "string" && url.startsWith("data:image/") && url.length > 200000 ? "/gift_box_2jar.jpg" : url
             );
             return { ...p, photos: sanitizedPhotos };
           }
