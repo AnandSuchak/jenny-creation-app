@@ -13,7 +13,7 @@
       "created_at": "2026-08-26T08:44:23.841+00:00",
       "deleted_at": null,
       "require_password_change": false,
-      "current_session_token": "SESS-Y9QU6ZEH-1790612699659"
+      "current_session_token": "SESS-BYV2Z7ZG-1790745134387"
     },
     {
       "id": "usr-1789312524082-vk55p",
@@ -28,7 +28,7 @@
       "created_at": "2026-09-13T15:15:24.082+00:00",
       "deleted_at": null,
       "require_password_change": false,
-      "current_session_token": "SESS-66UW34BT-1790609754068"
+      "current_session_token": "SESS-NCN5XB91-1790742975805"
     },
     {
       "id": "usr-admin",
@@ -43,7 +43,7 @@
       "created_at": "2026-08-26T14:10:00+00:00",
       "deleted_at": null,
       "require_password_change": false,
-      "current_session_token": "SESS-SJA8KDGS-1790659224544"
+      "current_session_token": "SESS-YPJ50F6N-1790745333963"
     },
     {
       "id": "usr-1788267989216-zn0z8",
@@ -708,5 +708,2262 @@
       "timestamp": "2026-08-25T08:51:55.932Z"
     }
   ],
-  "_last_updated": 1790666396356
+  "_last_updated": 1790745333982,
+  "backup_snapshots": [
+    {
+      "id": "snap-2026-09-30-munnhjox",
+      "date_str": "2026-09-30",
+      "created_at": "2026-09-30T05:14:12.081Z",
+      "invoices_count": 0,
+      "catalog_count": 150,
+      "size_kb": 44.9,
+      "data": {
+        "invoices": [],
+        "invoice_items": [],
+        "categories": [
+          {
+            "id": "cat-1790596809257-659te",
+            "name": "Jar Box",
+            "created_at": "2026-09-28T12:00:09.257+00:00",
+            "updated_at": "2026-09-28T14:23:00.975+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790604544253-6zust",
+            "name": "Jar",
+            "created_at": "2026-09-28T14:09:04.253+00:00",
+            "updated_at": "2026-09-28T14:09:04.253+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790605231684-r45y8",
+            "name": "Basket",
+            "created_at": "2026-09-28T14:20:31.684+00:00",
+            "updated_at": "2026-09-28T14:20:31.684+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790605401762-gxa5x",
+            "name": "Puttha Box",
+            "created_at": "2026-09-28T14:23:21.762+00:00",
+            "updated_at": "2026-09-28T14:23:31.564+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790677591105-r3i8t",
+            "name": "SWEET BOX",
+            "created_at": "2026-09-29T10:26:31.105+00:00",
+            "updated_at": "2026-09-29T10:26:31.105+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790679502153-9g1z1",
+            "name": "FILE BOX",
+            "created_at": "2026-09-29T10:58:22.153+00:00",
+            "updated_at": "2026-09-29T10:58:22.153+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790699284006-p3if5",
+            "name": "Double Door",
+            "created_at": "2026-09-29T16:28:04.006+00:00",
+            "updated_at": "2026-09-29T16:28:04.006+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790700175038-9wh3m",
+            "name": "MDF Partiton Box",
+            "created_at": "2026-09-29T16:42:55.038+00:00",
+            "updated_at": "2026-09-29T16:42:55.038+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790702141912-5n5dc",
+            "name": "Gift Hampers",
+            "created_at": "2026-09-29T17:15:41.912+00:00",
+            "updated_at": "2026-09-29T17:15:41.912+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790706068904-yuu2f",
+            "name": "Ladoo Box",
+            "created_at": "2026-09-29T18:21:08.904+00:00",
+            "updated_at": "2026-09-29T18:21:08.904+00:00",
+            "deleted_at": null
+          }
+        ],
+        "sub_types": [
+          {
+            "id": "sub-1790596819396-fdbhx",
+            "category_id": "cat-1790596809257-659te",
+            "name": "1 Jar",
+            "created_at": "2026-09-28T12:00:19.396+00:00",
+            "updated_at": "2026-09-28T12:00:50.111+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596827329-c9hsh",
+            "category_id": "cat-1790596809257-659te",
+            "name": "2 Jar",
+            "created_at": "2026-09-28T12:00:27.329+00:00",
+            "updated_at": "2026-09-28T12:00:54.568+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596838944-1w7a8",
+            "category_id": "cat-1790596809257-659te",
+            "name": "3 Jar",
+            "created_at": "2026-09-28T12:00:38.944+00:00",
+            "updated_at": "2026-09-28T12:00:38.944+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596915458-bh17t",
+            "category_id": "cat-1790596809257-659te",
+            "name": "4 Jar",
+            "created_at": "2026-09-28T12:01:55.458+00:00",
+            "updated_at": "2026-09-28T12:01:55.458+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596922478-igvhd",
+            "category_id": "cat-1790596809257-659te",
+            "name": "5 Jar",
+            "created_at": "2026-09-28T12:02:02.478+00:00",
+            "updated_at": "2026-09-28T12:02:02.478+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596936727-m7aa3",
+            "category_id": "cat-1790596809257-659te",
+            "name": "6 Jar",
+            "created_at": "2026-09-28T12:02:16.727+00:00",
+            "updated_at": "2026-09-28T12:02:16.727+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605659831-myog5",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "4 Khana - 7x10 BACHHA",
+            "created_at": "2026-09-28T14:27:39.831+00:00",
+            "updated_at": "2026-09-28T14:32:05.507+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605724899-e5ikm",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "4 Khana - 8x8",
+            "created_at": "2026-09-28T14:28:44.899+00:00",
+            "updated_at": "2026-09-28T14:28:44.899+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605743164-lt5op",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "4 Khana - 10x10",
+            "created_at": "2026-09-28T14:29:03.164+00:00",
+            "updated_at": "2026-09-28T14:29:03.164+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605777368-i4i4a",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "4 Khana - 12x12",
+            "created_at": "2026-09-28T14:29:37.368+00:00",
+            "updated_at": "2026-09-28T14:29:37.368+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790700875286-9k4pt",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "9.5x16",
+            "created_at": "2026-09-29T16:54:35.286+00:00",
+            "updated_at": "2026-09-29T16:54:35.286+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790701370351-y2p6j",
+            "category_id": "cat-1790604544253-6zust",
+            "name": "Linner Brown Jar",
+            "created_at": "2026-09-29T17:02:50.351+00:00",
+            "updated_at": "2026-09-29T17:02:50.351+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790701420887-u5xna",
+            "category_id": "cat-1790604544253-6zust",
+            "name": "Tin Jar 3 Design Mix",
+            "created_at": "2026-09-29T17:03:40.887+00:00",
+            "updated_at": "2026-09-29T17:03:40.887+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790702182999-iiy44",
+            "category_id": "cat-1790702141912-5n5dc",
+            "name": "Round Basket",
+            "created_at": "2026-09-29T17:16:22.999+00:00",
+            "updated_at": "2026-09-29T17:16:22.999+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790702211321-cmc95",
+            "category_id": "cat-1790702141912-5n5dc",
+            "name": "Basket",
+            "created_at": "2026-09-29T17:16:51.321+00:00",
+            "updated_at": "2026-09-29T17:16:51.321+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790702249064-2d7z4",
+            "category_id": "cat-1790702141912-5n5dc",
+            "name": "Long Basket",
+            "created_at": "2026-09-29T17:17:29.064+00:00",
+            "updated_at": "2026-09-29T17:17:29.064+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790706145272-6b348",
+            "category_id": "cat-1790706068904-yuu2f",
+            "name": "2 Ladoo Box",
+            "created_at": "2026-09-29T18:22:25.272+00:00",
+            "updated_at": "2026-09-29T18:22:25.272+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605818270-28onf",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "6 Khana - 9x13",
+            "created_at": "2026-09-28T14:30:18.27+00:00",
+            "updated_at": "2026-09-28T14:30:18.271+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605836501-nfp3v",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "6 Khana - 10x15",
+            "created_at": "2026-09-28T14:30:36.501+00:00",
+            "updated_at": "2026-09-28T14:30:36.501+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605854798-vz5h0",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "6 Khana - JUMBO",
+            "created_at": "2026-09-28T14:30:54.798+00:00",
+            "updated_at": "2026-09-28T14:30:54.798+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790677686388-a0bfn",
+            "category_id": "cat-1790677591105-r3i8t",
+            "name": "4 SECTION",
+            "created_at": "2026-09-29T10:28:06.388+00:00",
+            "updated_at": "2026-09-29T10:28:06.388+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790678045217-xcv6j",
+            "category_id": "cat-1790677591105-r3i8t",
+            "name": "3 SECTION",
+            "created_at": "2026-09-29T10:34:05.217+00:00",
+            "updated_at": "2026-09-29T10:34:05.217+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790679549089-mmu2v",
+            "category_id": "cat-1790679502153-9g1z1",
+            "name": "2 JAR - CAVATIY",
+            "created_at": "2026-09-29T10:59:09.089+00:00",
+            "updated_at": "2026-09-29T10:59:09.089+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790679571768-95jvy",
+            "category_id": "cat-1790679502153-9g1z1",
+            "name": "3 JAR - CAVITY",
+            "created_at": "2026-09-29T10:59:31.768+00:00",
+            "updated_at": "2026-09-29T10:59:31.768+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790699136629-vbgji",
+            "category_id": "cat-1790679502153-9g1z1",
+            "name": "4 Section with Cavatiy",
+            "created_at": "2026-09-29T16:25:36.629+00:00",
+            "updated_at": "2026-09-29T16:25:36.629+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790699326742-5q9ta",
+            "category_id": "cat-1790699284006-p3if5",
+            "name": "3 Jar+15 Cavatiy",
+            "created_at": "2026-09-29T16:28:46.742+00:00",
+            "updated_at": "2026-09-29T16:28:46.742+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790699528734-xb8di",
+            "category_id": "cat-1790699284006-p3if5",
+            "name": "3 Plastic Jar Small+2 Cavatiy Trays",
+            "created_at": "2026-09-29T16:32:08.734+00:00",
+            "updated_at": "2026-09-29T16:32:08.734+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790699815894-0bfti",
+            "category_id": "cat-1790596809257-659te",
+            "name": "2 Jar+16 Cavatiy",
+            "created_at": "2026-09-29T16:36:55.894+00:00",
+            "updated_at": "2026-09-29T16:36:55.894+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790699981456-flevk",
+            "category_id": "cat-1790596809257-659te",
+            "name": "4 Jar+14 Cavatiy",
+            "created_at": "2026-09-29T16:39:41.456+00:00",
+            "updated_at": "2026-09-29T16:39:41.456+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790700754679-1n760",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "11x11",
+            "created_at": "2026-09-29T16:52:34.679+00:00",
+            "updated_at": "2026-09-29T16:52:34.679+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790701344039-6ngzk",
+            "category_id": "cat-1790604544253-6zust",
+            "name": "285 ML",
+            "created_at": "2026-09-29T17:02:24.039+00:00",
+            "updated_at": "2026-09-29T17:02:24.039+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790701456359-n4wlq",
+            "category_id": "cat-1790604544253-6zust",
+            "name": "Tin Jar 2 Design Mix",
+            "created_at": "2026-09-29T17:04:16.359+00:00",
+            "updated_at": "2026-09-29T17:04:16.359+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790706107720-190wp",
+            "category_id": "cat-1790706068904-yuu2f",
+            "name": "1 Ladoo",
+            "created_at": "2026-09-29T18:21:47.72+00:00",
+            "updated_at": "2026-09-29T18:21:47.72+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790706189329-knntu",
+            "category_id": "cat-1790706068904-yuu2f",
+            "name": "4 Ladoo Box",
+            "created_at": "2026-09-29T18:23:09.329+00:00",
+            "updated_at": "2026-09-29T18:23:09.33+00:00",
+            "deleted_at": null
+          }
+        ],
+        "products": [
+          {
+            "id": "prod-1790677039668-12u99",
+            "name": "2607 4jar (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 550,
+            "supplier_code": "2607",
+            "created_at": "2026-09-29T10:17:19.668+00:00",
+            "updated_at": "2026-09-29T10:17:19.668+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790675793301-wz914",
+            "name": "2603 (2 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596827329-c9hsh",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 350,
+            "supplier_code": "2603",
+            "created_at": "2026-09-29T09:56:33.301+00:00",
+            "updated_at": "2026-09-29T09:56:33.301+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790607014770-gk6vw",
+            "name": "2601 (3 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596838944-1w7a8",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 375,
+            "supplier_code": "2601",
+            "created_at": "2026-09-28T14:50:14.77+00:00",
+            "updated_at": "2026-09-28T14:50:14.77+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790700803721-l0nkz",
+            "name": "2619 B (11x11)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790700754679-1n760",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 200,
+            "supplier_code": "MDF Partiton Box",
+            "created_at": "2026-09-29T16:53:23.721+00:00",
+            "updated_at": "2026-09-29T16:53:23.721+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790699182541-lclec",
+            "name": "2646 (4 Section with Cavatiy)",
+            "category_id": "cat-1790679502153-9g1z1",
+            "sub_type_id": "sub-1790699136629-vbgji",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 300,
+            "supplier_code": "File Box",
+            "created_at": "2026-09-29T16:26:22.541+00:00",
+            "updated_at": "2026-09-29T16:26:22.541+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790699410648-wak2m",
+            "name": "2631 (3 Jar+15 Cavatiy)",
+            "category_id": "cat-1790699284006-p3if5",
+            "sub_type_id": "sub-1790699326742-5q9ta",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 550,
+            "supplier_code": "Double Door",
+            "created_at": "2026-09-29T16:30:10.648+00:00",
+            "updated_at": "2026-09-29T16:30:10.648+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790702815248-4p6oq",
+            "name": "D 2605 (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:26:55.248+00:00",
+            "updated_at": "2026-09-29T17:26:55.248+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790702432576-rlobv",
+            "name": "Basket With 3 Pcs. (Basket)",
+            "category_id": "cat-1790702141912-5n5dc",
+            "sub_type_id": "sub-1790702211321-cmc95",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 550,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:20:32.576+00:00",
+            "updated_at": "2026-09-29T17:20:32.576+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790702883529-ri6ae",
+            "name": "D 2607 (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:28:03.529+00:00",
+            "updated_at": "2026-09-29T17:28:03.529+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790706544464-vdvh0",
+            "name": "L 2608 (4 Ladoo Box)",
+            "category_id": "cat-1790706068904-yuu2f",
+            "sub_type_id": "sub-1790706189329-knntu",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 130,
+            "supplier_code": "2608 L",
+            "created_at": "2026-09-29T18:29:04.464+00:00",
+            "updated_at": "2026-09-29T18:29:04.465+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790702962096-bdh8u",
+            "name": "D 2608 (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:29:22.096+00:00",
+            "updated_at": "2026-09-29T17:29:22.096+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790706835801-u71s3",
+            "name": "B 2607 (3 SECTION)",
+            "category_id": "cat-1790677591105-r3i8t",
+            "sub_type_id": "sub-1790678045217-xcv6j",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 40,
+            "supplier_code": "2607",
+            "created_at": "2026-09-29T18:33:55.801+00:00",
+            "updated_at": "2026-09-29T18:33:55.801+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790706900226-2g494",
+            "name": "B 2608 (3 SECTION)",
+            "category_id": "cat-1790677591105-r3i8t",
+            "sub_type_id": "sub-1790678045217-xcv6j",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 40,
+            "supplier_code": "2608",
+            "created_at": "2026-09-29T18:35:00.226+00:00",
+            "updated_at": "2026-09-29T18:35:00.226+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790707007465-vq634",
+            "name": "1 KG Folding (4 SECTION)",
+            "category_id": "cat-1790677591105-r3i8t",
+            "sub_type_id": "sub-1790677686388-a0bfn",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 60,
+            "supplier_code": "1 KG",
+            "created_at": "2026-09-29T18:36:47.465+00:00",
+            "updated_at": "2026-09-29T18:36:47.465+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790705428281-s1ee4",
+            "name": "D 2504 (6 Khana - 10x15)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605836501-nfp3v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 120,
+            "supplier_code": "2504 D",
+            "created_at": "2026-09-29T18:10:28.281+00:00",
+            "updated_at": "2026-09-29T18:10:28.281+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790705783259-i5mzp",
+            "name": "D 2604 (4 Khana - 12x12)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605777368-i4i4a",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 120,
+            "supplier_code": "2604 D",
+            "created_at": "2026-09-29T18:16:23.259+00:00",
+            "updated_at": "2026-09-29T18:16:23.259+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790705917282-auzl7",
+            "name": "D 2606 (4 Khana - 12x12)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605777368-i4i4a",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 120,
+            "supplier_code": "2606 D",
+            "created_at": "2026-09-29T18:18:37.282+00:00",
+            "updated_at": "2026-09-29T18:18:37.282+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790607014769-od27q",
+            "name": "2601 (2 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596827329-c9hsh",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 310,
+            "supplier_code": "2601",
+            "created_at": "2026-09-28T14:50:14.769+00:00",
+            "updated_at": "2026-09-28T14:50:14.769+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790677039668-xnf9f",
+            "name": "2607 4jar (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 450,
+            "supplier_code": "2607",
+            "created_at": "2026-09-29T10:17:19.668+00:00",
+            "updated_at": "2026-09-29T10:17:19.668+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790675439525-v09t9",
+            "name": "2602 (2 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596827329-c9hsh",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 325,
+            "supplier_code": "2602",
+            "created_at": "2026-09-29T09:50:39.525+00:00",
+            "updated_at": "2026-09-29T09:50:39.525+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790698921501-sk8du",
+            "name": "2645 (2 JAR - CAVATIY)",
+            "category_id": "cat-1790679502153-9g1z1",
+            "sub_type_id": "sub-1790679549089-mmu2v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 300,
+            "supplier_code": "File Box",
+            "created_at": "2026-09-29T16:22:01.501+00:00",
+            "updated_at": "2026-09-29T16:22:01.501+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790702366368-f6jcm",
+            "name": "12\" Round Top Bottom (Round Basket)",
+            "category_id": "cat-1790702141912-5n5dc",
+            "sub_type_id": "sub-1790702182999-iiy44",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 1000,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:19:26.368+00:00",
+            "updated_at": "2026-09-29T17:19:26.368+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790675439526-4n099",
+            "name": "2602 (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 550,
+            "supplier_code": "2602",
+            "created_at": "2026-09-29T09:50:39.526+00:00",
+            "updated_at": "2026-09-29T09:50:39.526+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790699571542-zitq4",
+            "name": "2632 A (3 Plastic Jar Small+2 Cavatiy Trays)",
+            "category_id": "cat-1790699284006-p3if5",
+            "sub_type_id": "sub-1790699528734-xb8di",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 650,
+            "supplier_code": "Double Door",
+            "created_at": "2026-09-29T16:32:51.542+00:00",
+            "updated_at": "2026-09-29T16:32:51.542+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790699604742-k3hqe",
+            "name": "2632 B (3 Plastic Jar Small+2 Cavatiy Trays)",
+            "category_id": "cat-1790699284006-p3if5",
+            "sub_type_id": "sub-1790699528734-xb8di",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 650,
+            "supplier_code": "Double Door",
+            "created_at": "2026-09-29T16:33:24.742+00:00",
+            "updated_at": "2026-09-29T16:33:24.742+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790676808051-qqv7a",
+            "name": "2606 2jar (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 450,
+            "supplier_code": "2606",
+            "created_at": "2026-09-29T10:13:28.051+00:00",
+            "updated_at": "2026-09-29T10:13:28.051+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790676808051-wh2al",
+            "name": "2606 2jar (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 550,
+            "supplier_code": "2606",
+            "created_at": "2026-09-29T10:13:28.051+00:00",
+            "updated_at": "2026-09-29T10:13:28.051+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790607014771-j8juo",
+            "name": "2601 (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 400,
+            "supplier_code": "2601",
+            "created_at": "2026-09-28T14:50:14.771+00:00",
+            "updated_at": "2026-09-28T14:50:14.771+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790677852273-2uw3d",
+            "name": "2026 MALABAR BOX (4 SECTION)",
+            "category_id": "cat-1790677591105-r3i8t",
+            "sub_type_id": "sub-1790677686388-a0bfn",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": "500 GMS BOX",
+            "created_at": "2026-09-29T10:30:52.273+00:00",
+            "updated_at": "2026-09-29T10:30:52.273+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790701784663-nnjhu",
+            "name": "2026 (Linner Brown Jar)",
+            "category_id": "cat-1790604544253-6zust",
+            "sub_type_id": "sub-1790701370351-y2p6j",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 50,
+            "supplier_code": "Linner Brown Jar",
+            "created_at": "2026-09-29T17:09:44.663+00:00",
+            "updated_at": "2026-09-29T17:09:44.663+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703668416-yua7g",
+            "name": "D 2610  (4 Khana - 8x8)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605724899-e5ikm",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 60,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:41:08.416+00:00",
+            "updated_at": "2026-09-29T17:41:08.416+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790676028276-fhx0i",
+            "name": "2605 (3 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596838944-1w7a8",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 400,
+            "supplier_code": "2605",
+            "created_at": "2026-09-29T10:00:28.276+00:00",
+            "updated_at": "2026-09-29T10:04:38.771+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790607014772-9xrn3",
+            "name": "2601 (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 500,
+            "supplier_code": "2601",
+            "created_at": "2026-09-28T14:50:14.772+00:00",
+            "updated_at": "2026-09-28T14:50:14.772+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790678144617-uqgl7",
+            "name": "2026 MALABAR BOX (3 SECTION)",
+            "category_id": "cat-1790677591105-r3i8t",
+            "sub_type_id": "sub-1790678045217-xcv6j",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": "600 GMS BOX",
+            "created_at": "2026-09-29T10:35:44.617+00:00",
+            "updated_at": "2026-09-29T10:35:44.617+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790701879679-cps6a",
+            "name": "2026 (Tin Jar 3 Design Mix)",
+            "category_id": "cat-1790604544253-6zust",
+            "sub_type_id": "sub-1790701420887-u5xna",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 40,
+            "supplier_code": "Tin Jar ",
+            "created_at": "2026-09-29T17:11:19.679+00:00",
+            "updated_at": "2026-09-29T17:11:19.679+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703026169-obps2",
+            "name": "D 2405 (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:30:26.169+00:00",
+            "updated_at": "2026-09-29T17:30:26.169+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790705537915-ch8lb",
+            "name": "D 2505 (6 Khana - 10x15)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605836501-nfp3v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 120,
+            "supplier_code": "2505 D",
+            "created_at": "2026-09-29T18:12:17.915+00:00",
+            "updated_at": "2026-09-29T18:12:17.915+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790700957533-20c43",
+            "name": "2619 C (9.5x16)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790700875286-9k4pt",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 210,
+            "supplier_code": "MDF Partiton BOx",
+            "created_at": "2026-09-29T16:55:57.533+00:00",
+            "updated_at": "2026-09-29T16:55:57.533+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703586425-pmqam",
+            "name": "D 7x10 Bacha Mix (4 Khana - 7x10 BACHHA)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605659831-myog5",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 60,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:39:46.425+00:00",
+            "updated_at": "2026-09-29T17:39:46.425+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790707167386-qgz0w",
+            "name": "W-202590 (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 600,
+            "supplier_code": "Mirror Box",
+            "created_at": "2026-09-29T18:39:27.386+00:00",
+            "updated_at": "2026-09-29T18:39:27.386+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790707284282-0msif",
+            "name": "W-202590 (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 850,
+            "supplier_code": "Mirror Box",
+            "created_at": "2026-09-29T18:41:24.282+00:00",
+            "updated_at": "2026-09-29T18:41:24.282+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790701933567-hnlj0",
+            "name": "2026 (Tin Jar 2 Design Mix)",
+            "category_id": "cat-1790604544253-6zust",
+            "sub_type_id": "sub-1790701456359-n4wlq",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 40,
+            "supplier_code": "Tin Jar",
+            "created_at": "2026-09-29T17:12:13.567+00:00",
+            "updated_at": "2026-09-29T17:12:13.567+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790706304441-xmjhh",
+            "name": "L 2609  (1 Ladoo)",
+            "category_id": "cat-1790706068904-yuu2f",
+            "sub_type_id": "sub-1790706107720-190wp",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 70,
+            "supplier_code": "2609 L",
+            "created_at": "2026-09-29T18:25:04.441+00:00",
+            "updated_at": "2026-09-29T18:25:04.441+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790705658009-sekju",
+            "name": "D 2506 (6 Khana - 10x15)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605836501-nfp3v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 120,
+            "supplier_code": "2560 D ",
+            "created_at": "2026-09-29T18:14:18.009+00:00",
+            "updated_at": "2026-09-29T18:14:18.009+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790699879735-fq7jz",
+            "name": "2625 B (2 Jar+16 Cavatiy)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790699815894-0bfti",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 450,
+            "supplier_code": "Jar Box",
+            "created_at": "2026-09-29T16:37:59.735+00:00",
+            "updated_at": "2026-09-29T16:37:59.735+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790700040360-r0lif",
+            "name": "2626 (4 Jar+14 Cavatiy)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790699981456-flevk",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 620,
+            "supplier_code": "Jar Box",
+            "created_at": "2026-09-29T16:40:40.36+00:00",
+            "updated_at": "2026-09-29T16:40:40.361+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790678676828-p4aab",
+            "name": "2601 2JAR (2 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596827329-c9hsh",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 310,
+            "supplier_code": "2601",
+            "created_at": "2026-09-29T10:44:36.828+00:00",
+            "updated_at": "2026-09-29T10:44:36.828+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790678676829-5bnf5",
+            "name": "2601 2JAR (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 500,
+            "supplier_code": "2601",
+            "created_at": "2026-09-29T10:44:36.829+00:00",
+            "updated_at": "2026-09-29T10:44:36.829+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790675793301-hkgpc",
+            "name": "2603 (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 550,
+            "supplier_code": "2603",
+            "created_at": "2026-09-29T09:56:33.301+00:00",
+            "updated_at": "2026-09-29T09:56:33.301+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790676028276-gbk4i",
+            "name": "2605 (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 600,
+            "supplier_code": "2605",
+            "created_at": "2026-09-29T10:00:28.276+00:00",
+            "updated_at": "2026-09-29T10:02:18.364+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790705230041-v84fi",
+            "name": "D 2502 (6 Khana - 10x15)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605836501-nfp3v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 120,
+            "supplier_code": "2502 D",
+            "created_at": "2026-09-29T18:07:10.041+00:00",
+            "updated_at": "2026-09-29T18:07:10.041+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790679311755-usvcn",
+            "name": "2626 4JAR  (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 620,
+            "supplier_code": "CAVITY BOX",
+            "created_at": "2026-09-29T10:55:11.755+00:00",
+            "updated_at": "2026-09-29T10:55:11.755+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790701692832-jkf31",
+            "name": "2026 (285 ML)",
+            "category_id": "cat-1790604544253-6zust",
+            "sub_type_id": "sub-1790701344039-6ngzk",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 30,
+            "supplier_code": "Fancy Cut",
+            "created_at": "2026-09-29T17:08:12.832+00:00",
+            "updated_at": "2026-09-29T17:08:12.832+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790678676829-jz0d3",
+            "name": "2601 2JAR (3 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596838944-1w7a8",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 375,
+            "supplier_code": "2601",
+            "created_at": "2026-09-29T10:44:36.829+00:00",
+            "updated_at": "2026-09-29T10:44:36.829+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790706442345-2xai3",
+            "name": "L 2609 (2 Ladoo Box)",
+            "category_id": "cat-1790706068904-yuu2f",
+            "sub_type_id": "sub-1790706145272-6b348",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": "2609 L",
+            "created_at": "2026-09-29T18:27:22.345+00:00",
+            "updated_at": "2026-09-29T18:27:22.345+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790706786657-knnor",
+            "name": "B 2606 (3 SECTION)",
+            "category_id": "cat-1790677591105-r3i8t",
+            "sub_type_id": "sub-1790678045217-xcv6j",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 40,
+            "supplier_code": "2606 B",
+            "created_at": "2026-09-29T18:33:06.657+00:00",
+            "updated_at": "2026-09-29T18:33:06.657+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790707403283-h9qzw",
+            "name": "W-2501 (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 450,
+            "supplier_code": "2501",
+            "created_at": "2026-09-29T18:43:23.283+00:00",
+            "updated_at": "2026-09-29T18:43:23.283+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790678676829-b64rz",
+            "name": "2601 2JAR (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 400,
+            "supplier_code": "2601",
+            "created_at": "2026-09-29T10:44:36.829+00:00",
+            "updated_at": "2026-09-29T10:44:36.829+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790675793301-gz70y",
+            "name": "2603 (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 450,
+            "supplier_code": "2603",
+            "created_at": "2026-09-29T09:56:33.301+00:00",
+            "updated_at": "2026-09-29T09:56:33.301+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790676028276-xpbs4",
+            "name": "2605 (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 500,
+            "supplier_code": "2605",
+            "created_at": "2026-09-29T10:00:28.276+00:00",
+            "updated_at": "2026-09-29T10:03:48.314+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790676808050-jslb4",
+            "name": "2606 2jar (2 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596827329-c9hsh",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 350,
+            "supplier_code": "2606",
+            "created_at": "2026-09-29T10:13:28.05+00:00",
+            "updated_at": "2026-09-29T10:13:28.05+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790676808051-4bzi5",
+            "name": "2606 2jar (3 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596838944-1w7a8",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 400,
+            "supplier_code": "2606",
+            "created_at": "2026-09-29T10:13:28.051+00:00",
+            "updated_at": "2026-09-29T10:13:28.051+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790675439526-efa1v",
+            "name": "2602 (3 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596838944-1w7a8",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 400,
+            "supplier_code": "2602",
+            "created_at": "2026-09-29T09:50:39.526+00:00",
+            "updated_at": "2026-09-29T09:50:39.526+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790699920008-cbpqm",
+            "name": "2625 F (2 Jar+16 Cavatiy)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790699815894-0bfti",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 450,
+            "supplier_code": "Jar Box",
+            "created_at": "2026-09-29T16:38:40.008+00:00",
+            "updated_at": "2026-09-29T16:38:40.008+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790675439526-nexgc",
+            "name": "2602 (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 450,
+            "supplier_code": "2602",
+            "created_at": "2026-09-29T09:50:39.526+00:00",
+            "updated_at": "2026-09-29T09:50:39.526+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790677345908-80rid",
+            "name": "2026 jc  (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 900,
+            "supplier_code": "radio box",
+            "created_at": "2026-09-29T10:22:25.908+00:00",
+            "updated_at": "2026-09-29T10:22:25.908+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790707565609-ljchh",
+            "name": "W-2503 (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 550,
+            "supplier_code": "2503",
+            "created_at": "2026-09-29T18:46:05.609+00:00",
+            "updated_at": "2026-09-29T18:46:05.609+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703119073-iflil",
+            "name": "D 2331 Red (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:31:59.073+00:00",
+            "updated_at": "2026-09-29T17:31:59.073+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790702695128-pgrb9",
+            "name": "D 2604 (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:24:55.128+00:00",
+            "updated_at": "2026-09-29T17:24:55.128+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703180392-9po8n",
+            "name": "D 2407 (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:33:00.392+00:00",
+            "updated_at": "2026-09-29T17:33:00.392+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703327586-u4h1p",
+            "name": "D 2504 (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:35:27.586+00:00",
+            "updated_at": "2026-09-29T17:35:27.586+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703790889-arqzz",
+            "name": "D 2611 (4 Khana - 8x8)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605724899-e5ikm",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 500,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:43:10.889+00:00",
+            "updated_at": "2026-09-29T17:43:10.889+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703898553-cqj9z",
+            "name": "D 2614 (4 Khana - 8x8)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605724899-e5ikm",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 60,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:44:58.553+00:00",
+            "updated_at": "2026-09-29T17:44:58.553+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703258457-nlro8",
+            "name": "D 2503 (4 Khana - 10x10)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605743164-lt5op",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 100,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:34:18.457+00:00",
+            "updated_at": "2026-09-29T17:34:18.457+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790702477855-e643w",
+            "name": "Long Basket (Long Basket)",
+            "category_id": "cat-1790702141912-5n5dc",
+            "sub_type_id": "sub-1790702249064-2d7z4",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 550,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:21:17.855+00:00",
+            "updated_at": "2026-09-29T17:21:17.855+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790698855071-zz3p0",
+            "name": "2644 (2 JAR - CAVATIY)",
+            "category_id": "cat-1790679502153-9g1z1",
+            "sub_type_id": "sub-1790679549089-mmu2v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 300,
+            "supplier_code": "File Box",
+            "created_at": "2026-09-29T16:20:55.071+00:00",
+            "updated_at": "2026-09-29T16:20:55.071+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790699007271-umnev",
+            "name": "2645 (2 JAR - CAVATIY)",
+            "category_id": "cat-1790679502153-9g1z1",
+            "sub_type_id": "sub-1790679549089-mmu2v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 300,
+            "supplier_code": "File Box",
+            "created_at": "2026-09-29T16:23:27.271+00:00",
+            "updated_at": "2026-09-29T16:23:27.271+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790703981203-lbh1u",
+            "name": "D 2604  (6 Khana - 10x15)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605836501-nfp3v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 120,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:46:21.203+00:00",
+            "updated_at": "2026-09-29T17:46:21.203+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790704058554-e8cws",
+            "name": "D 2605 (6 Khana - 10x15)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605836501-nfp3v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 120,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:47:38.554+00:00",
+            "updated_at": "2026-09-29T17:47:38.554+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790704361516-c184z",
+            "name": "D 2502 (4 Khana - 7x10 BACHHA)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605659831-myog5",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 0,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:52:41.516+00:00",
+            "updated_at": "2026-09-29T17:52:41.516+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790704361516-m1mim",
+            "name": "D 2502 (6 Khana - 10x15)",
+            "category_id": "cat-1790605401762-gxa5x",
+            "sub_type_id": "sub-1790605836501-nfp3v",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 0,
+            "supplier_code": null,
+            "created_at": "2026-09-29T17:52:41.516+00:00",
+            "updated_at": "2026-09-29T17:52:41.516+00:00",
+            "deleted_at": null
+          }
+        ],
+        "additives": [
+          {
+            "id": "add-1790606272846-rmqc5",
+            "name": "Sadi Chocolate",
+            "price_per_kg": 600,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T14:37:52.846+00:00",
+            "updated_at": "2026-09-28T14:39:49.908+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790608719964-6kdcg",
+            "name": "Mango Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:18:39.964+00:00",
+            "updated_at": "2026-09-28T15:18:39.964+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790608950340-xh05k",
+            "name": "Milk Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:22:30.34+00:00",
+            "updated_at": "2026-09-28T15:22:30.34+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609004522-3delv",
+            "name": "Coffee Matcha",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:23:24.522+00:00",
+            "updated_at": "2026-09-28T15:24:13.936+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609035712-4z7p6",
+            "name": "Mango Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:23:55.712+00:00",
+            "updated_at": "2026-09-28T15:23:55.712+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609117342-573bl",
+            "name": "Kulfi Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:25:17.342+00:00",
+            "updated_at": "2026-09-28T15:25:17.342+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609177133-1ardb",
+            "name": "Coated Cranberry",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:26:17.133+00:00",
+            "updated_at": "2026-09-28T15:26:17.133+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609265066-9hbdc",
+            "name": "Milk Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:27:45.066+00:00",
+            "updated_at": "2026-09-28T15:27:45.066+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609293545-vecbf",
+            "name": "Rabdi Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:28:13.545+00:00",
+            "updated_at": "2026-09-28T15:28:13.545+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609325516-g3es5",
+            "name": "Tiramisu",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:28:45.516+00:00",
+            "updated_at": "2026-09-28T15:28:45.516+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609445979-ipn5i",
+            "name": "Choco Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:30:45.979+00:00",
+            "updated_at": "2026-09-28T15:30:45.979+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609490405-0yti6",
+            "name": "Biscoff Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:31:30.405+00:00",
+            "updated_at": "2026-09-28T15:31:30.405+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609033953-1mo12",
+            "name": "Sadi Chocolate",
+            "price_per_kg": 600,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:23:53.953+00:00",
+            "updated_at": "2026-09-28T15:23:53.953+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609073376-1oboy",
+            "name": "Choco Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:24:33.376+00:00",
+            "updated_at": "2026-09-28T15:24:33.376+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609100964-jz637",
+            "name": "Rose Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:25:00.964+00:00",
+            "updated_at": "2026-09-28T15:25:00.964+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609605792-vdsp7",
+            "name": "Milk Raisins",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:33:25.792+00:00",
+            "updated_at": "2026-09-28T15:33:25.792+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609552015-c8vec",
+            "name": "Choco Dust",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:32:32.015+00:00",
+            "updated_at": "2026-09-28T15:32:32.015+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609573833-qob69",
+            "name": "Rose Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:32:53.833+00:00",
+            "updated_at": "2026-09-28T15:32:53.833+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609123998-fhfgv",
+            "name": "Oreo Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:25:23.998+00:00",
+            "updated_at": "2026-09-28T15:25:23.998+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609161634-0n4kr",
+            "name": "Pan Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:26:01.634+00:00",
+            "updated_at": "2026-09-28T15:26:01.634+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609197672-92fr9",
+            "name": "Rabdi Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:26:37.672+00:00",
+            "updated_at": "2026-09-28T15:26:37.672+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609225014-w2gff",
+            "name": "Jamun Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:27:05.014+00:00",
+            "updated_at": "2026-09-28T15:27:05.014+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609278801-csrer",
+            "name": "Mint Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:27:58.801+00:00",
+            "updated_at": "2026-09-28T15:27:58.801+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609297316-394am",
+            "name": "Honey Rose Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:28:17.316+00:00",
+            "updated_at": "2026-09-28T15:28:17.316+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609320104-9bn3f",
+            "name": "Oreo Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:28:40.104+00:00",
+            "updated_at": "2026-09-28T15:28:40.104+00:00",
+            "deleted_at": null
+          }
+        ],
+        "locations": [
+          {
+            "id": "loc-1790604759947-apwrm",
+            "name": "Display",
+            "created_at": "2026-09-28T14:12:39.947+00:00",
+            "updated_at": "2026-09-28T14:12:39.947+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "loc-1790604909750-08ta0",
+            "name": "Harihar",
+            "created_at": "2026-09-28T14:15:09.75+00:00",
+            "updated_at": "2026-09-28T14:23:07.067+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "loc-1790606023637-6rg21",
+            "name": "Mandir (Junu Ghar)",
+            "created_at": "2026-09-28T14:33:43.637+00:00",
+            "updated_at": "2026-09-28T14:34:26.573+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "loc-1790606039630-5bxb4",
+            "name": "Riddhesh Ghar",
+            "created_at": "2026-09-28T14:33:59.63+00:00",
+            "updated_at": "2026-09-28T14:33:59.63+00:00",
+            "deleted_at": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "snap-2026-09-29-mump8j9i",
+      "date_str": "2026-09-29",
+      "created_at": "2026-09-29T13:15:24.678Z",
+      "invoices_count": 1,
+      "catalog_count": 49,
+      "size_kb": 11.2,
+      "data": {
+        "invoices": [
+          {
+            "id": "inv-live-1790664509060",
+            "invoice_number": "INV-LIVE-1790664509060",
+            "customer_name": "Live Supabase Tester",
+            "customer_phone": "9876543210",
+            "total_amount": 2500,
+            "status": "delivered",
+            "delivery_date": null,
+            "advance_paid": 0,
+            "payment_mode": "UPI",
+            "created_by_user_id": null,
+            "created_by_username": null,
+            "device_ip": null,
+            "device_fingerprint": null,
+            "created_at": "2026-09-29T11:59:00+00:00",
+            "updated_at": "2026-09-29T11:59:00+00:00",
+            "deleted_at": null,
+            "issue_date": "2026-09-29T11:59:00+00:00"
+          }
+        ],
+        "invoice_items": [],
+        "categories": [
+          {
+            "id": "cat-live-1790664086681",
+            "name": "Live Cloud Test Category",
+            "created_at": "2026-09-29T11:59:00+00:00",
+            "updated_at": "2026-09-29T11:59:00+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-live-1790664108075",
+            "name": "Live Cloud Test Category",
+            "created_at": "2026-09-29T11:59:00+00:00",
+            "updated_at": "2026-09-29T11:59:00+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-live-1790664509060",
+            "name": "Live Cloud Test Category",
+            "created_at": "2026-09-29T11:59:00+00:00",
+            "updated_at": "2026-09-29T11:59:00+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790596809257-659te",
+            "name": "Jar Box",
+            "created_at": "2026-09-28T12:00:09.257+00:00",
+            "updated_at": "2026-09-28T14:23:00.975+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790604544253-6zust",
+            "name": "Jar",
+            "created_at": "2026-09-28T14:09:04.253+00:00",
+            "updated_at": "2026-09-28T14:09:04.253+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790605231684-r45y8",
+            "name": "Basket",
+            "created_at": "2026-09-28T14:20:31.684+00:00",
+            "updated_at": "2026-09-28T14:20:31.684+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "cat-1790605401762-gxa5x",
+            "name": "Puttha Box",
+            "created_at": "2026-09-28T14:23:21.762+00:00",
+            "updated_at": "2026-09-28T14:23:31.564+00:00",
+            "deleted_at": null
+          }
+        ],
+        "sub_types": [
+          {
+            "id": "sub-1790596819396-fdbhx",
+            "category_id": "cat-1790596809257-659te",
+            "name": "1 Jar",
+            "created_at": "2026-09-28T12:00:19.396+00:00",
+            "updated_at": "2026-09-28T12:00:50.111+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596827329-c9hsh",
+            "category_id": "cat-1790596809257-659te",
+            "name": "2 Jar",
+            "created_at": "2026-09-28T12:00:27.329+00:00",
+            "updated_at": "2026-09-28T12:00:54.568+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596838944-1w7a8",
+            "category_id": "cat-1790596809257-659te",
+            "name": "3 Jar",
+            "created_at": "2026-09-28T12:00:38.944+00:00",
+            "updated_at": "2026-09-28T12:00:38.944+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596915458-bh17t",
+            "category_id": "cat-1790596809257-659te",
+            "name": "4 Jar",
+            "created_at": "2026-09-28T12:01:55.458+00:00",
+            "updated_at": "2026-09-28T12:01:55.458+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596922478-igvhd",
+            "category_id": "cat-1790596809257-659te",
+            "name": "5 Jar",
+            "created_at": "2026-09-28T12:02:02.478+00:00",
+            "updated_at": "2026-09-28T12:02:02.478+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790596936727-m7aa3",
+            "category_id": "cat-1790596809257-659te",
+            "name": "6 Jar",
+            "created_at": "2026-09-28T12:02:16.727+00:00",
+            "updated_at": "2026-09-28T12:02:16.727+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605659831-myog5",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "4 Khana - 7x10 BACHHA",
+            "created_at": "2026-09-28T14:27:39.831+00:00",
+            "updated_at": "2026-09-28T14:32:05.507+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605724899-e5ikm",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "4 Khana - 8x8",
+            "created_at": "2026-09-28T14:28:44.899+00:00",
+            "updated_at": "2026-09-28T14:28:44.899+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605743164-lt5op",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "4 Khana - 10x10",
+            "created_at": "2026-09-28T14:29:03.164+00:00",
+            "updated_at": "2026-09-28T14:29:03.164+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605777368-i4i4a",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "4 Khana - 12x12",
+            "created_at": "2026-09-28T14:29:37.368+00:00",
+            "updated_at": "2026-09-28T14:29:37.368+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605818270-28onf",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "6 Khana - 9x13",
+            "created_at": "2026-09-28T14:30:18.27+00:00",
+            "updated_at": "2026-09-28T14:30:18.271+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605836501-nfp3v",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "6 Khana - 10x15",
+            "created_at": "2026-09-28T14:30:36.501+00:00",
+            "updated_at": "2026-09-28T14:30:36.501+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "sub-1790605854798-vz5h0",
+            "category_id": "cat-1790605401762-gxa5x",
+            "name": "6 Khana - JUMBO",
+            "created_at": "2026-09-28T14:30:54.798+00:00",
+            "updated_at": "2026-09-28T14:30:54.798+00:00",
+            "deleted_at": null
+          }
+        ],
+        "products": [
+          {
+            "id": "prod-1790607014770-gk6vw",
+            "name": "2601 (3 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596838944-1w7a8",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 375,
+            "supplier_code": "2601",
+            "created_at": "2026-09-28T14:50:14.77+00:00",
+            "updated_at": "2026-09-28T14:50:14.77+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790607014769-od27q",
+            "name": "2601 (2 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596827329-c9hsh",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 310,
+            "supplier_code": "2601",
+            "created_at": "2026-09-28T14:50:14.769+00:00",
+            "updated_at": "2026-09-28T14:50:14.769+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790607014771-j8juo",
+            "name": "2601 (4 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596915458-bh17t",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 400,
+            "supplier_code": "2601",
+            "created_at": "2026-09-28T14:50:14.771+00:00",
+            "updated_at": "2026-09-28T14:50:14.771+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "prod-1790607014772-9xrn3",
+            "name": "2601 (6 Jar)",
+            "category_id": "cat-1790596809257-659te",
+            "sub_type_id": "sub-1790596936727-m7aa3",
+            "photos": [
+              "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"
+            ],
+            "price": 500,
+            "supplier_code": "2601",
+            "created_at": "2026-09-28T14:50:14.772+00:00",
+            "updated_at": "2026-09-28T14:50:14.772+00:00",
+            "deleted_at": null
+          }
+        ],
+        "additives": [
+          {
+            "id": "add-1790606272846-rmqc5",
+            "name": "Sadi Chocolate",
+            "price_per_kg": 600,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T14:37:52.846+00:00",
+            "updated_at": "2026-09-28T14:39:49.908+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790608719964-6kdcg",
+            "name": "Mango Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:18:39.964+00:00",
+            "updated_at": "2026-09-28T15:18:39.964+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790608950340-xh05k",
+            "name": "Milk Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:22:30.34+00:00",
+            "updated_at": "2026-09-28T15:22:30.34+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609004522-3delv",
+            "name": "Coffee Matcha",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:23:24.522+00:00",
+            "updated_at": "2026-09-28T15:24:13.936+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609035712-4z7p6",
+            "name": "Mango Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:23:55.712+00:00",
+            "updated_at": "2026-09-28T15:23:55.712+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609117342-573bl",
+            "name": "Kulfi Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:25:17.342+00:00",
+            "updated_at": "2026-09-28T15:25:17.342+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609177133-1ardb",
+            "name": "Coated Cranberry",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:26:17.133+00:00",
+            "updated_at": "2026-09-28T15:26:17.133+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609265066-9hbdc",
+            "name": "Milk Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:27:45.066+00:00",
+            "updated_at": "2026-09-28T15:27:45.066+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609293545-vecbf",
+            "name": "Rabdi Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:28:13.545+00:00",
+            "updated_at": "2026-09-28T15:28:13.545+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609325516-g3es5",
+            "name": "Tiramisu",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:28:45.516+00:00",
+            "updated_at": "2026-09-28T15:28:45.516+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609445979-ipn5i",
+            "name": "Choco Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:30:45.979+00:00",
+            "updated_at": "2026-09-28T15:30:45.979+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609490405-0yti6",
+            "name": "Biscoff Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:31:30.405+00:00",
+            "updated_at": "2026-09-28T15:31:30.405+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609033953-1mo12",
+            "name": "Sadi Chocolate",
+            "price_per_kg": 600,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:23:53.953+00:00",
+            "updated_at": "2026-09-28T15:23:53.953+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609073376-1oboy",
+            "name": "Choco Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:24:33.376+00:00",
+            "updated_at": "2026-09-28T15:24:33.376+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609100964-jz637",
+            "name": "Rose Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:25:00.964+00:00",
+            "updated_at": "2026-09-28T15:25:00.964+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609605792-vdsp7",
+            "name": "Milk Raisins",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:33:25.792+00:00",
+            "updated_at": "2026-09-28T15:33:25.792+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609552015-c8vec",
+            "name": "Choco Dust",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:32:32.015+00:00",
+            "updated_at": "2026-09-28T15:32:32.015+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609573833-qob69",
+            "name": "Rose Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:32:53.833+00:00",
+            "updated_at": "2026-09-28T15:32:53.833+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609123998-fhfgv",
+            "name": "Oreo Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:25:23.998+00:00",
+            "updated_at": "2026-09-28T15:25:23.998+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609161634-0n4kr",
+            "name": "Pan Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:26:01.634+00:00",
+            "updated_at": "2026-09-28T15:26:01.634+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609197672-92fr9",
+            "name": "Rabdi Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:26:37.672+00:00",
+            "updated_at": "2026-09-28T15:26:37.672+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609225014-w2gff",
+            "name": "Jamun Almond",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:27:05.014+00:00",
+            "updated_at": "2026-09-28T15:27:05.014+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609278801-csrer",
+            "name": "Mint Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:27:58.801+00:00",
+            "updated_at": "2026-09-28T15:27:58.801+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609297316-394am",
+            "name": "Honey Rose Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:28:17.316+00:00",
+            "updated_at": "2026-09-28T15:28:17.316+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "add-1790609320104-9bn3f",
+            "name": "Oreo Cashew",
+            "price_per_kg": 1200,
+            "stock_qty_kg": 1,
+            "created_at": "2026-09-28T15:28:40.104+00:00",
+            "updated_at": "2026-09-28T15:28:40.104+00:00",
+            "deleted_at": null
+          }
+        ],
+        "locations": [
+          {
+            "id": "loc-1790604759947-apwrm",
+            "name": "Display",
+            "created_at": "2026-09-28T14:12:39.947+00:00",
+            "updated_at": "2026-09-28T14:12:39.947+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "loc-1790604909750-08ta0",
+            "name": "Harihar",
+            "created_at": "2026-09-28T14:15:09.75+00:00",
+            "updated_at": "2026-09-28T14:23:07.067+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "loc-1790606023637-6rg21",
+            "name": "Mandir (Junu Ghar)",
+            "created_at": "2026-09-28T14:33:43.637+00:00",
+            "updated_at": "2026-09-28T14:34:26.573+00:00",
+            "deleted_at": null
+          },
+          {
+            "id": "loc-1790606039630-5bxb4",
+            "name": "Riddhesh Ghar",
+            "created_at": "2026-09-28T14:33:59.63+00:00",
+            "updated_at": "2026-09-28T14:33:59.63+00:00",
+            "deleted_at": null
+          }
+        ]
+      }
+    }
+  ]
 }
