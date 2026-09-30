@@ -436,47 +436,83 @@ const getStorageItem = <T>(key: string, defaultValue: T): T => {
   }
 };
 
-const setStorageItem = <T>(key: string, value: T): void => {
+const pruneLegacyBase64Images = (): void => {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(value));
-    
-    // Post to server JSON database file (only when running in a browser context)
-    if (typeof window !== "undefined" && window.location && window.location.pathname) {
-      setTimeout(async () => {
-        try {
-          const res = await fetch("/api/db", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ key, value })
-          });
-          if (res.ok) {
-            try {
-              const resData = await res.json();
-              if (resData && resData._last_updated) {
-                window.localStorage.setItem("jenny_db_last_known_version", String(resData._last_updated));
-              }
-            } catch (e) {}
+    const rawProducts = window.localStorage.getItem("jenny_creation_products");
+    if (rawProducts && rawProducts.includes("data:image/")) {
+      const prods = JSON.parse(rawProducts);
+      if (Array.isArray(prods)) {
+        const cleaned = prods.map((p: any) => {
+          if (Array.isArray(p.photos)) {
+            const sanitizedPhotos = p.photos.map((url: string) => 
+              typeof url === "string" && url.startsWith("data:image/") ? "/gift_box_2jar.jpg" : url
+            );
+            return { ...p, photos: sanitizedPhotos };
           }
-        } catch (e) {
-          console.error("Local JSON database server write failed:", e);
-        }
-      }, 0);
+          return p;
+        });
+        window.localStorage.setItem("jenny_creation_products", JSON.stringify(cleaned));
+      }
     }
+  } catch (e) {}
+};
 
-    // Asynchronously update Supabase if configured
-    setTimeout(() => {
+const setStorageItem = <T>(key: string, value: T): void => {
+  if (typeof window === "undefined") return;
+  const jsonStr = JSON.stringify(value);
+  const storageKey = `jenny_creation_${key}`;
+
+  try {
+    window.localStorage.setItem(storageKey, jsonStr);
+  } catch (error) {
+    console.warn(`localStorage quota exceeded while saving key '${key}'. Performing emergency quota cleanup...`, error);
+    pruneLegacyBase64Images();
+
+    try {
+      window.localStorage.setItem(storageKey, jsonStr);
+    } catch (retryError) {
       try {
-        if (localDB && typeof localDB.syncToSupabase === "function") {
-          localDB.syncToSupabase(key, value);
+        window.sessionStorage.setItem(storageKey, jsonStr);
+      } catch (sessionErr) {}
+    }
+  }
+
+  // Post to server JSON database file (only when running in a browser context)
+  if (typeof window !== "undefined" && window.location && window.location.pathname) {
+    setTimeout(async () => {
+      try {
+        const res = await fetch("/api/db", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key, value })
+        });
+        if (res.ok) {
+          try {
+            const resData = await res.json();
+            if (resData && resData._last_updated) {
+              try {
+                window.localStorage.setItem("jenny_db_last_known_version", String(resData._last_updated));
+              } catch (e) {}
+            }
+          } catch (e) {}
         }
       } catch (e) {
-        console.error("Auto-sync error:", e);
+        console.error("Local JSON database server write failed:", e);
       }
     }, 0);
-  } catch (error) {
-    console.error(error);
   }
+
+  // Asynchronously update Supabase if configured
+  setTimeout(() => {
+    try {
+      if (localDB && typeof localDB.syncToSupabase === "function") {
+        localDB.syncToSupabase(key, value);
+      }
+    } catch (e) {
+      console.error("Auto-sync error:", e);
+    }
+  }, 0);
 };
 
 // Database state management
