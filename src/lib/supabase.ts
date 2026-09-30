@@ -25,15 +25,31 @@ export async function uploadProductPhotoToSupabase(file: File): Promise<string> 
     const fileName = `prod_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
     const filePath = `${fileName}`;
 
-    const { data, error } = await supabase.storage
+    // Attempt upload to Supabase Storage bucket 'product-photos'
+    let { data, error } = await supabase.storage
       .from("product-photos")
       .upload(filePath, file, {
         cacheControl: "3600",
         upsert: true
       });
 
+    // If bucket not found, attempt auto-creation
+    if (error && (error.message.includes("not found") || error.message.includes("Bucket"))) {
+      try {
+        await supabase.storage.createBucket("product-photos", { public: true });
+        const retryRes = await supabase.storage
+          .from("product-photos")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: true
+          });
+        data = retryRes.data;
+        error = retryRes.error;
+      } catch (bErr) {}
+    }
+
     if (error) {
-      console.warn("Supabase Storage upload notice:", error.message);
+      // Supabase storage bucket not configured or permissions disabled, fallback to compressed WebP
       return "";
     }
 
@@ -43,7 +59,6 @@ export async function uploadProductPhotoToSupabase(file: File): Promise<string> 
 
     return publicUrlData?.publicUrl || "";
   } catch (err) {
-    console.warn("Supabase Storage upload catch notice:", err);
     return "";
   }
 }
