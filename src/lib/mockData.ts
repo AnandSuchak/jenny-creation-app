@@ -466,7 +466,6 @@ const setStorageItem = <T>(key: string, value: T): void => {
   try {
     window.localStorage.setItem(storageKey, jsonStr);
   } catch (error) {
-    console.warn(`localStorage quota exceeded while saving key '${key}'. Performing emergency quota cleanup...`, error);
     pruneLegacyBase64Images();
 
     try {
@@ -497,9 +496,7 @@ const setStorageItem = <T>(key: string, value: T): void => {
             }
           } catch (e) {}
         }
-      } catch (e) {
-        console.error("Local JSON database server write failed:", e);
-      }
+      } catch (e) {}
     }, 0);
   }
 
@@ -509,9 +506,7 @@ const setStorageItem = <T>(key: string, value: T): void => {
       if (localDB && typeof localDB.syncToSupabase === "function") {
         localDB.syncToSupabase(key, value);
       }
-    } catch (e) {
-      console.error("Auto-sync error:", e);
-    }
+    } catch (e) {}
   }, 0);
 };
 
@@ -675,25 +670,27 @@ class LocalDB {
       if (key === "locations") tableName = "storage_locations";
       const records = Array.isArray(data) ? data : [data];
       if (records.length === 0) return;
-      const { error } = await client.from(tableName).upsert(records);
-      if (error) {
-        // Fallback for stock table if Supabase schema lacks additive_id column or product_id NOT NULL constraint is still active
-        if (key === "stock" && (error.message.includes("additive_id") || error.message.includes("product_id") || error.message.includes("null") || error.message.includes("column"))) {
-          const productOnlyStock = records
-            .filter(r => r.product_id != null)
-            .map(({ additive_id, ...rest }) => rest);
-          if (productOnlyStock.length > 0) {
-            try {
-              await client.from(tableName).upsert(productOnlyStock);
-            } catch (retryErr) {}
-          }
-        } else {
-          console.warn(`Supabase sync notice for table ${tableName}:`, error.message);
+
+      if (key === "stock") {
+        const productStock = records
+          .filter(r => r.product_id != null)
+          .map(({ additive_id, ...rest }) => rest);
+        if (productStock.length > 0) {
+          try {
+            await client.from(tableName).upsert(productStock);
+          } catch (e) {}
         }
+        const additiveStock = records.filter(r => r.additive_id != null && r.product_id == null);
+        if (additiveStock.length > 0) {
+          try {
+            await client.from(tableName).upsert(additiveStock);
+          } catch (e) {}
+        }
+        return;
       }
-    } catch (err) {
-      console.warn(`Supabase sync notice for table ${key}:`, err);
-    }
+
+      await client.from(tableName).upsert(records);
+    } catch (err) {}
   }
 
   async syncFromSupabase(): Promise<void> {
