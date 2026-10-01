@@ -53,10 +53,6 @@ export function resetStorageBucketCache() {
 export async function uploadProductPhotoToSupabase(file: File): Promise<string> {
   if (!isSupabaseConfigured || !supabase) return "";
 
-  // Perform quick pre-check to avoid network HTTP 400 errors in browser console
-  const bucketReady = await isProductPhotosBucketAvailable();
-  if (!bucketReady) return "";
-
   try {
     const fileExt = file.name.split(".").pop() || "jpg";
     const fileName = `prod_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
@@ -71,7 +67,6 @@ export async function uploadProductPhotoToSupabase(file: File): Promise<string> 
       });
 
     if (error) {
-      cachedBucketAvailable = false;
       return "";
     }
 
@@ -81,15 +76,14 @@ export async function uploadProductPhotoToSupabase(file: File): Promise<string> 
 
     return publicUrlData?.publicUrl || "";
   } catch (err) {
-    cachedBucketAvailable = false;
     return "";
   }
 }
 
 /**
- * Client-side Canvas image compressor (converts heavy 3MB Base64 files to ~40KB WebP)
+ * Client-side Canvas image compressor (converts heavy 3MB files to lightweight ~40KB JPEG)
  */
-export function compressImageFile(file: File, maxWidth = 800, quality = 0.75): Promise<string> {
+export function compressImageFile(file: File, maxWidth = 800, quality = 0.8): Promise<string> {
   return new Promise((resolve) => {
     if (typeof window === "undefined") {
       resolve("");
@@ -97,27 +91,41 @@ export function compressImageFile(file: File, maxWidth = 800, quality = 0.75): P
     }
     const reader = new FileReader();
     reader.onload = (e) => {
-      const img = document.createElement("img");
+      const dataUrl = (e.target?.result as string) || "";
+      if (!dataUrl) {
+        resolve("");
+        return;
+      }
+      const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let width = img.width;
-        let height = img.height;
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL("image/webp", quality));
-        } else {
-          resolve((e.target?.result as string) || "");
+        try {
+          const canvas = document.createElement("canvas");
+          let width = img.naturalWidth || img.width;
+          let height = img.naturalHeight || img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL("image/jpeg", quality);
+            if (compressed && compressed.length > 50) {
+              resolve(compressed);
+              return;
+            }
+          }
+          resolve(dataUrl);
+        } catch (err) {
+          resolve(dataUrl);
         }
       };
-      img.onerror = () => resolve((e.target?.result as string) || "");
-      img.src = (e.target?.result as string) || "";
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
     };
     reader.onerror = () => resolve("");
     reader.readAsDataURL(file);
