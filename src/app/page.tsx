@@ -4887,117 +4887,88 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-          {/* Dryfruit Ingredients Stock Table */}
+          {/* Part 2: Dryfruit Ingredients Stock Table */}
           <div className={`${cardClass} overflow-hidden mt-6`}>
-            <div className="p-4 border-b border-zinc-808/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <h3 className={`font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isDark ? "text-zinc-200" : "text-zinc-750"}`}>
-                <span>🍯 Dryfruit Ingredients Stock</span>
-              </h3>
-              
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-xs">
-                {/* Search dryfruits */}
-                <div className="relative w-full sm:w-44">
-                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-zinc-500" />
-                  <input
-                    type="text"
-                    placeholder="Search dryfruits..."
-                    value={dryfruitSearchQuery}
-                    onChange={e => setDryfruitSearchQuery(e.target.value)}
-                    className={`pl-8 pr-3 py-1.5 border rounded-lg focus:outline-none w-full ${inputClass}`}
-                  />
-                </div>
-                
-                {/* Location select */}
-                <select
-                  value={dryfruitLocationFilter}
-                  onChange={e => setDryfruitLocationFilter(e.target.value)}
-                  className={`px-3 py-1.5 border rounded-lg focus:outline-none w-full sm:w-auto ${inputClass}`}
-                >
-                  <option value="all">All Locations</option>
-                  {locations.map(l => (
-                    <option key={l.id} value={l.id}>{l.name}</option>
-                  ))}
-                </select>
+            <div className={`p-4 border-b flex items-center justify-between ${isDark ? "bg-zinc-950/40 border-zinc-800" : "bg-zinc-100/80 border-zinc-200"}`}>
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-amber-500" />
+                <h3 className={`font-bold text-base ${isDark ? "text-zinc-100" : "text-zinc-900"}`}>
+                  Part 2: Dryfruit Ingredients Stock
+                </h3>
               </div>
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${isDark ? "bg-zinc-900 border-zinc-800 text-zinc-400" : "bg-white border-zinc-200 text-zinc-600"}`}>
+                {additives.length} Ingredients Total
+              </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className={`text-xs font-semibold uppercase tracking-wider border-b ${isDark ? "bg-zinc-950/40 text-zinc-400 border-zinc-808" : "bg-zinc-100/80 text-zinc-550 border-zinc-200"}`}>
+                  <tr className={`text-xs font-semibold uppercase tracking-wider border-b ${isDark ? "bg-zinc-950/40 text-zinc-400 border-zinc-800" : "bg-zinc-100/80 text-zinc-550 border-zinc-200"}`}>
                     <th className="py-4 px-6">Dryfruit Ingredient</th>
-                    <th className="py-4 px-4">Location</th>
-                    <th className="py-4 px-4 text-right">Stock Level (kg)</th>
+                    <th className="py-4 px-4">Price per kg</th>
+                    <th className="py-4 px-4 text-right">Available Stock</th>
                     <th className="py-4 px-6 text-center">Status</th>
+                    <th className="py-4 px-6 text-center">Actions</th>
                   </tr>
                 </thead>
-                <tbody className={`divide-y text-sm ${isDark ? "divide-zinc-808" : "divide-zinc-150"}`}>
-                  {stock
-                    .filter(st => {
-                      if (!st.additive_id) return false;
-                      const add = additives.find(a => a.id === st.additive_id);
-                      if (!add) return false;
-                      // Search Match
-                      const matchesSearch = add.name.toLowerCase().includes(dryfruitSearchQuery.toLowerCase());
-                      // Location Filter Match
-                      const matchesLocation = dryfruitLocationFilter === "all" || st.storage_location_id === dryfruitLocationFilter;
-                      return matchesSearch && matchesLocation;
-                    })
-                    .map((st, idx) => {
-                      const add = additives.find(a => a.id === st.additive_id);
-                      if (!add) return null;
-                      return (
-                        <tr key={`${st.id}-${idx}`} className={`transition duration-150 group ${isDark ? "hover:bg-zinc-900/25" : "hover:bg-zinc-100/40"}`}>
-                          <td className="py-4 px-6 font-semibold">
-                            {add.name}
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border ${isDark ? "bg-zinc-808/80 border-zinc-700 text-zinc-300" : "bg-zinc-100 border-zinc-200/80 text-zinc-650"}`}>
-                              <MapPin className="h-3 w-3 text-indigo-500" />
-                              {getLocationName(st.storage_location_id)}
-                            </span>
-                          </td>
-                          <td className={`py-4 px-4 text-right font-mono font-bold ${isDark ? "text-zinc-205" : "text-zinc-800"}`}>
-                            {st.quantity.toFixed(2)} kg
-                          </td>
-                          <td className="py-4 px-6 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              {st.quantity <= 0 ? (
-                                <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-rose-500/10 text-rose-450 border border-rose-500/20">
-                                  Deficit / Out
-                                </span>
-                              ) : st.quantity <= 2 ? (
-                                <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-amber-500/10 text-amber-555 border border-amber-500/20">
-                                  Low Stock
-                                </span>
-                              ) : (
-                                <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-emerald-500/10 text-emerald-555 border border-emerald-500/20">
-                                  Healthy
-                                </span>
-                              )}
-                              <button 
-                                onClick={() => {
-                                  setStockModalType("additive");
-                                  setStockAdditiveId(st.additive_id || "");
-                                  setStockLocationId(st.storage_location_id);
-                                  setStockQuantity(st.quantity);
-                                  setIsStockModalOpen(true);
-                                }}
-                                className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded transition duration-150 cursor-pointer"
-                              >
-                                Edit
-                              </button>
-                              <button 
-                                onClick={() => handleSoftDelete("stock", st.id)}
-                                className="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1 hover:bg-zinc-800 text-rose-400 hover:text-rose-355 rounded transition duration-150 cursor-pointer"
-                                title="Soft Delete"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
+                <tbody className={`divide-y text-sm ${isDark ? "divide-zinc-800" : "divide-zinc-150"}`}>
+                  {additives.map((add) => {
+                    const qty = add.stock_qty_kg || 0;
+                    return (
+                      <tr key={add.id} className={`transition duration-150 group ${isDark ? "hover:bg-zinc-900/25" : "hover:bg-zinc-100/40"}`}>
+                        <td className="py-4 px-6 flex items-center gap-3">
+                          <div className={`h-10 w-10 rounded-lg border flex items-center justify-center ${isDark ? "bg-amber-950/30 border-amber-900/40 text-amber-400" : "bg-amber-50 border-amber-200 text-amber-600"}`}>
+                            <Package className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className={`font-semibold ${isDark ? "text-zinc-200" : "text-zinc-800"}`}>
+                              {add.name}
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                            <div className="text-xs text-zinc-500 font-mono">ID: {add.id}</div>
+                          </div>
+                        </td>
+                        <td className={`py-4 px-4 font-mono font-semibold ${isDark ? "text-amber-400" : "text-amber-600"}`}>
+                          ₹{add.price_per_kg}/kg
+                        </td>
+                        <td className={`py-4 px-4 text-right font-mono font-bold ${isDark ? "text-zinc-200" : "text-zinc-800"}`}>
+                          {qty.toFixed(2)} kg
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          {qty === 0 ? (
+                            <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-rose-500/10 text-rose-450 border border-rose-500/20">
+                              Out of Stock
+                            </span>
+                          ) : qty < 5 ? (
+                            <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-amber-500/10 text-amber-555 border border-amber-500/20">
+                              Low Stock
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded bg-emerald-500/10 text-emerald-555 border border-emerald-500/20">
+                              Healthy
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSetupName(add.name);
+                              setEditItemId(add.id);
+                              setIsEditMode(true);
+                              setAdditivePrice(String(add.price_per_kg));
+                              setAdditivePriceOption("1kg");
+                              setAdditiveStockQty(String(add.stock_qty_kg || 0));
+                              setSetupModalType("additive");
+                              setIsSetupModalOpen(true);
+                            }}
+                            className="px-3 py-1 text-xs font-semibold rounded border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer"
+                          >
+                            Edit Stock
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

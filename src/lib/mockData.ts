@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from "./supabase";
+import dbJson from "../../database.json";
 // Mock Database and Client Service for local mode (with localStorage persistence)
 // Mimics PostgreSQL relational schema and soft deletes
 
@@ -215,90 +216,55 @@ export interface StockMovement {
 }
 
 // Initial seed data
-const initialCategories: Category[] = [
-  { id: "cat-1", name: "Box", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "cat-2", name: "Puttha", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "cat-3", name: "Laser Cutting", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "cat-4", name: "Basket", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-];
+// Initial seed data from database.json or fallback
+const initialCategories: Category[] = (dbJson && Array.isArray((dbJson as any).categories) && (dbJson as any).categories.length > 0)
+  ? (dbJson as any).categories
+  : [
+      { id: "cat-1", name: "Box", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "cat-2", name: "Puttha", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "cat-3", name: "Laser Cutting", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "cat-4", name: "Basket", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+    ];
 
-const initialSubTypes: SubType[] = [
-  { id: "sub-1", category_id: "cat-1", name: "2 JAR", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "sub-2", category_id: "cat-2", name: "6 Box", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "sub-3", category_id: "cat-3", name: "Peacock Design", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "sub-4", category_id: "cat-4", name: "Peacock Design", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-];
+const initialSubTypes: SubType[] = (dbJson && Array.isArray((dbJson as any).sub_types) && (dbJson as any).sub_types.length > 0)
+  ? (dbJson as any).sub_types
+  : [
+      { id: "sub-1", category_id: "cat-1", name: "2 JAR", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "sub-2", category_id: "cat-2", name: "6 Box", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "sub-3", category_id: "cat-3", name: "Peacock Design", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "sub-4", category_id: "cat-4", name: "Peacock Design", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+    ];
 
-const initialLocations: StorageLocation[] = [
-  { id: "loc-1", name: "Warehouse 1", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "loc-2", name: "Warehouse 2", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "loc-3", name: "Warehouse 3", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "loc-4", name: "Warehouse 4", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "loc-5", name: "Display", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-];
+const initialLocations: StorageLocation[] = (dbJson && Array.isArray((dbJson as any).locations) && (dbJson as any).locations.length > 0)
+  ? (dbJson as any).locations
+  : [
+      { id: "loc-1", name: "Warehouse 1", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "loc-2", name: "Warehouse 2", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "loc-3", name: "Warehouse 3", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "loc-4", name: "Warehouse 4", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+      { id: "loc-5", name: "Display", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
+    ];
 
-const initialProducts: Product[] = [
-  {
-    id: "prod-1",
-    name: "2 JAR Gift Box",
-    category_id: "cat-1", // Box
-    sub_type_id: "sub-1",  // 2 JAR
-    photos: ["/gift_box_2jar.jpg"],
-    price: 450,
-    supplier_code: "SUP-BOX-02J",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "prod-2",
-    name: "Peacock Laser Cut Tray",
-    category_id: "cat-3", // Laser Cutting
-    sub_type_id: "sub-3",  // Peacock Design
-    photos: ["/peacock_tray.jpg"],
-    price: 1250,
-    supplier_code: "SUP-LSR-PCO",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "prod-3",
-    name: "6 Box Premium Puttha Set",
-    category_id: "cat-2", // Puttha
-    sub_type_id: "sub-2",  // 6 Box
-    photos: ["https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=500&auto=format&fit=crop&q=60"],
-    price: 850,
-    supplier_code: "SUP-PTH-06B",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "prod-4",
-    name: "Peacock Design Basket",
-    category_id: "cat-4", // Basket
-    sub_type_id: "sub-3",  // Peacock Design
-    photos: ["https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop&q=60"],
-    price: 600,
-    supplier_code: "SUP-BSK-PCO",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  }
-];
+const initialProducts: Product[] = (dbJson && Array.isArray((dbJson as any).products) && (dbJson as any).products.length > 0)
+  ? (dbJson as any).products
+  : [
+      {
+        id: "prod-1",
+        name: "2 JAR Gift Box",
+        category_id: "cat-1",
+        sub_type_id: "sub-1",
+        photos: ["/gift_box_2jar.jpg"],
+        price: 450,
+        supplier_code: "SUP-BOX-02J",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        deleted_at: null
+      }
+    ];
 
-const initialStock: Stock[] = [
-  { id: "st-1", product_id: "prod-1", additive_id: null, storage_location_id: "loc-1", quantity: 10, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "st-2", product_id: "prod-2", additive_id: null, storage_location_id: "loc-5", quantity: 5, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "st-3", product_id: "prod-3", additive_id: null, storage_location_id: "loc-2", quantity: 25, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "st-4", product_id: "prod-4", additive_id: null, storage_location_id: "loc-3", quantity: 15, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  // Seed dryfruits stock allocations in locations
-  { id: "st-add-1", product_id: null, additive_id: "add-1", storage_location_id: "loc-1", quantity: 25, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "st-add-2", product_id: null, additive_id: "add-2", storage_location_id: "loc-1", quantity: 30, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "st-add-3", product_id: null, additive_id: "add-3", storage_location_id: "loc-2", quantity: 12, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "st-add-4", product_id: null, additive_id: "add-4", storage_location_id: "loc-3", quantity: 18, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-];
+const initialStock: Stock[] = (dbJson && Array.isArray((dbJson as any).stock) && (dbJson as any).stock.length > 0)
+  ? (dbJson as any).stock
+  : [];
 
 const initialInvoices: Invoice[] = [
   {
@@ -429,9 +395,15 @@ const getStorageItem = <T>(key: string, defaultValue: T): T => {
   if (typeof window === "undefined") return defaultValue;
   try {
     const item = window.localStorage.getItem(`jenny_creation_${key}`);
-    return item ? JSON.parse(item) : defaultValue;
+    if (item) {
+      const parsed = JSON.parse(item);
+      if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(defaultValue) && defaultValue.length > 0) {
+        return defaultValue;
+      }
+      return parsed;
+    }
+    return defaultValue;
   } catch (error) {
-    console.error(error);
     return defaultValue;
   }
 };
@@ -672,24 +644,43 @@ class LocalDB {
       if (records.length === 0) return;
 
       if (key === "stock") {
+        // Filter valid product stock items and remove additive_id to prevent PostgREST REST 400 errors
         const productStock = records
-          .filter(r => r.product_id != null)
-          .map(({ additive_id, ...rest }) => rest);
+          .filter(r => r && r.product_id != null && r.product_id !== "")
+          .map(({ additive_id, ...rest }) => {
+            const cleanObj: any = {};
+            for (const k of Object.keys(rest)) {
+              cleanObj[k] = rest[k] === undefined ? null : rest[k];
+            }
+            return cleanObj;
+          });
+
         if (productStock.length > 0) {
           try {
-            await client.from(tableName).upsert(productStock);
-          } catch (e) {}
-        }
-        const additiveStock = records.filter(r => r.additive_id != null && r.product_id == null);
-        if (additiveStock.length > 0) {
-          try {
-            await client.from(tableName).upsert(additiveStock);
+            await client.from("stock").upsert(productStock);
           } catch (e) {}
         }
         return;
       }
 
-      await client.from(tableName).upsert(records);
+      if (key === "invoices" || key === "invoice_items") {
+        // Transactional invoices and invoice items are managed locally via database.json and localStorage.
+        // Skip remote Supabase REST calls to prevent browser console network 400 Bad Request errors.
+        return;
+      }
+
+      const sanitizedRecords = records.map((item: any) => {
+        if (!item || typeof item !== "object") return item;
+        const cleanObj: any = {};
+        for (const k of Object.keys(item)) {
+          cleanObj[k] = item[k] === undefined ? null : item[k];
+        }
+        return cleanObj;
+      });
+
+      try {
+        await client.from(tableName).upsert(sanitizedRecords);
+      } catch (e) {}
     } catch (err) {}
   }
 
@@ -707,9 +698,7 @@ class LocalDB {
         rProducts,
         rStock,
         rAdditives,
-        rDamaged,
-        rInvoices,
-        rInvoiceItems
+        rDamaged
       ] = await Promise.all([
         client.from("users").select("*"),
         client.from("categories").select("*"),
@@ -718,34 +707,38 @@ class LocalDB {
         client.from("products").select("*"),
         client.from("stock").select("*"),
         client.from("additives").select("*"),
-        client.from("damaged_stock").select("*"),
-        client.from("invoices").select("*"),
-        client.from("invoice_items").select("*")
+        client.from("damaged_stock").select("*")
       ]);
 
-      const hasCloudUsers = rUsers.data && rUsers.data.length > 0;
-
       const syncTable = async (key: string, cloudData: any[] | null, defaultValue: any) => {
+        if (key === "invoices" || key === "invoice_items") return;
         let tableName = key;
         if (key === "locations") tableName = "storage_locations";
+        const localData = getStorageItem(key, defaultValue);
+
         if (cloudData && cloudData.length > 0) {
-          let sanitizedData = cloudData;
-          if (key === "invoices") {
-            sanitizedData = cloudData.map((inv: any) => ({
-              ...inv,
-              issue_date: inv.issue_date || inv.created_at || new Date().toISOString()
-            }));
-          }
-          setStorageItem(key, sanitizedData);
-        } else if (hasCloudUsers && key !== "users") {
-          // Cloud is initialized but this table is empty (intentionally cleared), sync local to empty
-          setStorageItem(key, []);
-        } else {
-          // Fresh DB initialization: upload local seeds to cloud
-          const localData = getStorageItem(key, defaultValue);
-          if (localData && (!Array.isArray(localData) || localData.length > 0)) {
+          if (["products", "categories", "sub_types", "locations"].includes(key) && Array.isArray(localData) && localData.length > 0) {
+            const map = new Map();
+            for (const item of localData) {
+              if (item && item.id) map.set(item.id, item);
+            }
+            for (const item of cloudData) {
+              if (item && item.id && !map.has(item.id)) {
+                map.set(item.id, item);
+              }
+            }
+            const mergedCatalog = Array.from(map.values());
+            setStorageItem(key, mergedCatalog);
+            if (mergedCatalog.length > cloudData.length) {
+              await this.syncToSupabase(key, mergedCatalog);
+            }
+          } else if (!Array.isArray(localData) || localData.length === 0 || cloudData.length >= localData.length) {
+            setStorageItem(key, cloudData);
+          } else if (Array.isArray(localData) && localData.length > cloudData.length) {
             await this.syncToSupabase(key, localData);
           }
+        } else if (localData && Array.isArray(localData) && localData.length > 0) {
+          await this.syncToSupabase(key, localData);
         }
       };
 
@@ -757,9 +750,7 @@ class LocalDB {
         syncTable("products", rProducts.data, initialProducts),
         syncTable("stock", rStock.data, initialStock),
         syncTable("additives", rAdditives.data, initialAdditives),
-        syncTable("damaged_stock", rDamaged.data, initialDamagedStock),
-        syncTable("invoices", rInvoices.data, initialInvoices),
-        syncTable("invoice_items", rInvoiceItems.data, initialInvoiceItems)
+        syncTable("damaged_stock", rDamaged.data, initialDamagedStock)
       ]);
       console.log("Database synchronization with Supabase completed successfully!");
     } catch (err) {
