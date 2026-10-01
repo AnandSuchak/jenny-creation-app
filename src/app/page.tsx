@@ -998,8 +998,15 @@ export default function Dashboard() {
   }
   // Derived statistics
   const totalProducts = products.length;
-  const totalStockQuantity = stock.reduce((sum, item) => sum + item.quantity, 0);
-  const lowStockCount = stock.filter(item => item.quantity < 10).length;
+  const totalStockQuantity = Math.round(
+    stock
+      .filter(item => item.product_id != null && item.deleted_at === null)
+      .reduce((sum, item) => sum + item.quantity, 0)
+  );
+  const totalDryfruitKg = additives
+    .filter(a => a.deleted_at === null)
+    .reduce((sum, a) => sum + (a.stock_qty_kg || 0), 0);
+  const lowStockCount = stock.filter(item => item.product_id != null && item.quantity < 10 && item.deleted_at === null).length;
   const totalInvoices = invoices.length;
   const totalRevenue = invoices.reduce((sum, item) => sum + item.total_amount, 0);
 
@@ -4605,8 +4612,12 @@ export default function Dashboard() {
               <span className="text-xs font-semibold uppercase tracking-wider">Total Stock</span>
               <Layers className="h-4 w-4 text-blue-400" />
             </div>
-            <div className={`text-2xl font-bold ${isDark ? "text-zinc-100" : "text-zinc-900"}`}>{totalStockQuantity}</div>
-            <p className="text-[10px] text-zinc-500 mt-1">Items in storage</p>
+            <div className={`text-2xl font-bold ${isDark ? "text-zinc-100" : "text-zinc-900"}`}>
+              {totalStockQuantity.toLocaleString()} <span className="text-xs font-normal text-zinc-400">units</span>
+            </div>
+            <p className="text-[10px] text-zinc-500 mt-1">
+              {totalDryfruitKg > 0 ? `+ ${totalDryfruitKg.toFixed(1)} kg dryfruits` : "Box inventory"}
+            </p>
           </div>
           <div className={`p-5 rounded-2xl ${cardClass} hover:border-amber-400/50 hover:shadow-md transition duration-200 border-l-2 hover:-translate-y-0.5 ${lowStockCount > 0 ? "border-l-rose-500" : "border-l-amber-505"}`}>
             <div className="flex items-center justify-between text-zinc-400 mb-2">
