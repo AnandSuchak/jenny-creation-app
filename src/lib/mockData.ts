@@ -908,15 +908,15 @@ class LocalDB {
   }
 
   getCategories(): Category[] {
-    return getStorageItem("categories", initialCategories).filter(c => c.deleted_at === null);
+    return getStorageItem("categories", initialCategories).filter(c => !c.deleted_at);
   }
   
   getSubTypes(): SubType[] {
-    return getStorageItem("sub_types", initialSubTypes).filter(s => s.deleted_at === null);
+    return getStorageItem("sub_types", initialSubTypes).filter(s => !s.deleted_at);
   }
   
   getLocations(): StorageLocation[] {
-    return getStorageItem("locations", initialLocations).filter(l => l.deleted_at === null);
+    return getStorageItem("locations", initialLocations).filter(l => !l.deleted_at);
   }
   
   getProducts(): Product[] {
@@ -981,19 +981,19 @@ class LocalDB {
         setStorageItem("invoice_items", cleanedInvoiceItems);
       }
       
-      return cleanedProducts.filter(p => p.deleted_at === null);
+      return cleanedProducts.filter(p => !p.deleted_at);
     }
     
-    return productsList.filter(p => p.deleted_at === null);
+    return productsList.filter(p => !p.deleted_at);
   }
 
   getStock(): Stock[] {
-    return getStorageItem("stock", initialStock).filter(st => st.deleted_at === null);
+    return getStorageItem("stock", initialStock).filter(st => !st.deleted_at);
   }
 
   getInvoices(): Invoice[] {
-    const invoices = getStorageItem("invoices", initialInvoices).filter(i => i.deleted_at === null);
-    const invoiceItems = getStorageItem("invoice_items", initialInvoiceItems).filter(item => item.deleted_at === null);
+    const invoices = getStorageItem("invoices", initialInvoices).filter(i => !i.deleted_at);
+    const invoiceItems = getStorageItem("invoice_items", initialInvoiceItems).filter(item => !item.deleted_at);
     
     return invoices.map(inv => ({
       ...inv,

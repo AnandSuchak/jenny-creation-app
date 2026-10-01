@@ -1773,9 +1773,10 @@ export default function Dashboard() {
   const getLocationName = (id: string) => locations.find(l => l.id === id)?.name || "Unknown";
   const getProduct = (id: string) => products.find(p => p.id === id);
   const getProductStock = (productId: string) => {
+    if (!productId) return 0;
     return stock
-      .filter(st => st.product_id === productId && st.deleted_at === null)
-      .reduce((sum, item) => sum + item.quantity, 0);
+      .filter(st => st.product_id === productId && (!st.deleted_at || st.deleted_at === null))
+      .reduce((sum, item) => sum + Number(item.quantity || 0), 0);
   };
   const getProductMaxJars = (productId: string): number => {
     const prod = products.find(p => p.id === productId);
