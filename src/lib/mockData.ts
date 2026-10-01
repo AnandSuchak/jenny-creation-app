@@ -737,10 +737,10 @@ class LocalDB {
               issue_date: inv.issue_date || inv.created_at || new Date().toISOString()
             }));
           }
-          window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify(sanitizedData));
+          setStorageItem(key, sanitizedData);
         } else if (hasCloudUsers && key !== "users") {
           // Cloud is initialized but this table is empty (intentionally cleared), sync local to empty
-          window.localStorage.setItem(`jenny_creation_${key}`, JSON.stringify([]));
+          setStorageItem(key, []);
         } else {
           // Fresh DB initialization: upload local seeds to cloud
           const localData = getStorageItem(key, defaultValue);
