@@ -538,6 +538,24 @@ class LocalDB {
       const records = Array.isArray(data) ? data : [data];
       if (records.length === 0) return;
 
+      if (key === "seller_settings") {
+        const record = Array.isArray(data) ? data[0] : data;
+        if (record) {
+          try {
+            await client.from("seller_settings").upsert({
+              id: "default",
+              seller_name: record.seller_name,
+              seller_address: record.seller_address,
+              gstin: record.gstin,
+              pan: record.pan,
+              show_gst_pan: record.show_gst_pan,
+              updated_at: new Date().toISOString()
+            });
+          } catch (e) {}
+        }
+        return;
+      }
+
       if (key === "stock") {
         // Filter valid product stock items and remove additive_id to prevent PostgREST REST 400 errors
         const productStock = records
@@ -2272,6 +2290,9 @@ class LocalDB {
 
   saveSellerSettings(settings: SellerSettings): void {
     setStorageItem("seller_settings", settings);
+    if (isSupabaseConfigured) {
+      this.syncToSupabase("seller_settings", settings).catch(err => console.warn("Supabase sync notice on seller settings:", err));
+    }
   }
 
   resetSeed(): void {

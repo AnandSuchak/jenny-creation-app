@@ -133,6 +133,17 @@ CREATE TABLE invoice_items (
     deleted_at TIMESTAMP WITH TIME ZONE -- For soft deletes
 );
 
+-- 11. SELLER SETTINGS TABLE (Store business seller profile & tax configurations)
+CREATE TABLE IF NOT EXISTS seller_settings (
+    id VARCHAR(50) PRIMARY KEY DEFAULT 'default',
+    seller_name VARCHAR(255) NOT NULL,
+    seller_address TEXT,
+    gstin VARCHAR(50),
+    pan VARCHAR(50),
+    show_gst_pan BOOLEAN DEFAULT false,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- Indexes for performance and quick lookups
 CREATE INDEX idx_products_category ON products(category_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_products_subtype ON products(sub_type_id) WHERE deleted_at IS NULL;
@@ -160,7 +171,7 @@ DECLARE
     tables text[] := ARRAY[
         'categories', 'sub_types', 'products', 'storage_locations', 
         'stock', 'additives', 'damaged_stock', 'invoices', 
-        'invoice_items', 'users', 'stock_movements', 'product_variants', 
+        'invoice_items', 'users', 'stock_movements', 'seller_settings', 'product_variants', 
         'tables', 'customers', 'orders', 'inventory_logs', 'otp_verifications'
     ];
 BEGIN
