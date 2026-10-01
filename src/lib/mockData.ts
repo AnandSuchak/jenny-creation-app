@@ -266,127 +266,12 @@ const initialStock: Stock[] = (dbJson && Array.isArray((dbJson as any).stock) &&
   ? (dbJson as any).stock
   : [];
 
-const initialInvoices: Invoice[] = [
-  {
-    id: "inv-1",
-    invoice_number: "INV-2026-001",
-    customer_name: "Aryan Sharma",
-    total_amount: 1200.00,
-    status: "delivered",
-    order_id: "ORD-2026-A1B2C",
-    issue_date: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "inv-2",
-    invoice_number: "INV-2026-002",
-    customer_name: "Nisha Patel",
-    total_amount: 4500.00,
-    status: "preparing",
-    order_id: "ORD-2026-D3E4F",
-    delivery_date: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0], // 5 days from now
-    advance_paid: 1500,
-    issue_date: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "inv-3",
-    invoice_number: "INV-2026-003",
-    customer_name: "Rajesh Kumar",
-    customer_phone: "9876543210",
-    total_amount: 135000.00,
-    status: "preparing",
-    order_id: "ORD-2026-TODAY",
-    delivery_date: new Date().toISOString().split('T')[0], // Today!
-    advance_paid: 50000,
-    issue_date: new Date(Date.now() - 86400000 * 3).toISOString(), // 3 days ago
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "inv-4",
-    invoice_number: "INV-2026-004",
-    customer_name: "Sanjay Mehta",
-    customer_phone: "9123456789",
-    total_amount: 90000.00,
-    status: "ordered",
-    order_id: "ORD-2026-TOMORROW",
-    delivery_date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow!
-    advance_paid: 20000,
-    issue_date: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  }
-];
+const initialInvoices: Invoice[] = [];
+const initialInvoiceItems: InvoiceItem[] = [];
 
-const initialInvoiceItems: InvoiceItem[] = [
-  {
-    id: "ivi-1",
-    invoice_id: "inv-1",
-    product_id: "prod-1",
-    quantity: 12,
-    unit_price: 100.00,
-    total_price: 1200.00,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "ivi-2",
-    invoice_id: "inv-2",
-    product_id: "prod-3",
-    quantity: 10,
-    unit_price: 450.00,
-    total_price: 4500.00,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "ivi-3",
-    invoice_id: "inv-3",
-    product_id: "prod-1",
-    quantity: 300,
-    unit_price: 450.00,
-    total_price: 135000.00,
-    customizations: [
-      { jar_number: 1, additive_id: "add-1", weight_grams: 100 },
-      { jar_number: 2, additive_id: "add-3", weight_grams: 150 }
-    ],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  },
-  {
-    id: "ivi-4",
-    invoice_id: "inv-4",
-    product_id: "prod-1",
-    quantity: 200,
-    unit_price: 450.00,
-    total_price: 90000.00,
-    customizations: [
-      { jar_number: 1, additive_id: "add-2", weight_grams: 100 },
-      { jar_number: 2, additive_id: "add-4", weight_grams: 100 }
-    ],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    deleted_at: null
-  }
-];
-
-const initialAdditives: Additive[] = [
-  { id: "add-1", name: "Kaju", price_per_kg: 800, stock_qty_kg: 10, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "add-2", name: "Badam", price_per_kg: 900, stock_qty_kg: 15, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "add-3", name: "Pista", price_per_kg: 1200, stock_qty_kg: 5, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "add-4", name: "Kismis", price_per_kg: 400, stock_qty_kg: 8, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-  { id: "add-5", name: "Rabdi Kaju", price_per_kg: 1400, stock_qty_kg: 12, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null },
-];
+const initialAdditives: Additive[] = (dbJson && Array.isArray((dbJson as any).additives) && (dbJson as any).additives.length > 0)
+  ? (dbJson as any).additives
+  : [];
 
 const initialDamagedStock: DamagedStock[] = [];
 
@@ -663,9 +548,54 @@ class LocalDB {
         return;
       }
 
-      if (key === "invoices" || key === "invoice_items") {
-        // Transactional invoices and invoice items are managed locally via database.json and localStorage.
-        // Skip remote Supabase REST calls to prevent browser console network 400 Bad Request errors.
+      if (key === "invoices") {
+        const cleanInvoices = records.map((inv: any) => ({
+          id: inv.id,
+          invoice_number: inv.invoice_number,
+          customer_name: inv.customer_name || "Walk-in Customer",
+          customer_phone: inv.customer_phone || "N/A",
+          total_amount: Number(inv.total_amount) || 0,
+          status: inv.status || "ordered",
+          delivery_date: inv.delivery_date || null,
+          advance_paid: Number(inv.advance_paid) || 0,
+          payment_mode: inv.payment_mode || "Cash",
+          created_by_user_id: inv.created_by_user_id || null,
+          created_by_username: inv.created_by_username || null,
+          device_ip: inv.device_ip || null,
+          device_fingerprint: inv.device_fingerprint || null,
+          created_at: inv.created_at || new Date().toISOString(),
+          updated_at: inv.updated_at || new Date().toISOString(),
+          deleted_at: inv.deleted_at || null
+        }));
+        if (cleanInvoices.length > 0) {
+          try {
+            await client.from("invoices").upsert(cleanInvoices);
+          } catch (e) {}
+        }
+        return;
+      }
+
+      if (key === "invoice_items") {
+        const cleanItems = records
+          .filter((item: any) => item && item.id && item.invoice_id)
+          .map((item: any) => ({
+            id: item.id,
+            invoice_id: item.invoice_id,
+            product_id: item.product_id || null,
+            additive_id: item.additive_id || null,
+            quantity: Number(item.quantity) || 1,
+            unit_price: Number(item.unit_price) || 0,
+            discount: Number(item.discount) || 0,
+            customizations: item.customizations || [],
+            created_at: item.created_at || new Date().toISOString(),
+            updated_at: item.updated_at || new Date().toISOString(),
+            deleted_at: item.deleted_at || null
+          }));
+        if (cleanItems.length > 0) {
+          try {
+            await client.from("invoice_items").upsert(cleanItems);
+          } catch (e) {}
+        }
         return;
       }
 
@@ -698,7 +628,9 @@ class LocalDB {
         rProducts,
         rStock,
         rAdditives,
-        rDamaged
+        rDamaged,
+        rInvoices,
+        rInvoiceItems
       ] = await Promise.all([
         client.from("users").select("*"),
         client.from("categories").select("*"),
@@ -707,14 +639,49 @@ class LocalDB {
         client.from("products").select("*"),
         client.from("stock").select("*"),
         client.from("additives").select("*"),
-        client.from("damaged_stock").select("*")
+        client.from("damaged_stock").select("*"),
+        client.from("invoices").select("*"),
+        client.from("invoice_items").select("*")
       ]);
 
       const syncTable = async (key: string, cloudData: any[] | null, defaultValue: any) => {
-        if (key === "invoices" || key === "invoice_items") return;
         let tableName = key;
         if (key === "locations") tableName = "storage_locations";
         const localData = getStorageItem(key, defaultValue);
+
+        if (key === "invoices") {
+          const rawInvoices = cloudData || [];
+          const rawItems = rInvoiceItems.data || [];
+
+          const mapItems = new Map<string, InvoiceItem[]>();
+          for (const item of rawItems) {
+            if (item && item.invoice_id) {
+              const list = mapItems.get(item.invoice_id) || [];
+              list.push(item);
+              mapItems.set(item.invoice_id, list);
+            }
+          }
+
+          const cleanInvoices = rawInvoices.map((inv: any) => ({
+            ...inv,
+            items: mapItems.get(inv.id) || []
+          }));
+
+          const localInvoices = Array.isArray(localData) ? localData : [];
+          const mergedMap = new Map();
+          for (const inv of localInvoices) {
+            if (inv && inv.id) mergedMap.set(inv.id, inv);
+          }
+          for (const inv of cleanInvoices) {
+            if (inv && inv.id) mergedMap.set(inv.id, inv);
+          }
+          const finalInvoices = Array.from(mergedMap.values());
+          setStorageItem("invoices", finalInvoices);
+          setStorageItem("invoice_items", rawItems);
+          return;
+        }
+
+        if (key === "invoice_items") return;
 
         if (cloudData && cloudData.length > 0) {
           if (["products", "categories", "sub_types", "locations"].includes(key) && Array.isArray(localData) && localData.length > 0) {
@@ -750,7 +717,9 @@ class LocalDB {
         syncTable("products", rProducts.data, initialProducts),
         syncTable("stock", rStock.data, initialStock),
         syncTable("additives", rAdditives.data, initialAdditives),
-        syncTable("damaged_stock", rDamaged.data, initialDamagedStock)
+        syncTable("damaged_stock", rDamaged.data, initialDamagedStock),
+        syncTable("invoices", rInvoices.data, initialInvoices),
+        syncTable("invoice_items", rInvoiceItems.data, initialInvoiceItems)
       ]);
       console.log("Database synchronization with Supabase completed successfully!");
     } catch (err) {

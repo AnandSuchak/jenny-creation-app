@@ -28,7 +28,7 @@
       "created_at": "2026-09-13T15:15:24.082+00:00",
       "deleted_at": null,
       "require_password_change": false,
-      "current_session_token": "SESS-0IC5OT73-1790763153366"
+      "current_session_token": "SESS-YTML27RY-1790843924007"
     },
     {
       "id": "usr-admin",
@@ -43,7 +43,7 @@
       "created_at": "2026-08-26T14:10:00+00:00",
       "deleted_at": null,
       "require_password_change": false,
-      "current_session_token": "SESS-PC7D159I-1790750133366"
+      "current_session_token": "SESS-CZND2341-1790844388245"
     },
     {
       "id": "usr-1788267989216-zn0z8",
@@ -3217,7 +3217,7 @@
       "timestamp": "2026-08-25T08:51:55.932Z"
     }
   ],
-  "_last_updated": 1790836556885,
+  "_last_updated": 1790844448692,
   "backup_snapshots": [
     {
       "id": "snap-2026-10-01-mup5c2bn",
