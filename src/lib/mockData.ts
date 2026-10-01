@@ -1934,17 +1934,46 @@ class LocalDB {
   }
 
   getAdditives(): Additive[] {
-    const list = getStorageItem<Additive[]>("additives", initialAdditives).filter(a => a.deleted_at === null);
+    const list = getStorageItem<Additive[]>("additives", initialAdditives).filter(a => !a.deleted_at);
     const stocks = getStorageItem<Stock[]>("stock", initialStock);
-    return list.map(a => {
-      const activeStocks = stocks.filter(st => st.additive_id === a.id && st.deleted_at === null);
-      const totalStock = activeStocks.reduce((sum, s) => sum + s.quantity, 0);
-      const finalQty = activeStocks.length > 0 ? totalStock : (a.stock_qty_kg || 0);
-      return {
-        ...a,
-        stock_qty_kg: finalQty
-      };
+    const locations = getStorageItem<StorageLocation[]>("locations", initialLocations);
+    const firstLoc = locations.find(l => !l.deleted_at) || locations[0];
+    let stocksUpdated = false;
+
+    const result = list.map(a => {
+      const activeStocks = stocks.filter(st => st.additive_id === a.id && !st.deleted_at);
+      if (activeStocks.length > 0) {
+        const totalStock = activeStocks.reduce((sum, s) => sum + Number(s.quantity || 0), 0);
+        return {
+          ...a,
+          stock_qty_kg: totalStock
+        };
+      } else if (firstLoc) {
+        // Auto-heal missing location stock record for active additive
+        const newStockQty = Number(a.stock_qty_kg || 0);
+        stocks.push({
+          id: `st-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          product_id: null,
+          additive_id: a.id,
+          storage_location_id: firstLoc.id,
+          quantity: newStockQty,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          deleted_at: null
+        });
+        stocksUpdated = true;
+        return {
+          ...a,
+          stock_qty_kg: newStockQty
+        };
+      }
+      return a;
     });
+
+    if (stocksUpdated) {
+      setStorageItem("stock", stocks);
+    }
+    return result;
   }
 
   addAdditive(name: string, pricePerKg: number, stockQtyKg: number = 0, callerUser?: any): Additive {
@@ -1954,7 +1983,7 @@ class LocalDB {
     }
     const list = getStorageItem<Additive[]>("additives", initialAdditives);
     const nameLower = name.trim().toLowerCase();
-    const exists = list.some(a => a.name.toLowerCase() === nameLower && a.deleted_at === null);
+    const exists = list.some(a => a.name.toLowerCase() === nameLower && !a.deleted_at);
     if (exists) throw new Error(`Additive "${name.trim()}" already exists.`);
 
     const newItem: Additive = {
@@ -1969,11 +1998,15 @@ class LocalDB {
     list.push(newItem);
     setStorageItem("additives", list);
 
-    if (stockQtyKg > 0) {
-      const stocks = getStorageItem<Stock[]>("stock", initialStock);
-      const locations = getStorageItem<StorageLocation[]>("locations", initialLocations);
-      const firstLoc = locations.find(l => l.deleted_at === null) || locations[0];
-      if (firstLoc) {
+    const stocks = getStorageItem<Stock[]>("stock", initialStock);
+    const locations = getStorageItem<StorageLocation[]>("locations", initialLocations);
+    const firstLoc = locations.find(l => !l.deleted_at) || locations[0];
+    if (firstLoc) {
+      const existingStIdx = stocks.findIndex(s => s.additive_id === newItem.id && !s.deleted_at);
+      if (existingStIdx >= 0) {
+        stocks[existingStIdx].quantity = Number(stockQtyKg);
+        stocks[existingStIdx].updated_at = new Date().toISOString();
+      } else {
         stocks.push({
           id: `st-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           product_id: null,
@@ -1984,8 +2017,8 @@ class LocalDB {
           updated_at: new Date().toISOString(),
           deleted_at: null
         });
-        setStorageItem("stock", stocks);
       }
+      setStorageItem("stock", stocks);
     }
     return newItem;
   }
@@ -1997,7 +2030,7 @@ class LocalDB {
     }
     const list = getStorageItem<Additive[]>("additives", initialAdditives);
     const nameLower = name.trim().toLowerCase();
-    const exists = list.some(a => a.id !== id && a.name.toLowerCase() === nameLower && a.deleted_at === null);
+    const exists = list.some(a => a.id !== id && a.name.toLowerCase() === nameLower && !a.deleted_at);
     if (exists) throw new Error(`Additive "${name.trim()}" already exists.`);
 
     const idx = list.findIndex(a => a.id === id);
@@ -2011,13 +2044,13 @@ class LocalDB {
       // Keep location stock table in sync
       const stocks = getStorageItem<Stock[]>("stock", initialStock);
       const locations = getStorageItem<StorageLocation[]>("locations", initialLocations);
-      const firstLoc = locations.find(l => l.deleted_at === null) || locations[0];
+      const firstLoc = locations.find(l => !l.deleted_at) || locations[0];
       if (firstLoc) {
-        const stIdx = stocks.findIndex(s => s.additive_id === id && s.deleted_at === null);
+        const stIdx = stocks.findIndex(s => s.additive_id === id && !s.deleted_at);
         if (stIdx >= 0) {
           stocks[stIdx].quantity = Number(stockQtyKg);
           stocks[stIdx].updated_at = new Date().toISOString();
-        } else if (Number(stockQtyKg) > 0) {
+        } else {
           stocks.push({
             id: `st-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
             product_id: null,
