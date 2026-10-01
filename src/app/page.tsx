@@ -4686,13 +4686,21 @@ export default function Dashboard() {
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={e => {
+                    setSearchQuery(e.target.value);
+                    setProductsPage(1);
+                    setStockPage(1);
+                  }}
                   className={`pl-9 pr-4 py-1.5 text-xs border rounded-lg focus:outline-none transition duration-200 w-full ${inputClass}`}
                 />
               </div>
               <select
                 value={selectedCategoryFilter}
-                onChange={e => setSelectedCategoryFilter(e.target.value)}
+                onChange={e => {
+                  setSelectedCategoryFilter(e.target.value);
+                  setProductsPage(1);
+                  setStockPage(1);
+                }}
                 className={`px-3 py-1.5 text-xs border rounded-lg focus:outline-none w-full sm:w-auto ${inputClass}`}
               >
                 <option value="all">All Categories</option>

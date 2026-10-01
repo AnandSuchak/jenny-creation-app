@@ -55,14 +55,14 @@ console.log("✓ RESTORE Category: Success\n");
 // MODULE 2: SUB-TYPES CRUD
 // ------------------------------------------------------------------------
 console.log("--- MODULE 2: Sub-Types CRUD ---");
-const sub1 = localDB.addSubType(cat1.id, "Test SubType 1");
+const sub1 = localDB.addSubType("Test SubType 1", cat1.id);
 console.log("✓ CREATE SubType:", sub1.id, sub1.name);
 
 let subTypes = localDB.getSubTypes();
 if (!subTypes.some(s => s.id === sub1.id)) throw new Error("SubType read failed");
 console.log("✓ READ SubType:", sub1.name);
 
-const updatedSub = localDB.updateSubType(sub1.id, "Test SubType 1 Updated");
+const updatedSub = localDB.updateSubType(sub1.id, "Test SubType 1 Updated", cat1.id);
 if (!updatedSub || updatedSub.name !== "Test SubType 1 Updated") throw new Error("SubType update failed");
 console.log("✓ UPDATE SubType:", updatedSub.name);
 

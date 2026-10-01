@@ -119,7 +119,7 @@ export async function GET(request: Request) {
   const data = readDB();
   const activeDevices = updateActiveDevices(data, request);
   
-  // Ensure _last_updated timestamp exists
+  // Ensure _last_updated timestamp exists in memory
   if (!data._last_updated) {
     try {
       data._last_updated = fs.existsSync(dbFilePath) 
@@ -130,12 +130,10 @@ export async function GET(request: Request) {
     }
   }
 
-  writeDB(data);
-
   const knownVersion = request.headers.get("x-known-version");
   
   // If client sent a known version and it matches current data version,
-  // return a lightweight (100 byte) response instead of full database payload!
+  // return a lightweight response instead of full database payload
   if (knownVersion && String(knownVersion) === String(data._last_updated)) {
     return NextResponse.json(
       { unmodified: true, _last_updated: data._last_updated, _last_cleared: data._last_cleared || 0, active_devices: activeDevices },
@@ -158,6 +156,24 @@ export async function GET(request: Request) {
   });
 }
 
+const ALLOWED_KEYS = new Set([
+  "users",
+  "categories",
+  "sub_types",
+  "locations",
+  "products",
+  "stock",
+  "additives",
+  "damaged_stock",
+  "invoices",
+  "invoice_items",
+  "stock_movements",
+  "active_devices",
+  "seller_settings",
+  "_last_cleared",
+  "_clear_all"
+]);
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -165,13 +181,31 @@ export async function POST(request: Request) {
     if (!key) {
       return NextResponse.json({ error: "Missing key" }, { status: 400 });
     }
+
+    if (!ALLOWED_KEYS.has(key)) {
+      return NextResponse.json({ error: `Unauthorized or invalid database key: ${key}` }, { status: 403 });
+    }
+
+    const deviceId = request.headers.get("x-device-id");
+    const adminKey = request.headers.get("x-admin-key");
+
+    if (!deviceId && !adminKey) {
+      return NextResponse.json({ error: "Unauthenticated write request rejected." }, { status: 401 });
+    }
+
+    if ((key === "_clear_all" || key === "users") && !adminKey) {
+      const authHeader = request.headers.get("x-user-role");
+      if (authHeader !== "super_admin") {
+        return NextResponse.json({ error: "Super Admin authorization required for sensitive database operations." }, { status: 403 });
+      }
+    }
+
     const currentData = readDB();
 
     if (key === "_clear_all" || key === "_last_cleared") {
       const clearTime = typeof value === "number" ? value : Date.now();
       currentData._last_cleared = clearTime;
       currentData._last_updated = clearTime;
-      // Only clear test transactional data; PRESERVE categories, sub_types, locations, additives, users
       currentData.products = [];
       currentData.stock = [];
       currentData.invoices = [];

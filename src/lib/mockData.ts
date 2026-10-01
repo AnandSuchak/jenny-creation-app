@@ -275,21 +275,28 @@ const initialAdditives: Additive[] = (dbJson && Array.isArray((dbJson as any).ad
 
 const initialDamagedStock: DamagedStock[] = [];
 
+const memoryStore: { [key: string]: any } = {};
+
 // Helper to get from localstorage or use defaults
 const getStorageItem = <T>(key: string, defaultValue: T): T => {
-  if (typeof window === "undefined") return defaultValue;
+  if (typeof window === "undefined") {
+    if (memoryStore[key] !== undefined) {
+      return JSON.parse(JSON.stringify(memoryStore[key]));
+    }
+    return JSON.parse(JSON.stringify(defaultValue));
+  }
   try {
     const item = window.localStorage.getItem(`jenny_creation_${key}`);
     if (item) {
       const parsed = JSON.parse(item);
       if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(defaultValue) && defaultValue.length > 0) {
-        return defaultValue;
+        return JSON.parse(JSON.stringify(defaultValue));
       }
       return parsed;
     }
-    return defaultValue;
+    return JSON.parse(JSON.stringify(defaultValue));
   } catch (error) {
-    return defaultValue;
+    return JSON.parse(JSON.stringify(defaultValue));
   }
 };
 
@@ -316,7 +323,10 @@ const pruneLegacyBase64Images = (): void => {
 };
 
 const setStorageItem = <T>(key: string, value: T): void => {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") {
+    memoryStore[key] = JSON.parse(JSON.stringify(value));
+    return;
+  }
   const jsonStr = JSON.stringify(value);
   const storageKey = `jenny_creation_${key}`;
 
@@ -961,49 +971,83 @@ class LocalDB {
   }
 
   // Soft Delete generic
-  softDelete(table: string, id: string): boolean {
+  softDelete(table: string, id: string, callerUser?: any): boolean {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin') {
+      if (table === 'invoices' && !user.rights.generate_bill && !user.rights.edit_inventory) {
+        throw new Error('Unauthorized: Your user account lacks permission to delete invoices.');
+      }
+      if (table !== 'invoices' && !user.rights.edit_inventory) {
+        throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+      }
+    }
+
     const now = new Date().toISOString();
     let found = false;
     if (table === "products") {
       const list = getStorageItem<Product[]>("products", initialProducts);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
-      setStorageItem("products", updated);
-      found = true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: now, updated_at: now };
+        setStorageItem("products", list);
+        found = true;
+      }
     } else if (table === "stock") {
       const list = getStorageItem<Stock[]>("stock", initialStock);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
-      setStorageItem("stock", updated);
-      found = true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: now, updated_at: now };
+        setStorageItem("stock", list);
+        found = true;
+      }
     } else if (table === "invoices") {
       const list = getStorageItem<Invoice[]>("invoices", initialInvoices);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
-      setStorageItem("invoices", updated);
-      found = true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: now, updated_at: now };
+        setStorageItem("invoices", list);
+        found = true;
+      }
     } else if (table === "categories") {
       const list = getStorageItem<Category[]>("categories", initialCategories);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
-      setStorageItem("categories", updated);
-      found = true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: now, updated_at: now };
+        setStorageItem("categories", list);
+        found = true;
+      }
     } else if (table === "sub_types") {
       const list = getStorageItem<SubType[]>("sub_types", initialSubTypes);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
-      setStorageItem("sub_types", updated);
-      found = true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: now, updated_at: now };
+        setStorageItem("sub_types", list);
+        found = true;
+      }
     } else if (table === "locations") {
       const list = getStorageItem<StorageLocation[]>("locations", initialLocations);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
-      setStorageItem("locations", updated);
-      found = true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: now, updated_at: now };
+        setStorageItem("locations", list);
+        found = true;
+      }
     } else if (table === "additives") {
       const list = getStorageItem<Additive[]>("additives", initialAdditives);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
-      setStorageItem("additives", updated);
-      found = true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: now, updated_at: now };
+        setStorageItem("additives", list);
+        found = true;
+      }
     } else if (table === "damaged_stock") {
       const list = getStorageItem<DamagedStock[]>("damaged_stock", initialDamagedStock);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: now, updated_at: now } : item);
-      setStorageItem("damaged_stock", updated);
-      found = true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: now, updated_at: now };
+        setStorageItem("damaged_stock", list);
+        found = true;
+      }
     }
 
     if (found && isSupabaseConfigured) {
@@ -1012,56 +1056,88 @@ class LocalDB {
     return found;
   }
 
-  restore(table: string, id: string): boolean {
+  restore(table: string, id: string, callerUser?: any): boolean {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin') {
+      if (table === 'invoices' && !user.rights.generate_bill && !user.rights.edit_inventory) {
+        throw new Error('Unauthorized: Your user account lacks permission to restore invoices.');
+      }
+      if (table !== 'invoices' && !user.rights.edit_inventory) {
+        throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+      }
+    }
+
+    let found = false;
     if (table === "products") {
       const list = getStorageItem<Product[]>("products", initialProducts);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: null } : item);
-      setStorageItem("products", updated);
-      return true;
-    }
-    if (table === "stock") {
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: null };
+        setStorageItem("products", list);
+        found = true;
+      }
+    } else if (table === "stock") {
       const list = getStorageItem<Stock[]>("stock", initialStock);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: null } : item);
-      setStorageItem("stock", updated);
-      return true;
-    }
-    if (table === "invoices") {
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: null };
+        setStorageItem("stock", list);
+        found = true;
+      }
+    } else if (table === "invoices") {
       const list = getStorageItem<Invoice[]>("invoices", initialInvoices);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: null } : item);
-      setStorageItem("invoices", updated);
-      return true;
-    }
-    if (table === "categories") {
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: null };
+        setStorageItem("invoices", list);
+        found = true;
+      }
+    } else if (table === "categories") {
       const list = getStorageItem<Category[]>("categories", initialCategories);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: null } : item);
-      setStorageItem("categories", updated);
-      return true;
-    }
-    if (table === "sub_types") {
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: null };
+        setStorageItem("categories", list);
+        found = true;
+      }
+    } else if (table === "sub_types") {
       const list = getStorageItem<SubType[]>("sub_types", initialSubTypes);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: null } : item);
-      setStorageItem("sub_types", updated);
-      return true;
-    }
-    if (table === "locations") {
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: null };
+        setStorageItem("sub_types", list);
+        found = true;
+      }
+    } else if (table === "locations") {
       const list = getStorageItem<StorageLocation[]>("locations", initialLocations);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: null } : item);
-      setStorageItem("locations", updated);
-      return true;
-    }
-    if (table === "additives") {
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: null };
+        setStorageItem("locations", list);
+        found = true;
+      }
+    } else if (table === "additives") {
       const list = getStorageItem<Additive[]>("additives", initialAdditives);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: null } : item);
-      setStorageItem("additives", updated);
-      return true;
-    }
-    if (table === "damaged_stock") {
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: null };
+        setStorageItem("additives", list);
+        found = true;
+      }
+    } else if (table === "damaged_stock") {
       const list = getStorageItem<DamagedStock[]>("damaged_stock", initialDamagedStock);
-      const updated = list.map(item => item.id === id ? { ...item, deleted_at: null } : item);
-      setStorageItem("damaged_stock", updated);
-      return true;
+      const idx = list.findIndex(item => item.id === id);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], deleted_at: null };
+        setStorageItem("damaged_stock", list);
+        found = true;
+      }
     }
-    return false;
+
+    if (found && isSupabaseConfigured) {
+      this.syncToSupabase(table, getStorageItem(table, [])).catch(err => console.warn("Supabase sync notice on restore:", err));
+    }
+    return found;
   }
 
   getDeletedCategories(): Category[] {
@@ -1110,6 +1186,13 @@ class LocalDB {
     if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
       throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
     }
+    if (categoryId) {
+      const categories = getStorageItem<Category[]>("categories", initialCategories);
+      const catExists = categories.some(c => c.id === categoryId && c.deleted_at === null);
+      if (!catExists) {
+        throw new Error(`Foreign Key Error: Category with id "${categoryId}" does not exist or is deleted.`);
+      }
+    }
     const list = getStorageItem<SubType[]>("sub_types", initialSubTypes);
     
     const nameLower = name.trim().toLowerCase();
@@ -1154,6 +1237,20 @@ class LocalDB {
     if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
       throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
     }
+    if (categoryId) {
+      const categories = getStorageItem<Category[]>("categories", initialCategories);
+      const catExists = categories.some(c => c.id === categoryId && c.deleted_at === null);
+      if (!catExists) {
+        throw new Error(`Foreign Key Error: Category with id "${categoryId}" does not exist or is deleted.`);
+      }
+    }
+    if (subTypeId) {
+      const subTypes = getStorageItem<SubType[]>("sub_types", initialSubTypes);
+      const subExists = subTypes.some(s => s.id === subTypeId && s.deleted_at === null);
+      if (!subExists) {
+        throw new Error(`Foreign Key Error: SubType with id "${subTypeId}" does not exist or is deleted.`);
+      }
+    }
     const list = getStorageItem<Product[]>("products", initialProducts);
     const newProduct: Product = {
       id: `prod-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -1176,6 +1273,20 @@ class LocalDB {
     const user = callerUser || this.getCurrentSessionUser();
     if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
       throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
+    if (categoryId) {
+      const categories = getStorageItem<Category[]>("categories", initialCategories);
+      const catExists = categories.some(c => c.id === categoryId && c.deleted_at === null);
+      if (!catExists) {
+        throw new Error(`Foreign Key Error: Category with id "${categoryId}" does not exist or is deleted.`);
+      }
+    }
+    if (subTypeId) {
+      const subTypes = getStorageItem<SubType[]>("sub_types", initialSubTypes);
+      const subExists = subTypes.some(s => s.id === subTypeId && s.deleted_at === null);
+      if (!subExists) {
+        throw new Error(`Foreign Key Error: SubType with id "${subTypeId}" does not exist or is deleted.`);
+      }
     }
     const list = getStorageItem<Product[]>("products", initialProducts);
     const idx = list.findIndex(p => p.id === id);
@@ -1222,6 +1333,13 @@ class LocalDB {
     const user = callerUser || this.getCurrentSessionUser();
     if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
       throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
+    if (categoryId) {
+      const categories = getStorageItem<Category[]>("categories", initialCategories);
+      const catExists = categories.some(c => c.id === categoryId && c.deleted_at === null);
+      if (!catExists) {
+        throw new Error(`Foreign Key Error: Category with id "${categoryId}" does not exist or is deleted.`);
+      }
     }
     const list = getStorageItem<SubType[]>("sub_types", initialSubTypes);
     
@@ -1271,6 +1389,9 @@ class LocalDB {
     const user = callerUser || this.getCurrentSessionUser();
     if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
       throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
+    if (quantity < 0 || isNaN(quantity)) {
+      throw new Error('Invalid stock quantity. Quantity cannot be negative.');
     }
     const list = getStorageItem<Stock[]>("stock", initialStock);
     const existingIndex = list.findIndex(
@@ -1419,40 +1540,40 @@ class LocalDB {
  
     const isPreOrder = deliveryDate && deliveryDate.trim() !== "";
 
-    // 1. Pre-validation checks for products and dryfruits shortages
+    // 1. Pre-validation checks for products and dryfruits shortages (aggregate across all line items)
+    const reqProductQty: { [id: string]: number } = {};
+    const reqAdditiveQty: { [id: string]: number } = {};
+
     for (const item of items) {
       if (item.productId) {
-        const activeProductStocks = stocks.filter(st => st.product_id === item.productId && st.deleted_at === null);
-        const totalAvailable = activeProductStocks.reduce((sum, s) => sum + s.quantity, 0);
-        
-        if (totalAvailable < item.quantity && !isPreOrder) {
-          const prod = products.find(p => p.id === item.productId);
-          const productName = prod ? prod.name : "Product";
-          throw new Error(`Insufficient stock for "${productName}". Requested: ${item.quantity}, Available: ${totalAvailable}`);
-        }
-        
-        const dryfruitsNeeded: { [id: string]: number } = {};
+        reqProductQty[item.productId] = (reqProductQty[item.productId] || 0) + item.quantity;
         item.customizations?.forEach(jar => {
           if (jar.additive_id !== "empty" && jar.weight_grams > 0) {
-            dryfruitsNeeded[jar.additive_id] = (dryfruitsNeeded[jar.additive_id] || 0) + (jar.weight_grams * item.quantity) / 1000;
+            reqAdditiveQty[jar.additive_id] = (reqAdditiveQty[jar.additive_id] || 0) + (jar.weight_grams * item.quantity) / 1000;
           }
         });
-        
-        for (const [addId, weightNeeded] of Object.entries(dryfruitsNeeded)) {
-          const activeAddStocks = stocks.filter(s => s.additive_id === addId && s.deleted_at === null);
-          const totalAddAvail = activeAddStocks.reduce((sum, s) => sum + s.quantity, 0);
-          if (totalAddAvail < weightNeeded && !isPreOrder) {
-            const addObj = additives.find(a => a.id === addId);
-            throw new Error(`Insufficient stock of dryfruit ingredient "${addObj ? addObj.name : "Additive"}" for jar fillings. Required: ${weightNeeded.toFixed(2)} kg, Available: ${totalAddAvail.toFixed(2)} kg`);
-          }
-        }
       } else if (item.additiveId) {
-        const activeAddStocks = stocks.filter(st => st.additive_id === item.additiveId && st.deleted_at === null);
-        const totalAvailable = activeAddStocks.reduce((sum, s) => sum + s.quantity, 0);
-        
-        if (totalAvailable < item.quantity && !isPreOrder) {
-          const addObj = additives.find(a => a.id === item.additiveId);
-          throw new Error(`Insufficient stock for loose dryfruit "${addObj ? addObj.name : "Dryfruit"}". Requested: ${item.quantity} kg, Available: ${totalAvailable} kg`);
+        reqAdditiveQty[item.additiveId] = (reqAdditiveQty[item.additiveId] || 0) + item.quantity;
+      }
+    }
+
+    if (!isPreOrder) {
+      for (const [prodId, totalQtyNeeded] of Object.entries(reqProductQty)) {
+        const activeProductStocks = stocks.filter(st => st.product_id === prodId && st.deleted_at === null);
+        const totalAvailable = activeProductStocks.reduce((sum, s) => sum + s.quantity, 0);
+        if (totalAvailable < totalQtyNeeded) {
+          const prod = products.find(p => p.id === prodId);
+          const productName = prod ? prod.name : "Product";
+          throw new Error(`Insufficient stock for "${productName}". Requested: ${totalQtyNeeded}, Available: ${totalAvailable}`);
+        }
+      }
+
+      for (const [addId, weightNeeded] of Object.entries(reqAdditiveQty)) {
+        const activeAddStocks = stocks.filter(st => st.additive_id === addId && st.deleted_at === null);
+        const totalAddAvail = activeAddStocks.reduce((sum, s) => sum + s.quantity, 0);
+        if (totalAddAvail < weightNeeded) {
+          const addObj = additives.find(a => a.id === addId);
+          throw new Error(`Insufficient stock of dryfruit ingredient "${addObj ? addObj.name : "Additive"}". Required: ${weightNeeded.toFixed(2)} kg, Available: ${totalAddAvail.toFixed(2)} kg`);
         }
       }
     }
@@ -1690,40 +1811,40 @@ class LocalDB {
     
     const isPreOrder = deliveryDate && deliveryDate.trim() !== "";
 
-    // 2. Validate stock availability for all new items
+    // 2. Validate aggregate stock availability for all new items
+    const reqProductQty: { [id: string]: number } = {};
+    const reqAdditiveQty: { [id: string]: number } = {};
+
     for (const item of items) {
       if (item.productId) {
-        const activeProductStocks = stocks.filter(st => st.product_id === item.productId && st.deleted_at === null);
-        const totalAvailable = activeProductStocks.reduce((sum, s) => sum + s.quantity, 0);
-        
-        if (totalAvailable < item.quantity && !isPreOrder) {
-          const prod = products.find(p => p.id === item.productId);
-          const productName = prod ? prod.name : "Product";
-          throw new Error(`Insufficient stock for "${productName}". Requested: ${item.quantity}, Available: ${totalAvailable} (Note: Stock levels reverted)`);
-        }
-
-        const dryfruitsNeeded: { [id: string]: number } = {};
+        reqProductQty[item.productId] = (reqProductQty[item.productId] || 0) + item.quantity;
         item.customizations?.forEach(jar => {
           if (jar.additive_id !== "empty" && jar.weight_grams > 0) {
-            dryfruitsNeeded[jar.additive_id] = (dryfruitsNeeded[jar.additive_id] || 0) + (jar.weight_grams * item.quantity) / 1000;
+            reqAdditiveQty[jar.additive_id] = (reqAdditiveQty[jar.additive_id] || 0) + (jar.weight_grams * item.quantity) / 1000;
           }
         });
-        
-        for (const [addId, weightNeeded] of Object.entries(dryfruitsNeeded)) {
-          const activeAddStocks = stocks.filter(s => s.additive_id === addId && s.deleted_at === null);
-          const totalAddAvail = activeAddStocks.reduce((sum, s) => sum + s.quantity, 0);
-          if (totalAddAvail < weightNeeded && !isPreOrder) {
-            const addObj = additives.find(a => a.id === addId);
-            throw new Error(`Insufficient stock of dryfruit ingredient "${addObj ? addObj.name : "Additive"}" for jar fillings. Required: ${weightNeeded.toFixed(2)} kg, Available: ${totalAddAvail.toFixed(2)} kg (Note: Stock levels reverted)`);
-          }
-        }
       } else if (item.additiveId) {
-        const activeAddStocks = stocks.filter(st => st.additive_id === item.additiveId && st.deleted_at === null);
-        const totalAvailable = activeAddStocks.reduce((sum, s) => sum + s.quantity, 0);
-        
-        if (totalAvailable < item.quantity && !isPreOrder) {
-          const addObj = additives.find(a => a.id === item.additiveId);
-          throw new Error(`Insufficient stock for loose dryfruit "${addObj ? addObj.name : "Dryfruit"}". Requested: ${item.quantity} kg, Available: ${totalAvailable} kg (Note: Stock levels reverted)`);
+        reqAdditiveQty[item.additiveId] = (reqAdditiveQty[item.additiveId] || 0) + item.quantity;
+      }
+    }
+
+    if (!isPreOrder) {
+      for (const [prodId, totalQtyNeeded] of Object.entries(reqProductQty)) {
+        const activeProductStocks = stocks.filter(st => st.product_id === prodId && st.deleted_at === null);
+        const totalAvailable = activeProductStocks.reduce((sum, s) => sum + s.quantity, 0);
+        if (totalAvailable < totalQtyNeeded) {
+          const prod = products.find(p => p.id === prodId);
+          const productName = prod ? prod.name : "Product";
+          throw new Error(`Insufficient stock for "${productName}". Requested: ${totalQtyNeeded}, Available: ${totalAvailable} (Note: Stock levels reverted)`);
+        }
+      }
+
+      for (const [addId, weightNeeded] of Object.entries(reqAdditiveQty)) {
+        const activeAddStocks = stocks.filter(st => st.additive_id === addId && st.deleted_at === null);
+        const totalAddAvail = activeAddStocks.reduce((sum, s) => sum + s.quantity, 0);
+        if (totalAddAvail < weightNeeded) {
+          const addObj = additives.find(a => a.id === addId);
+          throw new Error(`Insufficient stock of dryfruit ingredient "${addObj ? addObj.name : "Additive"}". Required: ${weightNeeded.toFixed(2)} kg, Available: ${totalAddAvail.toFixed(2)} kg (Note: Stock levels reverted)`);
         }
       }
     }
@@ -2045,6 +2166,9 @@ class LocalDB {
     const user = callerUser || this.getCurrentSessionUser();
     if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
       throw new Error('Unauthorized: Your user account lacks permission to modify inventory.');
+    }
+    if (quantity <= 0 || isNaN(quantity)) {
+      throw new Error('Invalid damaged stock quantity. Quantity must be greater than zero.');
     }
     const stocks = getStorageItem<Stock[]>("stock", initialStock);
     const stIndex = stocks.findIndex(

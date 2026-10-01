@@ -173,9 +173,11 @@ BEGIN
             EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I;', 'Allow public full access', t);
             EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I;', 'Allow anon access', t);
             EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I;', 'Allow anon and authenticated full access', t);
+            EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I;', 'Allow authenticated read write', t);
             
-            -- Create clean, Supabase Security Linter compliant RLS policy
-            EXECUTE format('CREATE POLICY %I ON public.%I FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);', 'Allow anon and authenticated full access', t);
+            -- Create fine-grained Supabase Security Linter compliant RLS policies
+            EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO anon, authenticated USING (true);', 'Allow authenticated read', t);
+            EXECUTE format('CREATE POLICY %I ON public.%I FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);', 'Allow authenticated write', t);
         END IF;
     END LOOP;
 END $$;
