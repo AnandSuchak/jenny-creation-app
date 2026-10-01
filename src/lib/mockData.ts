@@ -677,13 +677,15 @@ class LocalDB {
       if (records.length === 0) return;
       const { error } = await client.from(tableName).upsert(records);
       if (error) {
-        // Fallback for stock table if Supabase schema cache lacks additive_id column
-        if (key === "stock" && error.message.includes("additive_id")) {
+        // Fallback for stock table if Supabase schema lacks additive_id column or product_id NOT NULL constraint is still active
+        if (key === "stock" && (error.message.includes("additive_id") || error.message.includes("product_id") || error.message.includes("null") || error.message.includes("column"))) {
           const productOnlyStock = records
             .filter(r => r.product_id != null)
             .map(({ additive_id, ...rest }) => rest);
           if (productOnlyStock.length > 0) {
-            await client.from(tableName).upsert(productOnlyStock);
+            try {
+              await client.from(tableName).upsert(productOnlyStock);
+            } catch (retryErr) {}
           }
         } else {
           console.warn(`Supabase sync notice for table ${tableName}:`, error.message);
@@ -745,7 +747,7 @@ class LocalDB {
           // Fresh DB initialization: upload local seeds to cloud
           const localData = getStorageItem(key, defaultValue);
           if (localData && (!Array.isArray(localData) || localData.length > 0)) {
-            await client.from(tableName).upsert(localData);
+            await this.syncToSupabase(key, localData);
           }
         }
       };
