@@ -2742,7 +2742,7 @@ export default function Dashboard() {
                           <input 
                             type="text" 
                             required
-                            placeholder="e.g. Aryan Sharma"
+                            placeholder="Enter customer name..."
                             value={invoiceCustomerName}
                             onChange={e => setInvoiceCustomerName(e.target.value)}
                             className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${inputClass}`}
