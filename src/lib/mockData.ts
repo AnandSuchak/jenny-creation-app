@@ -1939,11 +1939,16 @@ class LocalDB {
     const locations = getStorageItem<StorageLocation[]>("locations", initialLocations);
     const firstLoc = locations.find(l => !l.deleted_at) || locations[0];
     let stocksUpdated = false;
+    let additivesUpdated = false;
 
     const result = list.map(a => {
       const activeStocks = stocks.filter(st => st.additive_id === a.id && !st.deleted_at);
       if (activeStocks.length > 0) {
         const totalStock = activeStocks.reduce((sum, s) => sum + Number(s.quantity || 0), 0);
+        if (a.stock_qty_kg !== totalStock) {
+          a.stock_qty_kg = totalStock;
+          additivesUpdated = true;
+        }
         return {
           ...a,
           stock_qty_kg: totalStock
@@ -1972,6 +1977,9 @@ class LocalDB {
 
     if (stocksUpdated) {
       setStorageItem("stock", stocks);
+    }
+    if (additivesUpdated) {
+      setStorageItem("additives", list);
     }
     return result;
   }
