@@ -14,6 +14,7 @@ export interface User {
     edit_inventory: boolean;
   };
   created_at: string;
+  updated_at?: string;
   deleted_at: string | null;
   require_password_change?: boolean;
   current_session_token?: string | null;
@@ -849,6 +850,7 @@ class LocalDB {
     const idx = list.findIndex(u => u.id === id && u.deleted_at === null);
     if (idx !== -1) {
       list[idx].current_session_token = token;
+      list[idx].updated_at = new Date().toISOString();
       setStorageItem("users", list);
       return list[idx];
     }
@@ -869,6 +871,7 @@ class LocalDB {
       throw new Error("Cannot modify rights for primary Super Admin.");
     }
     list[matchedIdx].rights = rights;
+    list[matchedIdx].updated_at = new Date().toISOString();
     setStorageItem("users", list);
     return list[matchedIdx];
   }
@@ -886,6 +889,7 @@ class LocalDB {
     }
     list[matchedIdx].password_hash = defaultPasswordHash;
     list[matchedIdx].require_password_change = true;
+    list[matchedIdx].updated_at = new Date().toISOString();
     setStorageItem("users", list);
     return list[matchedIdx];
   }
@@ -896,6 +900,7 @@ class LocalDB {
     if (matchedIdx === -1) throw new Error("User not found.");
     list[matchedIdx].password_hash = newPasswordHash;
     list[matchedIdx].require_password_change = false;
+    list[matchedIdx].updated_at = new Date().toISOString();
     setStorageItem("users", list);
     return list[matchedIdx];
   }

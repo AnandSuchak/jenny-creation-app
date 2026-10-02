@@ -340,7 +340,7 @@ export default function Dashboard() {
           alert("Your account has been deleted or deactivated by an administrator. You have been signed out.");
         } else {
           // Check for single-session lock token mismatch
-          if (latestMatched.current_session_token && latestMatched.current_session_token !== sessionToken) {
+          if (sessionToken && latestMatched.current_session_token && latestMatched.current_session_token !== sessionToken) {
             localStorage.removeItem("jenny_session_user");
             localStorage.removeItem("jenny_session_token");
             sessionStorage.removeItem("jenny_session_user");
@@ -348,6 +348,12 @@ export default function Dashboard() {
             setCurrentUser(null);
             alert("This user account has been logged in on another browser or device. You have been signed out.");
           } else {
+            if (!sessionToken && latestMatched.current_session_token) {
+              try {
+                localStorage.setItem("jenny_session_token", latestMatched.current_session_token);
+                sessionStorage.setItem("jenny_session_token", latestMatched.current_session_token);
+              } catch (e) {}
+            }
             // If database rights or properties changed, update in-memory state and session string
             if (JSON.stringify(latestMatched) !== JSON.stringify(currentUser)) {
               localStorage.setItem("jenny_session_user", JSON.stringify(latestMatched));
