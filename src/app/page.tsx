@@ -206,6 +206,12 @@ export default function Dashboard() {
   const [sellerGstin, setSellerGstin] = useState("");
   const [sellerPan, setSellerPan] = useState("");
   const [sellerShowGst, setSellerShowGst] = useState(false);
+  const [adminSubTab, setAdminSubTab] = useState<"catalog" | "profile" | "users" | "devices" | "trash" | "analytics" | "backups">("catalog");
+  const [sellerTerms, setSellerTerms] = useState("");
+  const [sellerFooter, setSellerFooter] = useState("");
+  const [sellerLogo, setSellerLogo] = useState("");
+  const [auditLogSearch, setAuditLogSearch] = useState("");
+  const [trashSearch, setTrashSearch] = useState("");
   const [adminCurrentPassword, setAdminCurrentPassword] = useState("");
   const [adminNewPassword, setAdminNewPassword] = useState("");
   const [previewInvoiceId, setPreviewInvoiceId] = useState("");
@@ -370,6 +376,9 @@ export default function Dashboard() {
     setSellerGstin(settings.gstin);
     setSellerPan(settings.pan);
     setSellerShowGst(settings.show_gst_pan);
+    setSellerTerms(settings.invoice_terms || "");
+    setSellerFooter(settings.invoice_footer || "");
+    setSellerLogo(settings.logo_url || "");
     // Load deleted elements for restore tracking
     setDeletedCategories(localDB.getDeletedCategories());
     setDeletedSubTypes(localDB.getDeletedSubTypes());
@@ -5287,323 +5296,898 @@ export default function Dashboard() {
           )}
         </>
       )}
-        {/* Tab 4: System Setup */}
+        {/* Tab 4: System Setup / Admin Hub */}
         {activeTab === "setup" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-            {/* Categories list */}
-            <div className={`${cardClass} p-6 flex flex-col justify-between`}>
-              <div>
-                <h3 className={`font-bold text-lg mb-4 flex items-center justify-between ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
-                  <span>Categories</span>
-                  <button 
-                    onClick={() => {
-                      setSetupModalType("category");
-                      setIsSetupModalOpen(true);
-                    }}
-                    className={`p-1 text-zinc-400 hover:text-indigo-500 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-150"}`}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </h3>
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2">
-                  {categories.map((c, idx) => (
-                    <div key={`${c.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
-                      <div>
-                        <span className={`font-medium block ${isDark ? "text-zinc-300" : "text-zinc-705"}`}>{c.name}</span>
-                        <span className="text-[10px] text-zinc-500 font-mono">ID: {c.id}</span>
-                      </div>
-                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
-                        <button 
-                          onClick={() => {
-                            setIsEditMode(true);
-                            setEditItemId(c.id);
-                            setSetupName(c.name);
-                            setSetupModalType("category");
-                            setIsSetupModalOpen(true);
-                          }}
-                          className={`p-1 rounded text-xs transition duration-150 ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900"}`}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleSoftDelete("categories", c.id)}
-                          className={`p-1 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800 text-rose-455" : "hover:bg-zinc-200/50 text-rose-500 hover:text-rose-600"}`}
-                          title="Soft Delete Category"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            {/* Sub-types list */}
-            <div className={`${cardClass} p-6 flex flex-col justify-between`}>
-              <div>
-                <h3 className={`font-bold text-lg mb-4 flex items-center justify-between ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
-                  <span>Sub-Types</span>
-                  <button 
-                    onClick={() => {
-                      setSetupModalType("subtype");
-                      setIsSetupModalOpen(true);
-                    }}
-                    className={`p-1 text-zinc-400 hover:text-indigo-500 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-150"}`}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </h3>
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2">
-                  {subTypes.map((s, idx) => (
-                    <div key={`${s.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
-                      <div>
-                        <span className={`font-medium block ${isDark ? "text-zinc-300" : "text-zinc-705"}`}>
-                          {s.name} <span className="text-xs text-zinc-500 font-normal">({getCategoryName(s.category_id)})</span>
-                        </span>
-                        <span className="text-[10px] text-zinc-500 font-mono">ID: {s.id}</span>
-                      </div>
-                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
-                        <button 
-                          onClick={() => {
-                            setIsEditMode(true);
-                            setEditItemId(s.id);
-                            setSetupName(s.name);
-                            setSetupCategoryId(s.category_id);
-                            setSetupModalType("subtype");
-                            setIsSetupModalOpen(true);
-                          }}
-                          className={`p-1 rounded text-xs transition duration-150 ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900"}`}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleSoftDelete("sub_types", s.id)}
-                          className={`p-1 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800 text-rose-455" : "hover:bg-zinc-200/50 text-rose-500 hover:text-rose-600"}`}
-                          title="Soft Delete Sub-Type"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            {/* Storage Locations list */}
-            <div className={`${cardClass} p-6 flex flex-col justify-between`}>
-              <div>
-                <h3 className={`font-bold text-lg mb-4 flex items-center justify-between ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
-                  <span>Storage Locations</span>
-                  <button 
-                    onClick={() => {
-                      setSetupModalType("location");
-                      setIsSetupModalOpen(true);
-                    }}
-                    className={`p-1 text-zinc-400 hover:text-indigo-500 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-150"}`}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </h3>
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2">
-                  {locations.map((l, idx) => (
-                    <div key={`${l.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
-                      <div>
-                        <span className={`font-medium flex items-center gap-1.5 ${isDark ? "text-zinc-300" : "text-zinc-705"}`}>
-                          <MapPin className="h-3.5 w-3.5 text-indigo-500" />
-                          {l.name}
-                        </span>
-                        <span className="text-[10px] text-zinc-500 font-mono">ID: {l.id}</span>
-                      </div>
-                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
-                        <button 
-                          onClick={() => {
-                            setIsEditMode(true);
-                            setEditItemId(l.id);
-                            setSetupName(l.name);
-                            setSetupModalType("location");
-                            setIsSetupModalOpen(true);
-                          }}
-                          className={`p-1 rounded text-xs transition duration-150 ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900"}`}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleSoftDelete("locations", l.id)}
-                          className={`p-1 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800 text-rose-455" : "hover:bg-zinc-200/50 text-rose-500 hover:text-rose-600"}`}
-                          title="Soft Delete Location"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            {/* Dryfruit Additives list */}
-            <div className={`${cardClass} p-6 flex flex-col justify-between`}>
-              <div>
-                <h3 className={`font-bold text-lg mb-4 flex items-center justify-between ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
-                  <span>Dryfruit Additives</span>
-                  <button 
-                    onClick={() => {
-                      setIsEditMode(false);
-                      setEditItemId("");
-                      setSetupName("");
-                      setAdditivePrice("");
-                      setAdditivePriceOption("1kg");
-                      setAdditiveStockQty("");
-                      setSetupModalType("additive");
-                      setIsSetupModalOpen(true);
-                    }}
-                    className={`p-1 text-zinc-400 hover:text-indigo-500 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-150"}`}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </h3>
-                <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2">
-                  {additives.map((add, idx) => (
-                    <div key={`${add.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
-                      <div>
-                        <span className={`font-medium block text-sm ${isDark ? "text-zinc-200" : "text-zinc-800"}`}>{add.name}</span>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-500 mt-1">
-                          <span className="whitespace-nowrap font-semibold text-amber-600 dark:text-amber-400">₹{add.price_per_kg}/kg</span>
-                          <span className="text-zinc-300 dark:text-zinc-600 select-none">•</span>
-                          <span className="whitespace-nowrap">Stock:&nbsp;<span className={`font-bold ${add.stock_qty_kg <= 2 ? "text-rose-500 font-extrabold" : "text-emerald-500"}`}>{add.stock_qty_kg || 0}&nbsp;kg</span></span>
-                          <span className="text-zinc-300 dark:text-zinc-600 select-none">•</span>
-                          <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">₹{Math.round(add.price_per_kg / 10)}/100g</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
-                        <button 
-                          onClick={() => {
-                            setIsEditMode(true);
-                            setEditItemId(add.id);
-                            setSetupName(add.name);
-                            setAdditivePrice(String(add.price_per_kg));
-                            setAdditivePriceOption("1kg");
-                            setAdditiveStockQty(String(add.stock_qty_kg || 0));
-                            setSetupModalType("additive");
-                            setIsSetupModalOpen(true);
-                          }}
-                          className={`p-1 rounded text-xs transition duration-150 ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900"}`}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => {
-                            if (confirm(`Are you sure you want to delete additive "${add.name}"?`)) {
-                              localDB.softDelete("additives", add.id);
-                              loadData();
-                            }
-                          }}
-                          className={`p-1 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800 text-rose-455" : "hover:bg-zinc-200/50 text-rose-500 hover:text-rose-600"}`}
-                          title="Delete Additive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  {additives.length === 0 && (
-                    <div className="text-center text-zinc-550 text-xs italic py-4">No additives created</div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* 💾 3-Day Rolling Backup Hub */}
-            <div className={`col-span-1 md:col-span-2 xl:col-span-4 ${cardClass} p-6 border shadow-xl`}>
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-zinc-808/30">
-                <div>
-                  <h3 className={`font-bold text-lg flex items-center gap-2 ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
-                    <Database className="h-5 w-5 text-indigo-500" />
-                    <span>3-Day Rolling Backup Manager (Automated FIFO)</span>
-                  </h3>
-                  <p className="text-xs text-zinc-500 mt-0.5">
-                    Automatically maintains 3 daily rolling snapshots of invoices and catalog data. Oldest snapshots are automatically purged when Day 4 is created.
-                  </p>
-                </div>
+          <div className="space-y-6">
+            {/* Admin Hub Sub-Tab Bar */}
+            <div className={`p-2 rounded-2xl border flex flex-wrap items-center justify-between gap-2 ${isDark ? "bg-zinc-900 border-zinc-808/80 shadow-lg" : "bg-white border-slate-200 shadow-sm"}`}>
+              <div className="flex flex-wrap items-center gap-1.5">
                 <button
-                  type="button"
-                  onClick={() => {
-                    const snap = localDB.createBackupSnapshot();
-                    setBackupSnapshots(localDB.getBackupSnapshots());
-                    alert(`✅ Backup snapshot created for ${snap.date_str} (${snap.size_kb} KB)!`);
-                  }}
-                  className="px-3.5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  onClick={() => setAdminSubTab("catalog")}
+                  className={`px-3.5 py-2 text-xs font-bold rounded-xl transition duration-150 flex items-center gap-2 cursor-pointer ${
+                    adminSubTab === "catalog"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                      : (isDark ? "text-zinc-400 hover:text-white hover:bg-zinc-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                  }`}
                 >
-                  <Plus className="h-4 w-4" /> Create Snapshot Now
+                  <Layers className="h-4 w-4" /> Catalog Setup
+                </button>
+                <button
+                  onClick={() => setAdminSubTab("profile")}
+                  className={`px-3.5 py-2 text-xs font-bold rounded-xl transition duration-150 flex items-center gap-2 cursor-pointer ${
+                    adminSubTab === "profile"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                      : (isDark ? "text-zinc-400 hover:text-white hover:bg-zinc-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                  }`}
+                >
+                  <SlidersHorizontal className="h-4 w-4" /> Profile & Branding
+                </button>
+                <button
+                  onClick={() => setAdminSubTab("users")}
+                  className={`px-3.5 py-2 text-xs font-bold rounded-xl transition duration-150 flex items-center gap-2 cursor-pointer ${
+                    adminSubTab === "users"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                      : (isDark ? "text-zinc-400 hover:text-white hover:bg-zinc-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                  }`}
+                >
+                  <Users className="h-4 w-4" /> Users & Permissions
+                </button>
+                <button
+                  onClick={() => setAdminSubTab("devices")}
+                  className={`px-3.5 py-2 text-xs font-bold rounded-xl transition duration-150 flex items-center gap-2 cursor-pointer ${
+                    adminSubTab === "devices"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                      : (isDark ? "text-zinc-400 hover:text-white hover:bg-zinc-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                  }`}
+                >
+                  <Shield className="h-4 w-4" /> Active Sessions
+                </button>
+                <button
+                  onClick={() => setAdminSubTab("trash")}
+                  className={`px-3.5 py-2 text-xs font-bold rounded-xl transition duration-150 flex items-center gap-2 cursor-pointer ${
+                    adminSubTab === "trash"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                      : (isDark ? "text-zinc-400 hover:text-white hover:bg-zinc-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                  }`}
+                >
+                  <Trash2 className="h-4 w-4" /> Recycle Bin ({localDB.getTrashBinItems().length})
+                </button>
+                <button
+                  onClick={() => setAdminSubTab("analytics")}
+                  className={`px-3.5 py-2 text-xs font-bold rounded-xl transition duration-150 flex items-center gap-2 cursor-pointer ${
+                    adminSubTab === "analytics"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                      : (isDark ? "text-zinc-400 hover:text-white hover:bg-zinc-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                  }`}
+                >
+                  <FileText className="h-4 w-4" /> Audit Logs & Tax
+                </button>
+                <button
+                  onClick={() => setAdminSubTab("backups")}
+                  className={`px-3.5 py-2 text-xs font-bold rounded-xl transition duration-150 flex items-center gap-2 cursor-pointer ${
+                    adminSubTab === "backups"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                      : (isDark ? "text-zinc-400 hover:text-white hover:bg-zinc-800" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100")
+                  }`}
+                >
+                  <Database className="h-4 w-4" /> Export & Backups
                 </button>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {backupSnapshots.length === 0 ? (
-                  <div className="col-span-3 text-center py-6 text-xs text-zinc-500 italic">
-                    No active rolling backups found. Click "Create Snapshot Now" or wait for daily automated trigger.
-                  </div>
-                ) : (
-                  backupSnapshots.map((snap: any, sIdx: number) => (
-                    <div 
-                      key={snap.id}
-                      className={`p-4 rounded-xl border flex flex-col justify-between gap-3 ${
-                        isDark ? "bg-zinc-950/40 border-zinc-808" : "bg-slate-50 border-slate-200"
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs font-black font-mono text-indigo-500">
-                            📅 {snap.date_str} {sIdx === 0 && "(Latest)"}
-                          </span>
-                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-zinc-500/10 text-zinc-500">
-                            {snap.size_kb} KB
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-zinc-550 dark:text-zinc-400">
-                          <strong>{snap.invoices_count}</strong> Invoices • <strong>{snap.catalog_count}</strong> Catalog Items
-                        </p>
-                        <p className="text-[9px] font-mono text-zinc-500 mt-1">
-                          Created: {new Date(snap.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2 border-t pt-2.5 border-dashed border-zinc-808/30">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snap.data, null, 2));
-                            const downloadAnchor = document.createElement("a");
-                            downloadAnchor.setAttribute("href", dataStr);
-                            downloadAnchor.setAttribute("download", `jenny_backup_${snap.date_str}.json`);
-                            document.body.appendChild(downloadAnchor);
-                            downloadAnchor.click();
-                            downloadAnchor.remove();
-                          }}
-                          className="flex-1 py-1.5 text-[11px] font-bold border rounded-lg text-center transition cursor-pointer text-indigo-500 border-indigo-500/20 hover:bg-indigo-500/10"
-                        >
-                          📥 Download JSON
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (confirm(`Restore backup from ${snap.date_str}? Current unbacked data will be overwritten.`)) {
-                              const ok = localDB.restoreBackupSnapshot(snap.id);
-                              if (ok) {
-                                loadData();
-                                alert(`Snapshot from ${snap.date_str} restored successfully!`);
-                              }
-                            }
-                          }}
-                          className="px-3 py-1.5 text-[11px] font-bold border rounded-lg text-center transition cursor-pointer text-amber-500 border-amber-500/20 hover:bg-amber-500/10"
-                        >
-                          🔄 Restore
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
             </div>
+
+            {/* Sub-Tab 1: Catalog Setup */}
+            {adminSubTab === "catalog" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                {/* Categories */}
+                <div className={`${cardClass} p-6 flex flex-col justify-between`}>
+                  <div>
+                    <h3 className={`font-bold text-lg mb-4 flex items-center justify-between ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                      <span>Categories ({categories.length})</span>
+                      <button 
+                        onClick={() => {
+                          setSetupModalType("category");
+                          setIsSetupModalOpen(true);
+                        }}
+                        className={`p-1 text-zinc-400 hover:text-indigo-500 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-150"}`}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </h3>
+                    <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2">
+                      {categories.map((c, idx) => (
+                        <div key={`${c.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
+                          <div>
+                            <span className={`font-medium block ${isDark ? "text-zinc-300" : "text-zinc-705"}`}>{c.name}</span>
+                            <span className="text-[10px] text-zinc-500 font-mono">ID: {c.id}</span>
+                          </div>
+                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
+                            <button 
+                              onClick={() => {
+                                setIsEditMode(true);
+                                setEditItemId(c.id);
+                                setSetupName(c.name);
+                                setSetupModalType("category");
+                                setIsSetupModalOpen(true);
+                              }}
+                              className={`p-1 rounded text-xs transition duration-150 ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900"}`}
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleSoftDelete("categories", c.id)}
+                              className={`p-1 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800 text-rose-455" : "hover:bg-zinc-200/50 text-rose-500 hover:text-rose-600"}`}
+                              title="Soft Delete Category"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sub-types */}
+                <div className={`${cardClass} p-6 flex flex-col justify-between`}>
+                  <div>
+                    <h3 className={`font-bold text-lg mb-4 flex items-center justify-between ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                      <span>Sub-Types ({subTypes.length})</span>
+                      <button 
+                        onClick={() => {
+                          setSetupModalType("subtype");
+                          setIsSetupModalOpen(true);
+                        }}
+                        className={`p-1 text-zinc-400 hover:text-indigo-500 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-150"}`}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </h3>
+                    <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2">
+                      {subTypes.map((s, idx) => (
+                        <div key={`${s.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
+                          <div>
+                            <span className={`font-medium block ${isDark ? "text-zinc-300" : "text-zinc-705"}`}>
+                              {s.name} <span className="text-xs text-zinc-500 font-normal">({getCategoryName(s.category_id)})</span>
+                            </span>
+                            <span className="text-[10px] text-zinc-500 font-mono">ID: {s.id}</span>
+                          </div>
+                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
+                            <button 
+                              onClick={() => {
+                                setIsEditMode(true);
+                                setEditItemId(s.id);
+                                setSetupName(s.name);
+                                setSetupCategoryId(s.category_id);
+                                setSetupModalType("subtype");
+                                setIsSetupModalOpen(true);
+                              }}
+                              className={`p-1 rounded text-xs transition duration-150 ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900"}`}
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleSoftDelete("sub_types", s.id)}
+                              className={`p-1 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800 text-rose-455" : "hover:bg-zinc-200/50 text-rose-500 hover:text-rose-600"}`}
+                              title="Soft Delete Sub-Type"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Storage Locations */}
+                <div className={`${cardClass} p-6 flex flex-col justify-between`}>
+                  <div>
+                    <h3 className={`font-bold text-lg mb-4 flex items-center justify-between ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                      <span>Storage Locations ({locations.length})</span>
+                      <button 
+                        onClick={() => {
+                          setSetupModalType("location");
+                          setIsSetupModalOpen(true);
+                        }}
+                        className={`p-1 text-zinc-400 hover:text-indigo-500 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-150"}`}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </h3>
+                    <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2">
+                      {locations.map((l, idx) => (
+                        <div key={`${l.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
+                          <div>
+                            <span className={`font-medium flex items-center gap-1.5 ${isDark ? "text-zinc-300" : "text-zinc-705"}`}>
+                              <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+                              {l.name}
+                            </span>
+                            <span className="text-[10px] text-zinc-500 font-mono">ID: {l.id}</span>
+                          </div>
+                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
+                            <button 
+                              onClick={() => {
+                                setIsEditMode(true);
+                                setEditItemId(l.id);
+                                setSetupName(l.name);
+                                setSetupModalType("location");
+                                setIsSetupModalOpen(true);
+                              }}
+                              className={`p-1 rounded text-xs transition duration-150 ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900"}`}
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => handleSoftDelete("locations", l.id)}
+                              className={`p-1 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800 text-rose-455" : "hover:bg-zinc-200/50 text-rose-500 hover:text-rose-600"}`}
+                              title="Soft Delete Location"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dryfruit Additives */}
+                <div className={`${cardClass} p-6 flex flex-col justify-between`}>
+                  <div>
+                    <h3 className={`font-bold text-lg mb-4 flex items-center justify-between ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                      <span>Dryfruit Additives ({additives.length})</span>
+                      <button 
+                        onClick={() => {
+                          setIsEditMode(false);
+                          setEditItemId("");
+                          setSetupName("");
+                          setAdditivePrice("");
+                          setAdditivePriceOption("1kg");
+                          setAdditiveStockQty("");
+                          setSetupModalType("additive");
+                          setIsSetupModalOpen(true);
+                        }}
+                        className={`p-1 text-zinc-400 hover:text-indigo-500 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-150"}`}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </h3>
+                    <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2">
+                      {additives.map((add, idx) => (
+                        <div key={`${add.id}-${idx}`} className={`p-3 rounded-lg border flex items-center justify-between group transition duration-150 ${isDark ? "bg-zinc-950/45 border-zinc-808 hover:border-zinc-700" : "bg-zinc-50 border-zinc-200/80 hover:border-zinc-300"}`}>
+                          <div>
+                            <span className={`font-medium block text-sm ${isDark ? "text-zinc-200" : "text-zinc-800"}`}>{add.name}</span>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-500 mt-1">
+                              <span className="whitespace-nowrap font-semibold text-amber-600 dark:text-amber-400">₹{add.price_per_kg}/kg</span>
+                              <span className="text-zinc-300 dark:text-zinc-600 select-none">•</span>
+                              <span className="whitespace-nowrap">Stock:&nbsp;<span className={`font-bold ${add.stock_qty_kg <= 2 ? "text-rose-500 font-extrabold" : "text-emerald-500"}`}>{add.stock_qty_kg || 0}&nbsp;kg</span></span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition duration-150">
+                            <button 
+                              onClick={() => {
+                                setIsEditMode(true);
+                                setEditItemId(add.id);
+                                setSetupName(add.name);
+                                setAdditivePrice(String(add.price_per_kg));
+                                setAdditivePriceOption("1kg");
+                                setAdditiveStockQty(String(add.stock_qty_kg || 0));
+                                setSetupModalType("additive");
+                                setIsSetupModalOpen(true);
+                              }}
+                              className={`p-1 rounded text-xs transition duration-150 ${isDark ? "hover:bg-zinc-800 text-zinc-400 hover:text-white" : "hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900"}`}
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete additive "${add.name}"?`)) {
+                                  localDB.softDelete("additives", add.id);
+                                  loadData();
+                                }
+                              }}
+                              className={`p-1 rounded transition duration-150 ${isDark ? "hover:bg-zinc-800 text-rose-455" : "hover:bg-zinc-200/50 text-rose-500 hover:text-rose-600"}`}
+                              title="Delete Additive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Tab 2: Business Profile & Tax Settings */}
+            {adminSubTab === "profile" && (
+              <div className={`${cardClass} p-6 rounded-2xl border shadow-lg flex flex-col gap-6`}>
+                <div>
+                  <h2 className="text-xl font-extrabold text-slate-850 dark:text-zinc-100">Seller Business Profile & Invoice Terms</h2>
+                  <p className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5">
+                    Configure business address, GSTIN, PAN, custom invoice terms, and branding options.
+                  </p>
+                </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const updated = {
+                      seller_name: sellerName.trim() || "Jenny's Creation",
+                      seller_address: sellerAddress.trim() || "123 Creative Street, Studio City",
+                      gstin: sellerGstin.trim(),
+                      pan: sellerPan.trim(),
+                      show_gst_pan: sellerShowGst,
+                      invoice_terms: sellerTerms.trim(),
+                      invoice_footer: sellerFooter.trim(),
+                      logo_url: sellerLogo.trim()
+                    };
+                    localDB.saveSellerSettings(updated);
+                    loadData();
+                    alert("Business Profile & Invoice Terms updated successfully!");
+                  }}
+                  className="space-y-4 text-xs"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                        Business Seller Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={sellerName}
+                        onChange={(e) => setSellerName(e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${inputClass}`}
+                      />
+                    </div>
+                    <div className="flex flex-col justify-end pb-2">
+                      <label className="flex items-center gap-2 font-bold text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={sellerShowGst}
+                          onChange={(e) => setSellerShowGst(e.target.checked)}
+                          className="rounded border-zinc-350 text-indigo-650 focus:ring-indigo-500 h-4 w-4"
+                        />
+                        <span>Show GSTIN & PAN details on printed invoices</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                      Corporate Business Address
+                    </label>
+                    <textarea
+                      required
+                      rows={2}
+                      value={sellerAddress}
+                      onChange={(e) => setSellerAddress(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none leading-relaxed ${inputClass}`}
+                      placeholder="Seller address details..."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                        Seller Permanent Account Number (PAN)
+                      </label>
+                      <input
+                        type="text"
+                        value={sellerPan}
+                        onChange={(e) => setSellerPan(e.target.value)}
+                        placeholder="e.g. ABCDE1234F"
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none font-mono uppercase ${inputClass}`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                        Seller Goods & Services Tax (GSTIN)
+                      </label>
+                      <input
+                        type="text"
+                        value={sellerGstin}
+                        onChange={(e) => setSellerGstin(e.target.value)}
+                        placeholder="e.g. 24AAACJ1234A1Z5"
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none font-mono uppercase ${inputClass}`}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                      Custom Invoice Terms & Conditions
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={sellerTerms}
+                      onChange={(e) => setSellerTerms(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none leading-relaxed ${inputClass}`}
+                      placeholder="e.g. 1. Goods once sold cannot be returned. 2. Payment due upon delivery."
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 ${isDark ? "text-zinc-400" : "text-zinc-500"}`}>
+                      Invoice Footer Note
+                    </label>
+                    <input
+                      type="text"
+                      value={sellerFooter}
+                      onChange={(e) => setSellerFooter(e.target.value)}
+                      placeholder="e.g. Thank you for shopping with Jenny's Creation!"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${inputClass}`}
+                    />
+                  </div>
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="submit"
+                      className="px-5 py-2 font-bold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-md transition duration-150 cursor-pointer"
+                    >
+                      Save Configuration Changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Sub-Tab 3: Users & Permissions */}
+            {adminSubTab === "users" && (
+              <div className={`${cardClass} p-6 rounded-2xl border shadow-lg space-y-6`}>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-850 dark:text-zinc-100 flex items-center gap-2">
+                      <Users className="h-5 w-5 text-indigo-500" /> Operator Accounts & Permissions Matrix
+                    </h2>
+                    <p className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5">
+                      Configure operator accounts and allocate permissions for stock views, billing, and inventory edits.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsUserManagementOpen(true)}
+                    className="px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-md transition duration-150 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" /> Add Operator Account
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto border rounded-xl border-zinc-808/20">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className={`border-b ${isDark ? "bg-zinc-900/50 border-zinc-808/30 text-zinc-400" : "bg-slate-50/50 border-slate-100 text-slate-500"} uppercase tracking-wider font-extrabold text-[9px]`}>
+                        <th className="p-3">User</th>
+                        <th className="p-3">Role</th>
+                        <th className="p-3">View Stock</th>
+                        <th className="p-3">Generate Bill</th>
+                        <th className="p-3">Edit Inventory</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${isDark ? "divide-zinc-808/20" : "divide-slate-100"}`}>
+                      {usersList.map((u) => {
+                        const isPrimaryAdmin = u.id === "usr-admin";
+                        return (
+                          <tr key={u.id} className={isDark ? "hover:bg-zinc-850/10" : "hover:bg-slate-50/20"}>
+                            <td className="p-3 font-semibold text-zinc-200">{u.username}</td>
+                            <td className="p-3">
+                              <span className={`text-[9px] px-2 py-0.5 rounded font-black uppercase ${
+                                u.role === "super_admin" ? "bg-indigo-500/10 text-indigo-500" : "bg-amber-500/10 text-amber-600"
+                              }`}>
+                                {u.role === "super_admin" ? "Admin" : "Operator"}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <input
+                                type="checkbox"
+                                disabled={isPrimaryAdmin}
+                                checked={u.rights.view_stock}
+                                onChange={(e) => {
+                                  try {
+                                    localDB.updateUserRights(u.id, { ...u.rights, view_stock: e.target.checked }, currentUser?.id);
+                                    loadData();
+                                  } catch (err: any) { alert(err.message); }
+                                }}
+                                className="rounded border-zinc-408 text-indigo-650 h-4 w-4 cursor-pointer"
+                              />
+                            </td>
+                            <td className="p-3">
+                              <input
+                                type="checkbox"
+                                disabled={isPrimaryAdmin}
+                                checked={u.rights.generate_bill}
+                                onChange={(e) => {
+                                  try {
+                                    localDB.updateUserRights(u.id, { ...u.rights, generate_bill: e.target.checked }, currentUser?.id);
+                                    loadData();
+                                  } catch (err: any) { alert(err.message); }
+                                }}
+                                className="rounded border-zinc-408 text-indigo-650 h-4 w-4 cursor-pointer"
+                              />
+                            </td>
+                            <td className="p-3">
+                              <input
+                                type="checkbox"
+                                disabled={isPrimaryAdmin}
+                                checked={u.rights.edit_inventory}
+                                onChange={(e) => {
+                                  try {
+                                    localDB.updateUserRights(u.id, { ...u.rights, edit_inventory: e.target.checked }, currentUser?.id);
+                                    loadData();
+                                  } catch (err: any) { alert(err.message); }
+                                }}
+                                className="rounded border-zinc-408 text-indigo-650 h-4 w-4 cursor-pointer"
+                              />
+                            </td>
+                            <td className="p-3 text-right">
+                              {!isPrimaryAdmin && (
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Delete operator account "${u.username}"?`)) {
+                                      localDB.softDelete("users", u.id, currentUser?.id);
+                                      loadData();
+                                    }
+                                  }}
+                                  className="text-rose-500 hover:text-rose-600 font-bold text-xs"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Tab 4: Live Devices & Security */}
+            {adminSubTab === "devices" && (
+              <div className={`${cardClass} p-6 rounded-2xl border shadow-lg space-y-6`}>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-850 dark:text-zinc-100 flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-indigo-500" /> Active Devices & Session Control
+                    </h2>
+                    <p className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5">
+                      Monitors all connected browser sessions polling the server. Inactive sessions (&gt;15s) are pruned automatically.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto border rounded-xl border-zinc-808/20">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className={`border-b ${isDark ? "bg-zinc-900/50 border-zinc-808/30 text-zinc-400" : "bg-slate-50/50 border-slate-100 text-slate-500"} uppercase tracking-wider font-extrabold text-[9px]`}>
+                        <th className="p-3">User</th>
+                        <th className="p-3">Device Fingerprint</th>
+                        <th className="p-3">Last Sync Ping</th>
+                        <th className="p-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${isDark ? "divide-zinc-808/20" : "divide-slate-100"}`}>
+                      {activeDevices.map((d) => (
+                        <tr key={d.deviceId} className={isDark ? "hover:bg-zinc-850/10" : "hover:bg-slate-50/20"}>
+                          <td className="p-3 font-semibold text-zinc-200">{d.username}</td>
+                          <td className="p-3 font-mono text-[10px] text-zinc-400">{d.deviceId}</td>
+                          <td className="p-3 font-mono text-zinc-500">{new Date(d.lastSeen).toLocaleTimeString()}</td>
+                          <td className="p-3 text-right">
+                            <button
+                              onClick={() => {
+                                try {
+                                  localDB.forceLogoutDevice(d.deviceId, currentUser);
+                                  loadData();
+                                  alert(`Session ${d.deviceId} terminated.`);
+                                } catch (err: any) { alert(err.message); }
+                              }}
+                              className="px-2.5 py-1 text-[11px] font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition"
+                            >
+                              Force Disconnect
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Tab 5: Recycle Bin / 1-Click Recovery */}
+            {adminSubTab === "trash" && (
+              <div className={`${cardClass} p-6 rounded-2xl border shadow-lg space-y-6`}>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-slate-850 dark:text-zinc-100 flex items-center gap-2">
+                      <Trash2 className="h-5 w-5 text-indigo-500" /> Recycle Bin & 1-Click Recovery Center
+                    </h2>
+                    <p className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5">
+                      Recover soft-deleted items or permanently delete them from database storage.
+                    </p>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search trash..."
+                    value={trashSearch}
+                    onChange={e => setTrashSearch(e.target.value)}
+                    className={`px-3 py-1.5 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                  />
+                </div>
+
+                <div className="overflow-x-auto border rounded-xl border-zinc-808/20">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className={`border-b ${isDark ? "bg-zinc-900/50 border-zinc-808/30 text-zinc-400" : "bg-slate-50/50 border-slate-100 text-slate-500"} uppercase tracking-wider font-extrabold text-[9px]`}>
+                        <th className="p-3">Item Type</th>
+                        <th className="p-3">Item Name / Reference</th>
+                        <th className="p-3">Deleted Date</th>
+                        <th className="p-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${isDark ? "divide-zinc-808/20" : "divide-slate-100"}`}>
+                      {localDB.getTrashBinItems()
+                        .filter(i => !trashSearch || i.name.toLowerCase().includes(trashSearch.toLowerCase()))
+                        .map((item) => (
+                          <tr key={`${item.type}-${item.id}`} className={isDark ? "hover:bg-zinc-850/10" : "hover:bg-slate-50/20"}>
+                            <td className="p-3 font-mono text-[10px] uppercase font-bold text-indigo-400">{item.type}</td>
+                            <td className="p-3 font-semibold text-zinc-200">{item.name}</td>
+                            <td className="p-3 font-mono text-zinc-500">{new Date(item.deleted_at).toLocaleString()}</td>
+                            <td className="p-3 text-right flex justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  const tableKeyMap: { [t: string]: string } = {
+                                    product: "products", category: "categories", sub_type: "sub_types", location: "locations", additive: "additives", invoice: "invoices"
+                                  };
+                                  localDB.restore(tableKeyMap[item.type], item.id, currentUser);
+                                  loadData();
+                                  alert(`Restored ${item.name}!`);
+                                }}
+                                className="px-2.5 py-1 text-[11px] font-bold text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition"
+                              >
+                                🔄 1-Click Restore
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Permanently purge ${item.name}? This cannot be undone.`)) {
+                                    localDB.permanentlyDelete(item.type, item.id, currentUser);
+                                    loadData();
+                                  }
+                                }}
+                                className="px-2.5 py-1 text-[11px] font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition"
+                              >
+                                💥 Purge
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      {localDB.getTrashBinItems().length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="p-6 text-center text-zinc-500 italic">Trash bin is clean. No deleted items found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Tab 6: Audit Logs & Tax Analytics */}
+            {adminSubTab === "analytics" && (
+              <div className="space-y-6">
+                <div className={`${cardClass} p-6 rounded-2xl border shadow-lg space-y-4`}>
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-extrabold text-slate-850 dark:text-zinc-100 flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-indigo-500" /> User Activity Audit Trail Logs
+                      </h2>
+                      <p className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5">
+                        Track every invoice created, stock updated, or permission modified with timestamped attribution.
+                      </p>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Filter audit logs..."
+                      value={auditLogSearch}
+                      onChange={e => setAuditLogSearch(e.target.value)}
+                      className={`px-3 py-1.5 text-xs border rounded-lg focus:outline-none ${inputClass}`}
+                    />
+                  </div>
+
+                  <div className="overflow-x-auto border rounded-xl border-zinc-808/20 max-h-80">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className={`border-b ${isDark ? "bg-zinc-900/50 border-zinc-808/30 text-zinc-400" : "bg-slate-50/50 border-slate-100 text-slate-500"} uppercase tracking-wider font-extrabold text-[9px]`}>
+                          <th className="p-3">Timestamp</th>
+                          <th className="p-3">User</th>
+                          <th className="p-3">Action</th>
+                          <th className="p-3">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody className={`divide-y ${isDark ? "divide-zinc-808/20" : "divide-slate-100"}`}>
+                        {localDB.getAuditLogs()
+                          .filter(l => !auditLogSearch || l.action.toLowerCase().includes(auditLogSearch.toLowerCase()) || l.details.toLowerCase().includes(auditLogSearch.toLowerCase()))
+                          .map((log) => (
+                            <tr key={log.id} className={isDark ? "hover:bg-zinc-850/10" : "hover:bg-slate-50/20"}>
+                              <td className="p-3 font-mono text-[10px] text-zinc-500">{new Date(log.timestamp).toLocaleString()}</td>
+                              <td className="p-3 font-semibold text-zinc-200">{log.username}</td>
+                              <td className="p-3 font-mono text-[10px] uppercase font-bold text-indigo-400">{log.action}</td>
+                              <td className="p-3 text-zinc-400">{log.details}</td>
+                            </tr>
+                          ))}
+                        {localDB.getAuditLogs().length === 0 && (
+                          <tr>
+                            <td colSpan={4} className="p-6 text-center text-zinc-500 italic">No audit log entries recorded yet.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-Tab 7: Export & Backups */}
+            {adminSubTab === "backups" && (
+              <div className="space-y-6">
+                {/* CSV Exports */}
+                <div className={`${cardClass} p-6 rounded-2xl border shadow-lg space-y-4`}>
+                  <h2 className="text-xl font-extrabold text-slate-850 dark:text-zinc-100 flex items-center gap-2">
+                    <FileSpreadsheet className="h-5 w-5 text-emerald-500" /> One-Click CSV Report Exports
+                  </h2>
+                  <p className="text-xs text-zinc-550 dark:text-zinc-450">
+                    Export full spreadsheet reports for inventory stock, products, and invoice records.
+                  </p>
+                  <div className="flex flex-wrap gap-4 pt-2">
+                    <button
+                      onClick={() => {
+                        const csvData = "ID,Name,Category,Subtype,Price,SupplierCode\n" +
+                          products.map(p => `"${p.id}","${p.name}","${categories.find(c => c.id === p.category_id)?.name || ''}","${subTypes.find(s => s.id === p.sub_type_id)?.name || ''}",${p.price},"${p.supplier_code || ''}"`).join("\n");
+                        const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", `products_${new Date().toISOString().slice(0, 10)}.csv`);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                      className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+                    >
+                      📊 Export Products Catalog CSV
+                    </button>
+                    <button
+                      onClick={() => {
+                        const csvData = "ID,ItemName,ItemType,Location,Quantity\n" +
+                          stock.map(s => {
+                            const name = s.product_id ? (products.find(p => p.id === s.product_id)?.name || 'Product') : (additives.find(a => a.id === s.additive_id)?.name || 'Dryfruit');
+                            const loc = locations.find(l => l.id === s.storage_location_id)?.name || 'Location';
+                            return `"${s.id}","${name}","${s.product_id ? 'Product' : 'Dryfruit'}","${loc}",${s.quantity}`;
+                          }).join("\n");
+                        const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", `stock_${new Date().toISOString().slice(0, 10)}.csv`);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                      className="px-4 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+                    >
+                      📦 Export Inventory Stock CSV
+                    </button>
+                    <button
+                      onClick={() => {
+                        const csvData = "InvoiceNumber,CustomerName,Phone,TotalAmount,Status,PaymentMode,IssueDate\n" +
+                          invoices.map(i => `"${i.invoice_number}","${i.customer_name}","${i.customer_phone || ''}",${i.total_amount},"${i.status}","${i.payment_mode || 'Cash'}","${i.issue_date}"`).join("\n");
+                        const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.setAttribute("href", url);
+                        link.setAttribute("download", `invoices_${new Date().toISOString().slice(0, 10)}.csv`);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                      className="px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+                    >
+                      🧾 Export Invoices Sales CSV
+                    </button>
+                  </div>
+                </div>
+
+                {/* 💾 3-Day Rolling Backup Hub */}
+                <div className={`${cardClass} p-6 border shadow-xl`}>
+                  <div className="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-zinc-808/30">
+                    <div>
+                      <h3 className={`font-bold text-lg flex items-center gap-2 ${isDark ? "text-zinc-100" : "text-zinc-800"}`}>
+                        <Database className="h-5 w-5 text-indigo-500" />
+                        <span>3-Day Rolling Backup Manager (Automated FIFO)</span>
+                      </h3>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        Automatically maintains 3 daily rolling snapshots of invoices and catalog data. Oldest snapshots are automatically purged when Day 4 is created.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const snap = localDB.createBackupSnapshot();
+                        setBackupSnapshots(localDB.getBackupSnapshots());
+                        alert(`✅ Backup snapshot created for ${snap.date_str} (${snap.size_kb} KB)!`);
+                      }}
+                      className="px-3.5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <Plus className="h-4 w-4" /> Create Snapshot Now
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {backupSnapshots.length === 0 ? (
+                      <div className="col-span-3 text-center py-6 text-xs text-zinc-500 italic">
+                        No active rolling backups found. Click "Create Snapshot Now" or wait for daily automated trigger.
+                      </div>
+                    ) : (
+                      backupSnapshots.map((snap: any, sIdx: number) => (
+                        <div 
+                          key={snap.id}
+                          className={`p-4 rounded-xl border flex flex-col justify-between gap-3 ${
+                            isDark ? "bg-zinc-950/40 border-zinc-808" : "bg-slate-50 border-slate-200"
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs font-black font-mono text-indigo-500">
+                                📅 {snap.date_str} {sIdx === 0 && "(Latest)"}
+                              </span>
+                              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-zinc-500/10 text-zinc-500">
+                                {snap.size_kb} KB
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-zinc-555 dark:text-zinc-400">
+                              <strong>{snap.invoices_count}</strong> Invoices • <strong>{snap.catalog_count}</strong> Catalog Items
+                            </p>
+                            <p className="text-[9px] font-mono text-zinc-500 mt-1">
+                              Created: {new Date(snap.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 border-t pt-2.5 border-dashed border-zinc-808/30">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snap.data, null, 2));
+                                const downloadAnchor = document.createElement("a");
+                                downloadAnchor.setAttribute("href", dataStr);
+                                downloadAnchor.setAttribute("download", `jenny_backup_${snap.date_str}.json`);
+                                document.body.appendChild(downloadAnchor);
+                                downloadAnchor.click();
+                                downloadAnchor.remove();
+                              }}
+                              className="flex-1 py-1.5 text-[11px] font-bold border rounded-lg text-center transition cursor-pointer text-indigo-500 border-indigo-500/20 hover:bg-indigo-500/10"
+                            >
+                              📥 Download JSON
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Restore backup from ${snap.date_str}? Current unbacked data will be overwritten.`)) {
+                                  const ok = localDB.restoreBackupSnapshot(snap.id);
+                                  if (ok) {
+                                    loadData();
+                                    alert(`Snapshot from ${snap.date_str} restored successfully!`);
+                                  }
+                                }
+                              }}
+                              className="px-3 py-1.5 text-[11px] font-bold border rounded-lg text-center transition cursor-pointer text-amber-500 border-amber-500/20 hover:bg-amber-500/10"
+                            >
+                              🔄 Restore
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

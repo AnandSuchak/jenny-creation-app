@@ -88,6 +88,10 @@ export interface SellerSettings {
   gstin: string;
   pan: string;
   show_gst_pan: boolean;
+  invoice_terms?: string;
+  invoice_footer?: string;
+  logo_url?: string;
+  auto_lock_minutes?: number;
 }
 
 export interface Category {
@@ -118,6 +122,22 @@ export interface Product {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+}
+
+export interface AuditLog {
+  id: string;
+  user_id?: string;
+  username: string;
+  action: string;
+  details: string;
+  timestamp: string;
+}
+
+export interface TrashBinItem {
+  id: string;
+  type: "product" | "category" | "sub_type" | "location" | "additive" | "invoice";
+  name: string;
+  deleted_at: string;
 }
 
 export interface StorageLocation {
@@ -2293,6 +2313,112 @@ class LocalDB {
     if (isSupabaseConfigured) {
       this.syncToSupabase("seller_settings", settings).catch(err => console.warn("Supabase sync notice on seller settings:", err));
     }
+    this.logAudit("UPDATE_SELLER_SETTINGS", `Updated seller business profile (${settings.seller_name})`);
+  }
+
+  // --- AUDIT LOGGING ---
+  logAudit(action: string, details: string, callerUser?: any): AuditLog {
+    const user = callerUser || this.getCurrentSessionUser();
+    const logs = getStorageItem<AuditLog[]>("audit_logs", []);
+    const newLog: AuditLog = {
+      id: `log-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      user_id: user?.id,
+      username: user?.username || "System",
+      action,
+      details,
+      timestamp: new Date().toISOString()
+    };
+    logs.unshift(newLog);
+    setStorageItem("audit_logs", logs.slice(0, 500));
+    return newLog;
+  }
+
+  getAuditLogs(): AuditLog[] {
+    return getStorageItem<AuditLog[]>("audit_logs", []);
+  }
+
+  // --- RECYCLE BIN / TRASH RECOVERY ---
+  getTrashBinItems(): TrashBinItem[] {
+    const items: TrashBinItem[] = [];
+
+    const prods = getStorageItem<Product[]>("products", initialProducts);
+    prods.filter(p => p.deleted_at !== null).forEach(p => items.push({ id: p.id, type: "product", name: p.name, deleted_at: p.deleted_at! }));
+
+    const cats = getStorageItem<Category[]>("categories", initialCategories);
+    cats.filter(c => c.deleted_at !== null).forEach(c => items.push({ id: c.id, type: "category", name: c.name, deleted_at: c.deleted_at! }));
+
+    const subs = getStorageItem<SubType[]>("sub_types", initialSubTypes);
+    subs.filter(s => s.deleted_at !== null).forEach(s => items.push({ id: s.id, type: "sub_type", name: s.name, deleted_at: s.deleted_at! }));
+
+    const locs = getStorageItem<StorageLocation[]>("locations", initialLocations);
+    locs.filter(l => l.deleted_at !== null).forEach(l => items.push({ id: l.id, type: "location", name: l.name, deleted_at: l.deleted_at! }));
+
+    const adds = getStorageItem<Additive[]>("additives", initialAdditives);
+    adds.filter(a => a.deleted_at !== null).forEach(a => items.push({ id: a.id, type: "additive", name: a.name, deleted_at: a.deleted_at! }));
+
+    const invs = getStorageItem<Invoice[]>("invoices", initialInvoices);
+    invs.filter(i => i.deleted_at !== null).forEach(i => items.push({ id: i.id, type: "invoice", name: `${i.invoice_number} - ${i.customer_name}`, deleted_at: i.deleted_at! }));
+
+    return items.sort((a, b) => new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime());
+  }
+
+  permanentlyDelete(type: string, id: string, callerUser?: any): boolean {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin') {
+      throw new Error("Unauthorized: Only Super Admins can permanently delete items.");
+    }
+    const tableKeyMap: { [t: string]: { key: string; initial: any } } = {
+      product: { key: "products", initial: initialProducts },
+      category: { key: "categories", initial: initialCategories },
+      sub_type: { key: "sub_types", initial: initialSubTypes },
+      location: { key: "locations", initial: initialLocations },
+      additive: { key: "additives", initial: initialAdditives },
+      invoice: { key: "invoices", initial: initialInvoices }
+    };
+
+    const target = tableKeyMap[type];
+    if (!target) return false;
+
+    const list = getStorageItem<any[]>(target.key, target.initial);
+    const filtered = list.filter(item => item.id !== id);
+    if (filtered.length < list.length) {
+      setStorageItem(target.key, filtered);
+      this.logAudit("PERMANENT_DELETE", `Permanently purged ${type} record (${id})`, user);
+      return true;
+    }
+    return false;
+  }
+
+  // --- CUSTOM LOW STOCK THRESHOLDS ---
+  getCustomThresholds(): { [itemId: string]: number } {
+    return getStorageItem<{ [itemId: string]: number }>("custom_stock_thresholds", {});
+  }
+
+  setCustomThreshold(itemId: string, minThreshold: number, callerUser?: any): void {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin' && !user.rights.edit_inventory) {
+      throw new Error("Unauthorized: Your account lacks permission to modify stock thresholds.");
+    }
+    if (minThreshold < 0 || isNaN(minThreshold)) {
+      throw new Error("Stock threshold cannot be negative.");
+    }
+    const thresholds = this.getCustomThresholds();
+    thresholds[itemId] = minThreshold;
+    setStorageItem("custom_stock_thresholds", thresholds);
+    this.logAudit("UPDATE_THRESHOLD", `Updated low stock threshold for item ${itemId} to ${minThreshold}`, user);
+  }
+
+  // --- SESSION SECURITY CONTROL ---
+  forceLogoutDevice(deviceId: string, callerUser?: any): boolean {
+    const user = callerUser || this.getCurrentSessionUser();
+    if (user && user.role !== 'super_admin') {
+      throw new Error("Unauthorized: Only Super Admins can force logout devices.");
+    }
+    const active = getStorageItem<any[]>("active_devices", []);
+    const updated = active.filter((d: any) => d.deviceId !== deviceId);
+    setStorageItem("active_devices", updated);
+    this.logAudit("FORCE_LOGOUT", `Forced session termination for device ${deviceId}`, user);
+    return true;
   }
 
   resetSeed(): void {
