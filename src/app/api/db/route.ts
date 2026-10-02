@@ -170,6 +170,9 @@ const ALLOWED_KEYS = new Set([
   "stock_movements",
   "active_devices",
   "seller_settings",
+  "audit_logs",
+  "custom_stock_thresholds",
+  "backup_snapshots",
   "_last_cleared",
   "_clear_all"
 ]);

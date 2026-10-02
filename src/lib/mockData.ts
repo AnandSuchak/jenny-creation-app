@@ -368,9 +368,27 @@ const setStorageItem = <T>(key: string, value: T): void => {
   if (typeof window !== "undefined" && window.location && window.location.pathname) {
     setTimeout(async () => {
       try {
+        const deviceId = window.localStorage.getItem("jenny_device_fingerprint_id") || "DEV-CLIENT";
+        let username = "Guest";
+        let userRole = "operator";
+        try {
+          const sessionUser = window.localStorage.getItem("jenny_session_user") || window.sessionStorage.getItem("jenny_session_user");
+          if (sessionUser) {
+            const parsed = JSON.parse(sessionUser);
+            if (parsed && parsed.username) username = parsed.username;
+            if (parsed && parsed.role) userRole = parsed.role;
+          }
+        } catch (err) {}
+
         const res = await fetch("/api/db", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-device-id": deviceId,
+            "x-username": username,
+            "x-user-role": userRole,
+            "x-user-agent": typeof navigator !== "undefined" ? navigator.userAgent : "Browser"
+          },
           body: JSON.stringify({ key, value })
         });
         if (res.ok) {
@@ -404,11 +422,13 @@ class LocalDB {
     try {
       const deviceId = window.localStorage.getItem("jenny_device_fingerprint_id") || "DEV-UNKNOWN";
       let username = "Guest";
+      let userRole = "operator";
       try {
         const sessionUser = window.localStorage.getItem("jenny_session_user") || window.sessionStorage.getItem("jenny_session_user");
         if (sessionUser) {
           const parsed = JSON.parse(sessionUser);
           if (parsed && parsed.username) username = parsed.username;
+          if (parsed && parsed.role) userRole = parsed.role;
         }
       } catch (err) {}
 
@@ -525,6 +545,7 @@ class LocalDB {
               "Content-Type": "application/json",
               "x-device-id": deviceId,
               "x-username": username,
+              "x-user-role": userRole,
               "x-user-agent": navigator.userAgent
             },
             body: JSON.stringify({ key, value: mergedList })
@@ -2273,9 +2294,29 @@ class LocalDB {
     setStorageItem("damaged_stock", []);
     setStorageItem("stock_movements", []);
 
+    const deviceId = typeof window !== "undefined" ? (window.localStorage.getItem("jenny_device_fingerprint_id") || "DEV-CLIENT") : "DEV-CLIENT";
+    let username = "Guest";
+    let userRole = "operator";
+    try {
+      if (typeof window !== "undefined") {
+        const sessionUser = window.localStorage.getItem("jenny_session_user") || window.sessionStorage.getItem("jenny_session_user");
+        if (sessionUser) {
+          const parsed = JSON.parse(sessionUser);
+          if (parsed && parsed.username) username = parsed.username;
+          if (parsed && parsed.role) userRole = parsed.role;
+        }
+      }
+    } catch (err) {}
+
     fetch("/api/db", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-device-id": deviceId,
+        "x-username": username,
+        "x-user-role": userRole,
+        "x-user-agent": typeof navigator !== "undefined" ? navigator.userAgent : "Browser"
+      },
       body: JSON.stringify({ key: "_clear_all", value: clearTimestamp })
     }).catch(err => console.error("Server sandbox clear POST failed:", err));
 

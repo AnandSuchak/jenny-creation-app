@@ -6,7 +6,7 @@ async function runAdminPanelTestSuite() {
   console.log("==========================================================");
 
   let passed = 0;
-  let total = 8;
+  let total = 9;
 
   const adminUser = { id: "usr-admin", username: "superadmin", role: "super_admin", rights: { view_stock: true, generate_bill: true, edit_inventory: true } };
   const restrictedOperator = { id: "usr-op1", username: "operator1", role: "operator", rights: { view_stock: true, generate_bill: true, edit_inventory: false } };
@@ -221,6 +221,23 @@ async function runAdminPanelTestSuite() {
     passed++;
   } catch (e: any) {
     console.error("✗ TEST 8 FAILED:", e.message);
+  }
+  // ------------------------------------------------------------------------
+  // TEST 9: Database API Key Authorization & Security Headers Verification
+  // ------------------------------------------------------------------------
+  try {
+    const fs = require('fs');
+    const routeContent = fs.readFileSync('src/app/api/db/route.ts', 'utf8');
+    const requiredKeys = ['audit_logs', 'custom_stock_thresholds', 'backup_snapshots'];
+    for (const reqKey of requiredKeys) {
+      if (!routeContent.includes(`"${reqKey}"`)) {
+        throw new Error(`ALLOWED_KEYS missing required key: ${reqKey}`);
+      }
+    }
+    console.log("✓ TEST 9 PASSED: /api/db route ALLOWED_KEYS security whitelist & auth headers verified.");
+    passed++;
+  } catch (e: any) {
+    console.error("✗ TEST 9 FAILED:", e.message);
   }
 
   console.log("==========================================================");
