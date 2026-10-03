@@ -574,6 +574,18 @@ class LocalDB {
     if (typeof window === "undefined") return;
     const client = supabase;
     if (!isSupabaseConfigured || !client) return;
+
+    const nonCloudKeys = new Set([
+      "backup_snapshots",
+      "audit_logs",
+      "custom_stock_thresholds",
+      "active_devices",
+      "stock_movements",
+      "_last_cleared",
+      "_clear_all"
+    ]);
+    if (nonCloudKeys.has(key)) return;
+
     try {
       let tableName = key;
       if (key === "locations") tableName = "storage_locations";
@@ -656,16 +668,18 @@ class LocalDB {
             updated_at: inv.updated_at || new Date().toISOString(),
             deleted_at: inv.deleted_at || null
           };
-          const keyName = cleanInv.invoice_number ? cleanInv.invoice_number : cleanInv.id;
-          if (!map.has(keyName)) {
-            map.set(keyName, cleanInv);
-          }
+          map.set(cleanInv.id, cleanInv);
         });
         const cleanInvoices = Array.from(map.values());
         if (cleanInvoices.length > 0) {
-          try {
-            await client.from("invoices").upsert(cleanInvoices, { onConflict: "id", ignoreDuplicates: true });
-          } catch (e) {}
+          for (const invRecord of cleanInvoices) {
+            try {
+              const { error } = await client.from("invoices").upsert(invRecord, { onConflict: "id", ignoreDuplicates: true });
+              if (error && (error.code === "23505" || String((error as any).status) === "409" || (error.message && error.message.includes("unique")))) {
+                await client.from("invoices").upsert(invRecord, { onConflict: "invoice_number", ignoreDuplicates: true });
+              }
+            } catch (e) {}
+          }
         }
         return;
       }
