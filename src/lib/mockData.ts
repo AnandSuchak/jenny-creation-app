@@ -580,6 +580,22 @@ class LocalDB {
       const records = Array.isArray(data) ? data : [data];
       if (records.length === 0) return;
 
+      if (key === "users") {
+        const cleanUsers = records.map(({ updated_at, ...rest }: any) => {
+          const cleanObj: any = {};
+          for (const k of Object.keys(rest)) {
+            cleanObj[k] = rest[k] === undefined ? null : rest[k];
+          }
+          return cleanObj;
+        });
+        if (cleanUsers.length > 0) {
+          try {
+            await client.from("users").upsert(cleanUsers);
+          } catch (e) {}
+        }
+        return;
+      }
+
       if (key === "seller_settings") {
         const record = Array.isArray(data) ? data[0] : data;
         if (record) {
