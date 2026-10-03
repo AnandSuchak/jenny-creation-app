@@ -196,7 +196,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthenticated write request rejected." }, { status: 401 });
     }
 
-    if ((key === "_clear_all" || key === "users") && !adminKey) {
+    if (key === "_clear_all" && !adminKey) {
       const authHeader = request.headers.get("x-user-role");
       if (authHeader !== "super_admin") {
         return NextResponse.json({ error: "Super Admin authorization required for sensitive database operations." }, { status: 403 });
