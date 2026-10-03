@@ -590,7 +590,7 @@ class LocalDB {
         });
         if (cleanUsers.length > 0) {
           try {
-            await client.from("users").upsert(cleanUsers);
+            await client.from("users").upsert(cleanUsers, { onConflict: "id", ignoreDuplicates: true });
           } catch (e) {}
         }
         return;
@@ -608,7 +608,7 @@ class LocalDB {
               pan: record.pan,
               show_gst_pan: record.show_gst_pan,
               updated_at: new Date().toISOString()
-            });
+            }, { onConflict: "id" });
           } catch (e) {}
         }
         return;
@@ -628,34 +628,43 @@ class LocalDB {
 
         if (productStock.length > 0) {
           try {
-            await client.from("stock").upsert(productStock);
+            await client.from("stock").upsert(productStock, { onConflict: "id", ignoreDuplicates: true });
           } catch (e) {}
         }
         return;
       }
 
       if (key === "invoices") {
-        const cleanInvoices = records.map((inv: any) => ({
-          id: inv.id,
-          invoice_number: inv.invoice_number,
-          customer_name: inv.customer_name || "Walk-in Customer",
-          customer_phone: inv.customer_phone || "N/A",
-          total_amount: Number(inv.total_amount) || 0,
-          status: inv.status || "ordered",
-          delivery_date: inv.delivery_date || null,
-          advance_paid: Number(inv.advance_paid) || 0,
-          payment_mode: inv.payment_mode || "Cash",
-          created_by_user_id: inv.created_by_user_id || null,
-          created_by_username: inv.created_by_username || null,
-          device_ip: inv.device_ip || null,
-          device_fingerprint: inv.device_fingerprint || null,
-          created_at: inv.created_at || new Date().toISOString(),
-          updated_at: inv.updated_at || new Date().toISOString(),
-          deleted_at: inv.deleted_at || null
-        }));
+        const map = new Map<string, any>();
+        records.forEach((inv: any) => {
+          if (!inv || !inv.id) return;
+          const cleanInv = {
+            id: inv.id,
+            invoice_number: inv.invoice_number,
+            customer_name: inv.customer_name || "Walk-in Customer",
+            customer_phone: inv.customer_phone || "N/A",
+            total_amount: Number(inv.total_amount) || 0,
+            status: inv.status || "ordered",
+            delivery_date: inv.delivery_date || null,
+            advance_paid: Number(inv.advance_paid) || 0,
+            payment_mode: inv.payment_mode || "Cash",
+            created_by_user_id: inv.created_by_user_id || null,
+            created_by_username: inv.created_by_username || null,
+            device_ip: inv.device_ip || null,
+            device_fingerprint: inv.device_fingerprint || null,
+            created_at: inv.created_at || new Date().toISOString(),
+            updated_at: inv.updated_at || new Date().toISOString(),
+            deleted_at: inv.deleted_at || null
+          };
+          const keyName = cleanInv.invoice_number ? cleanInv.invoice_number : cleanInv.id;
+          if (!map.has(keyName)) {
+            map.set(keyName, cleanInv);
+          }
+        });
+        const cleanInvoices = Array.from(map.values());
         if (cleanInvoices.length > 0) {
           try {
-            await client.from("invoices").upsert(cleanInvoices);
+            await client.from("invoices").upsert(cleanInvoices, { onConflict: "id", ignoreDuplicates: true });
           } catch (e) {}
         }
         return;
@@ -679,7 +688,7 @@ class LocalDB {
           }));
         if (cleanItems.length > 0) {
           try {
-            await client.from("invoice_items").upsert(cleanItems);
+            await client.from("invoice_items").upsert(cleanItems, { onConflict: "id", ignoreDuplicates: true });
           } catch (e) {}
         }
         return;
@@ -695,7 +704,7 @@ class LocalDB {
       });
 
       try {
-        await client.from(tableName).upsert(sanitizedRecords);
+        await client.from(tableName).upsert(sanitizedRecords, { onConflict: "id", ignoreDuplicates: true });
       } catch (e) {}
     } catch (err) {}
   }
