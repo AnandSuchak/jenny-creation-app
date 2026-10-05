@@ -491,7 +491,7 @@ export default function Dashboard() {
     const syncInterval = setInterval(() => {
       if (typeof document !== "undefined" && document.hidden) return;
       performSync();
-    }, 60000); // Smart 60-second bandwidth-saving interval
+    }, 5000); // Smart 5-second CUD-timestamp polling interval
 
     // Trigger instant check when user switches back to this tab
     const handleVisibilityChange = () => {
@@ -1857,21 +1857,17 @@ export default function Dashboard() {
   );
   const filteredStock = stock.filter(st => {
     if (st.deleted_at !== null) return false;
-    if (st.product_id) {
-      const prod = getProduct(st.product_id);
-      if (!prod) return false;
-      const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategoryFilter === "all" || prod.category_id === selectedCategoryFilter;
-      const matchesLocation = selectedLocationFilter === "all" || st.storage_location_id === selectedLocationFilter;
-      return matchesSearch && matchesCategory && matchesLocation;
-    } else if (st.additive_id) {
-      const add = additives.find(a => a.id === st.additive_id);
-      if (!add) return false;
-      const matchesSearch = add.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesLocation = selectedLocationFilter === "all" || st.storage_location_id === selectedLocationFilter;
-      return matchesSearch && matchesLocation;
-    }
-    return false;
+    if (!st.product_id) return false;
+    const prod = getProduct(st.product_id);
+    if (!prod) return false;
+    const matchesSearch = prod.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategoryFilter === "all" || prod.category_id === selectedCategoryFilter;
+    const matchesLocation = selectedLocationFilter === "all" || st.storage_location_id === selectedLocationFilter;
+    return matchesSearch && matchesCategory && matchesLocation;
+  });
+  const filteredAdditives = additives.filter(add => {
+    if (add.deleted_at !== null) return false;
+    return searchQuery === "" || add.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
   const totalStockPages = Math.ceil(filteredStock.length / stockPerPage) || 1;
   const paginatedStock = filteredStock.slice(
@@ -4931,7 +4927,7 @@ export default function Dashboard() {
                 </h3>
               </div>
               <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${isDark ? "bg-zinc-900 border-zinc-800 text-zinc-400" : "bg-white border-zinc-200 text-zinc-600"}`}>
-                {additives.length} Ingredients Total
+                {filteredAdditives.length} Ingredients Total
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -4946,7 +4942,7 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className={`divide-y text-sm ${isDark ? "divide-zinc-800" : "divide-zinc-150"}`}>
-                  {additives.map((add) => {
+                  {filteredAdditives.map((add) => {
                     const qty = add.stock_qty_kg || 0;
                     return (
                       <tr key={add.id} className={`transition duration-150 group ${isDark ? "hover:bg-zinc-900/25" : "hover:bg-zinc-100/40"}`}>

@@ -6,7 +6,7 @@ async function runAdminPanelTestSuite() {
   console.log("==========================================================");
 
   let passed = 0;
-  let total = 9;
+  let total = 12;
 
   const adminUser = { id: "usr-admin", username: "superadmin", role: "super_admin", rights: { view_stock: true, generate_bill: true, edit_inventory: true } };
   const restrictedOperator = { id: "usr-op1", username: "operator1", role: "operator", rights: { view_stock: true, generate_bill: true, edit_inventory: false } };
@@ -238,6 +238,65 @@ async function runAdminPanelTestSuite() {
     passed++;
   } catch (e: any) {
     console.error("✗ TEST 9 FAILED:", e.message);
+  }
+
+  // ------------------------------------------------------------------------
+  // TEST 10: Single Device Session Lock Token Consistency
+  // ------------------------------------------------------------------------
+  try {
+    const testToken = "SESS-TEST-" + Date.now();
+    const updatedUser = localDB.updateUserSessionToken("usr-admin", testToken);
+    if (updatedUser.current_session_token !== testToken) {
+      throw new Error(`Session token update failed. Expected ${testToken}, got ${updatedUser.current_session_token}`);
+    }
+    const refetched = localDB.getUsers().find(u => u.id === "usr-admin");
+    if (!refetched || refetched.current_session_token !== testToken) {
+      throw new Error("Refetched session token does not match updated token!");
+    }
+    console.log("✓ TEST 10 PASSED: Single-device session lock token updating and persistence verified.");
+    passed++;
+  } catch (e: any) {
+    console.error("✗ TEST 10 FAILED:", e.message);
+  }
+
+  // ------------------------------------------------------------------------
+  // TEST 11: Inventory Hub Catalog 0-Stock Inclusion & Stock Partitioning
+  // ------------------------------------------------------------------------
+  try {
+    const cat = localDB.addCategory("Zero Stock Category");
+    const zeroProd = localDB.addProduct("Zero Stock Box", cat.id, "", [], 1500);
+
+    const products = localDB.getProducts();
+    const zeroFound = products.find(p => p.id === zeroProd.id);
+    if (!zeroFound) {
+      throw new Error("Product with zero initial stock is missing from product catalog!");
+    }
+
+    const stock = localDB.getStock();
+    const zeroStockSum = stock.filter(st => st.product_id === zeroProd.id && st.deleted_at === null).reduce((sum, s) => sum + s.quantity, 0);
+    if (zeroStockSum !== 0) {
+      throw new Error(`Expected zero stock sum, got ${zeroStockSum}`);
+    }
+
+    console.log("✓ TEST 11 PASSED: Product catalog correctly preserves 0-stock products & inventory partitioning.");
+    passed++;
+  } catch (e: any) {
+    console.error("✗ TEST 11 FAILED:", e.message);
+  }
+
+  // ------------------------------------------------------------------------
+  // TEST 12: Pure Database Sync PostgREST Upsert Invariant
+  // ------------------------------------------------------------------------
+  try {
+    const fs = require('fs');
+    const mockDataCode = fs.readFileSync('src/lib/mockData.ts', 'utf8');
+    if (mockDataCode.includes('ignoreDuplicates: true')) {
+      throw new Error("Found ignoreDuplicates: true in syncToSupabase which prevents database updates!");
+    }
+    console.log("✓ TEST 12 PASSED: Pure database sync PostgREST upsert invariant verified (no ignoreDuplicates blocking updates).");
+    passed++;
+  } catch (e: any) {
+    console.error("✗ TEST 12 FAILED:", e.message);
   }
 
   console.log("==========================================================");

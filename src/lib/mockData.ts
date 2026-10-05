@@ -343,7 +343,7 @@ const pruneLegacyBase64Images = (): void => {
   } catch (e) {}
 };
 
-const setStorageItem = <T>(key: string, value: T): void => {
+const setStorageItem = <T>(key: string, value: T, skipSupabaseSync = false): void => {
   if (typeof window === "undefined") {
     memoryStore[key] = JSON.parse(JSON.stringify(value));
     return;
@@ -406,14 +406,16 @@ const setStorageItem = <T>(key: string, value: T): void => {
     }, 0);
   }
 
-  // Asynchronously update Supabase if configured
-  setTimeout(() => {
-    try {
-      if (localDB && typeof localDB.syncToSupabase === "function") {
-        localDB.syncToSupabase(key, value);
-      }
-    } catch (e) {}
-  }, 0);
+  // Asynchronously update Supabase if configured (skipping if data was downloaded from Supabase)
+  if (!skipSupabaseSync) {
+    setTimeout(() => {
+      try {
+        if (localDB && typeof localDB.syncToSupabase === "function") {
+          localDB.syncToSupabase(key, value);
+        }
+      } catch (e) {}
+    }, 0);
+  }
 };
 
 // Database state management
@@ -602,7 +604,7 @@ class LocalDB {
         });
         if (cleanUsers.length > 0) {
           try {
-            await client.from("users").upsert(cleanUsers, { onConflict: "id", ignoreDuplicates: true });
+            await client.from("users").upsert(cleanUsers, { onConflict: "id" });
           } catch (e) {}
         }
         return;
@@ -640,7 +642,7 @@ class LocalDB {
 
         if (productStock.length > 0) {
           try {
-            await client.from("stock").upsert(productStock, { onConflict: "id", ignoreDuplicates: true });
+            await client.from("stock").upsert(productStock, { onConflict: "id" });
           } catch (e) {}
         }
         return;
@@ -674,9 +676,9 @@ class LocalDB {
         if (cleanInvoices.length > 0) {
           for (const invRecord of cleanInvoices) {
             try {
-              const { error } = await client.from("invoices").upsert(invRecord, { onConflict: "id", ignoreDuplicates: true });
+              const { error } = await client.from("invoices").upsert(invRecord, { onConflict: "id" });
               if (error && (error.code === "23505" || String((error as any).status) === "409" || (error.message && error.message.includes("unique")))) {
-                await client.from("invoices").upsert(invRecord, { onConflict: "invoice_number", ignoreDuplicates: true });
+                await client.from("invoices").upsert(invRecord, { onConflict: "invoice_number" });
               }
             } catch (e) {}
           }
@@ -702,7 +704,7 @@ class LocalDB {
           }));
         if (cleanItems.length > 0) {
           try {
-            await client.from("invoice_items").upsert(cleanItems, { onConflict: "id", ignoreDuplicates: true });
+            await client.from("invoice_items").upsert(cleanItems, { onConflict: "id" });
           } catch (e) {}
         }
         return;
@@ -718,7 +720,7 @@ class LocalDB {
       });
 
       try {
-        await client.from(tableName).upsert(sanitizedRecords, { onConflict: "id", ignoreDuplicates: true });
+        await client.from(tableName).upsert(sanitizedRecords, { onConflict: "id" });
       } catch (e) {}
     } catch (err) {}
   }
@@ -785,12 +787,29 @@ class LocalDB {
             if (inv && inv.id) mergedMap.set(inv.id, inv);
           }
           const finalInvoices = Array.from(mergedMap.values());
-          setStorageItem("invoices", finalInvoices);
-          setStorageItem("invoice_items", rawItems);
+          setStorageItem("invoices", finalInvoices, true);
+          setStorageItem("invoice_items", rawItems, true);
           return;
         }
 
         if (key === "invoice_items") return;
+
+        if (key === "users" && cloudData && cloudData.length > 0) {
+          const activeToken = typeof window !== "undefined" ? (localStorage.getItem("jenny_session_token") || sessionStorage.getItem("jenny_session_token")) : null;
+          const activeUserStr = typeof window !== "undefined" ? (localStorage.getItem("jenny_session_user") || sessionStorage.getItem("jenny_session_user")) : null;
+          let activeUserId: string | null = null;
+          if (activeUserStr) {
+            try { activeUserId = JSON.parse(activeUserStr).id; } catch {}
+          }
+          const mergedUsers = cloudData.map((u: any) => {
+            if (activeUserId && u.id === activeUserId && activeToken) {
+              return { ...u, current_session_token: activeToken };
+            }
+            return u;
+          });
+          setStorageItem("users", mergedUsers, true);
+          return;
+        }
 
         if (cloudData && cloudData.length > 0) {
           if (["products", "categories", "sub_types", "locations"].includes(key) && Array.isArray(localData) && localData.length > 0) {
@@ -804,12 +823,12 @@ class LocalDB {
               }
             }
             const mergedCatalog = Array.from(map.values());
-            setStorageItem(key, mergedCatalog);
+            setStorageItem(key, mergedCatalog, true);
             if (mergedCatalog.length > cloudData.length) {
               await this.syncToSupabase(key, mergedCatalog);
             }
           } else if (!Array.isArray(localData) || localData.length === 0 || cloudData.length >= localData.length) {
-            setStorageItem(key, cloudData);
+            setStorageItem(key, cloudData, true);
           } else if (Array.isArray(localData) && localData.length > cloudData.length) {
             await this.syncToSupabase(key, localData);
           }
