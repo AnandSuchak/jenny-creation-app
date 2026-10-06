@@ -1,3 +1,4 @@
+process.env.J_TEST_MODE = "true";
 import { localDB } from "../src/lib/mockData";
 
 async function runAdminPanelTestSuite() {

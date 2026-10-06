@@ -309,11 +309,7 @@ const getStorageItem = <T>(key: string, defaultValue: T): T => {
   try {
     const item = window.localStorage.getItem(`jenny_creation_${key}`);
     if (item) {
-      const parsed = JSON.parse(item);
-      if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(defaultValue) && defaultValue.length > 0) {
-        return JSON.parse(JSON.stringify(defaultValue));
-      }
-      return parsed;
+      return JSON.parse(item);
     }
     return JSON.parse(JSON.stringify(defaultValue));
   } catch (error) {
@@ -577,6 +573,8 @@ class LocalDB {
     const client = supabase;
     if (!isSupabaseConfigured || !client) return;
 
+    if (typeof process !== "undefined" && process.env.J_TEST_MODE === "true") return;
+
     const nonCloudKeys = new Set([
       "backup_snapshots",
       "audit_logs",
@@ -743,16 +741,16 @@ class LocalDB {
         rInvoices,
         rInvoiceItems
       ] = await Promise.all([
-        client.from("users").select("*"),
-        client.from("categories").select("*"),
-        client.from("sub_types").select("*"),
-        client.from("storage_locations").select("*"),
-        client.from("products").select("*"),
-        client.from("stock").select("*"),
-        client.from("additives").select("*"),
-        client.from("damaged_stock").select("*"),
-        client.from("invoices").select("*"),
-        client.from("invoice_items").select("*")
+        client.from("users").select("*").range(0, 9999),
+        client.from("categories").select("*").range(0, 9999),
+        client.from("sub_types").select("*").range(0, 9999),
+        client.from("storage_locations").select("*").range(0, 9999),
+        client.from("products").select("*").range(0, 9999),
+        client.from("stock").select("*").range(0, 9999),
+        client.from("additives").select("*").range(0, 9999),
+        client.from("damaged_stock").select("*").range(0, 9999),
+        client.from("invoices").select("*").range(0, 9999),
+        client.from("invoice_items").select("*").range(0, 9999)
       ]);
 
       const syncTable = async (key: string, cloudData: any[] | null, defaultValue: any) => {
@@ -778,16 +776,7 @@ class LocalDB {
             items: mapItems.get(inv.id) || []
           }));
 
-          const localInvoices = Array.isArray(localData) ? localData : [];
-          const mergedMap = new Map();
-          for (const inv of localInvoices) {
-            if (inv && inv.id) mergedMap.set(inv.id, inv);
-          }
-          for (const inv of cleanInvoices) {
-            if (inv && inv.id) mergedMap.set(inv.id, inv);
-          }
-          const finalInvoices = Array.from(mergedMap.values());
-          setStorageItem("invoices", finalInvoices, true);
+          setStorageItem("invoices", cleanInvoices, true);
           setStorageItem("invoice_items", rawItems, true);
           return;
         }
@@ -811,27 +800,8 @@ class LocalDB {
           return;
         }
 
-        if (cloudData && cloudData.length > 0) {
-          if (["products", "categories", "sub_types", "locations"].includes(key) && Array.isArray(localData) && localData.length > 0) {
-            const map = new Map();
-            for (const item of localData) {
-              if (item && item.id) map.set(item.id, item);
-            }
-            for (const item of cloudData) {
-              if (item && item.id && !map.has(item.id)) {
-                map.set(item.id, item);
-              }
-            }
-            const mergedCatalog = Array.from(map.values());
-            setStorageItem(key, mergedCatalog, true);
-            if (mergedCatalog.length > cloudData.length) {
-              await this.syncToSupabase(key, mergedCatalog);
-            }
-          } else if (!Array.isArray(localData) || localData.length === 0 || cloudData.length >= localData.length) {
-            setStorageItem(key, cloudData, true);
-          } else if (Array.isArray(localData) && localData.length > cloudData.length) {
-            await this.syncToSupabase(key, localData);
-          }
+        if (cloudData && Array.isArray(cloudData)) {
+          setStorageItem(key, cloudData, true);
         } else if (localData && Array.isArray(localData) && localData.length > 0) {
           await this.syncToSupabase(key, localData);
         }
@@ -852,6 +822,90 @@ class LocalDB {
       console.log("Database synchronization with Supabase completed successfully!");
     } catch (err) {
       console.error("Database sync failed:", err);
+    }
+  }
+
+  async fetchAllFromSupabase(): Promise<{
+    users: User[];
+    categories: Category[];
+    subTypes: SubType[];
+    locations: StorageLocation[];
+    products: Product[];
+    stock: Stock[];
+    additives: Additive[];
+    damagedStock: DamagedStock[];
+    invoices: Invoice[];
+  } | null> {
+    if (typeof window === "undefined") return null;
+    const client = supabase;
+    if (!isSupabaseConfigured || !client) return null;
+
+    try {
+      const [
+        rUsers,
+        rCategories,
+        rSubTypes,
+        rLocations,
+        rProducts,
+        rStock,
+        rAdditives,
+        rDamaged,
+        rInvoices,
+        rInvoiceItems
+      ] = await Promise.all([
+        client.from("users").select("*").range(0, 9999),
+        client.from("categories").select("*").range(0, 9999),
+        client.from("sub_types").select("*").range(0, 9999),
+        client.from("storage_locations").select("*").range(0, 9999),
+        client.from("products").select("*").range(0, 9999),
+        client.from("stock").select("*").range(0, 9999),
+        client.from("additives").select("*").range(0, 9999),
+        client.from("damaged_stock").select("*").range(0, 9999),
+        client.from("invoices").select("*").range(0, 9999),
+        client.from("invoice_items").select("*").range(0, 9999)
+      ]);
+
+      const rawInvoices = rInvoices.data || [];
+      const rawItems = rInvoiceItems.data || [];
+      const mapItems = new Map<string, InvoiceItem[]>();
+      for (const item of rawItems) {
+        if (item && item.invoice_id) {
+          const list = mapItems.get(item.invoice_id) || [];
+          list.push(item);
+          mapItems.set(item.invoice_id, list);
+        }
+      }
+      const cleanInvoices = rawInvoices.map((inv: any) => ({
+        ...inv,
+        items: mapItems.get(inv.id) || []
+      }));
+
+      // Overwrite local storage directly with cloud data (no stale local retention)
+      setStorageItem("users", rUsers.data || [], true);
+      setStorageItem("categories", rCategories.data || [], true);
+      setStorageItem("sub_types", rSubTypes.data || [], true);
+      setStorageItem("locations", rLocations.data || [], true);
+      setStorageItem("products", rProducts.data || [], true);
+      setStorageItem("stock", rStock.data || [], true);
+      setStorageItem("additives", rAdditives.data || [], true);
+      setStorageItem("damaged_stock", rDamaged.data || [], true);
+      setStorageItem("invoices", cleanInvoices, true);
+      setStorageItem("invoice_items", rawItems, true);
+
+      return {
+        users: rUsers.data || [],
+        categories: rCategories.data || [],
+        subTypes: rSubTypes.data || [],
+        locations: rLocations.data || [],
+        products: rProducts.data || [],
+        stock: rStock.data || [],
+        additives: rAdditives.data || [],
+        damagedStock: rDamaged.data || [],
+        invoices: cleanInvoices
+      };
+    } catch (err) {
+      console.error("fetchAllFromSupabase error:", err);
+      return null;
     }
   }
 

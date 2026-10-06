@@ -468,9 +468,21 @@ export default function Dashboard() {
     const performSync = async () => {
       if (isSupabaseConfigured) {
         try {
-          await localDB.syncFromSupabase();
+          const cloudData = await localDB.fetchAllFromSupabase();
           setConnectionStatus("synced");
-          loadData();
+          if (cloudData) {
+            setCategories(cloudData.categories.filter(c => !c.deleted_at));
+            setSubTypes(cloudData.subTypes.filter(s => !s.deleted_at));
+            setLocations(cloudData.locations.filter(l => !l.deleted_at));
+            setProducts(cloudData.products.filter(p => !p.deleted_at));
+            setStock(cloudData.stock.filter(st => !st.deleted_at));
+            setAdditives(cloudData.additives.filter(a => !a.deleted_at));
+            setInvoices(cloudData.invoices.filter(i => !i.deleted_at));
+            setDamagedStockList(cloudData.damagedStock.filter(d => !d.deleted_at));
+            setUsersList(cloudData.users.filter(u => !u.deleted_at));
+          } else {
+            loadData();
+          }
         } catch (err) {
           setConnectionStatus("offline");
         }
@@ -2513,15 +2525,21 @@ export default function Dashboard() {
               type="button"
               onClick={async () => {
                 setIsManualSyncing(true);
-                if (isSupabaseConfigured) {
-                  await localDB.syncFromSupabase();
+                setConnectionStatus("connecting");
+                try {
+                  if (isSupabaseConfigured) {
+                    await localDB.syncFromSupabase();
+                  } else {
+                    await localDB.syncFromServer();
+                  }
+                  setConnectionStatus("synced");
                   loadData();
-                } else {
-                  await localDB.syncFromServer();
-                  loadData();
+                } catch (err) {
+                  setConnectionStatus("offline");
+                } finally {
+                  setIsManualSyncing(false);
+                  setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
                 }
-                setIsManualSyncing(false);
-                setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
               }}
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition duration-150 cursor-pointer ${
                 isDark ? "bg-indigo-950/40 border-indigo-500/30 text-indigo-400 hover:bg-indigo-900/50" : "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"

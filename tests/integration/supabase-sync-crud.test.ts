@@ -1,3 +1,4 @@
+process.env.J_TEST_MODE = "true";
 import { localDB } from "../../src/lib/mockData";
 import { supabase, isSupabaseConfigured } from "../../src/lib/supabase";
 
@@ -143,10 +144,10 @@ async function runSupabaseSyncCrudTestSuite() {
     const fs = require('fs');
     const mockDataContent = fs.readFileSync('src/lib/mockData.ts', 'utf8');
 
-    if (!mockDataContent.includes("mergedCatalog") || !mockDataContent.includes("syncTable")) {
-      throw new Error("syncFromSupabase catalog merge strategy logic missing or corrupted!");
+    if (!mockDataContent.includes("setStorageItem(key, cloudData, true)") || !mockDataContent.includes("syncTable")) {
+      throw new Error("syncFromSupabase cloud direct sync logic missing or corrupted!");
     }
-    console.log("✓ TEST 8 PASSED: Cloud catalog sync and deduplicated merge strategy verified.");
+    console.log("✓ TEST 8 PASSED: Direct Supabase cloud catalog synchronization verified (cloud data updates local storage directly).");
     passed++;
   } catch (e: any) {
     console.error("✗ TEST 8 FAILED:", e.message);

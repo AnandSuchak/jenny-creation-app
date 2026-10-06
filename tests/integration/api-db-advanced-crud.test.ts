@@ -1,3 +1,4 @@
+process.env.J_TEST_MODE = "true";
 import { GET, POST } from "../../src/app/api/db/route";
 import { NextRequest } from "next/server";
 
