@@ -880,12 +880,17 @@ class LocalDB {
         items: mapItems.get(inv.id) || []
       }));
 
+      const cleanProducts = (rProducts.data || []).map((p: any) => ({
+        ...p,
+        photos: []
+      }));
+
       // Overwrite local storage directly with cloud data (no stale local retention)
       setStorageItem("users", rUsers.data || [], true);
       setStorageItem("categories", rCategories.data || [], true);
       setStorageItem("sub_types", rSubTypes.data || [], true);
       setStorageItem("locations", rLocations.data || [], true);
-      setStorageItem("products", rProducts.data || [], true);
+      setStorageItem("products", cleanProducts, true);
       setStorageItem("stock", rStock.data || [], true);
       setStorageItem("additives", rAdditives.data || [], true);
       setStorageItem("damaged_stock", rDamaged.data || [], true);
@@ -897,7 +902,7 @@ class LocalDB {
         categories: rCategories.data || [],
         subTypes: rSubTypes.data || [],
         locations: rLocations.data || [],
-        products: rProducts.data || [],
+        products: cleanProducts,
         stock: rStock.data || [],
         additives: rAdditives.data || [],
         damagedStock: rDamaged.data || [],

@@ -719,12 +719,10 @@ export default function Dashboard() {
       <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
         {/* Solid Background Color Layer behind everything */}
         <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
-        {/* Background Image with blur & opacity overlay */}
+        {/* Background Overlay */}
         <div 
-          className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
+          className="absolute inset-0 -z-20 transition-all duration-300 pointer-events-none"
           style={{ 
-            backgroundImage: "url('/gifting_bg_image.jpg')",
-            filter: "blur(18px) brightness(0.95)",
             opacity: isDark ? 0.08 : 0.04
           }}
         />
@@ -871,12 +869,10 @@ export default function Dashboard() {
       <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans relative overflow-hidden flex items-center justify-center p-4`}>
         {/* Solid Background Color Layer behind everything */}
         <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
-        {/* Background Image with blur & opacity overlay */}
+        {/* Background Overlay */}
         <div 
-          className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
+          className="absolute inset-0 -z-20 transition-all duration-300 pointer-events-none"
           style={{ 
-            backgroundImage: "url('/gifting_bg_image.jpg')",
-            filter: "blur(18px) brightness(0.95)",
             opacity: isDark ? 0.08 : 0.04
           }}
         />
@@ -2194,12 +2190,10 @@ export default function Dashboard() {
     <div className={`min-h-screen ${isDark ? "text-zinc-200" : "text-slate-800"} font-sans selection:bg-indigo-500 selection:text-white relative overflow-hidden pb-16`}>
       {/* Solid Background Color Layer behind everything */}
       <div className={`absolute inset-0 -z-30 ${isDark ? "bg-zinc-950 bg-radial-[at_top_center,_var(--tw-gradient-stops)] from-indigo-950/15 via-zinc-950 to-zinc-950" : "bg-slate-100"}`} />
-      {/* Background Image with blur & opacity overlay */}
+      {/* Background Overlay */}
       <div 
-        className="absolute inset-0 -z-20 bg-cover bg-center bg-no-repeat transition-all duration-300 pointer-events-none"
+        className="absolute inset-0 -z-20 transition-all duration-300 pointer-events-none"
         style={{ 
-          backgroundImage: "url('/gifting_bg_image.jpg')",
-          filter: "blur(18px) brightness(0.95)",
           opacity: isDark ? 0.08 : 0.04
         }}
       />
@@ -3021,28 +3015,15 @@ export default function Dashboard() {
                                   </div>
                                 )}
                                 <div>
-                                  {/* Product Thumbnail Image */}
-                                  <div className="h-28 w-full rounded-xl overflow-hidden mb-2.5 bg-zinc-900 border border-zinc-800/60 relative group">
-                                    {isLowDataMode ? (
-                                      <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 text-zinc-400 text-[10px] font-bold">
-                                        <Package className="h-5 w-5 mb-1 text-indigo-400 opacity-60" />
-                                        <span>Photo Hidden (Low Data)</span>
-                                      </div>
-                                    ) : (
-                                      <img
-                                        src={photoSrc}
-                                        alt={p.name}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                                        onError={(e) => {
-                                          (e.target as HTMLElement).style.display = "none";
-                                        }}
-                                      />
-                                    )}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-2">
-                                      <span className="text-[10px] font-extrabold text-white bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/10">
-                                        ₹{(p.price || 0).toLocaleString("en-IN")}
-                                      </span>
+                                  {/* Product Card Icon Header */}
+                                  <div className={`h-16 w-full rounded-xl overflow-hidden mb-2.5 flex items-center justify-between px-3 border relative ${isDark ? "bg-indigo-950/30 border-indigo-500/30" : "bg-indigo-50/60 border-indigo-200"}`}>
+                                    <div className="flex items-center gap-2">
+                                      <Package className="h-6 w-6 text-indigo-500" />
+                                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Product</span>
                                     </div>
+                                    <span className="text-xs font-black text-indigo-500 font-mono">
+                                      ₹{(p.price || 0).toLocaleString("en-IN")}
+                                    </span>
                                   </div>
 
                                   {/* Badges & Titles */}
@@ -4791,20 +4772,9 @@ export default function Dashboard() {
                       return (
                         <tr key={`${st.id}-${idx}`} className={`transition duration-150 group ${isDark ? "hover:bg-zinc-900/25" : "hover:bg-zinc-100/40"}`}>
                           <td className="py-4 px-6 flex items-center gap-3">
-                            {prod && prod.photos ? (
-                              <img 
-                                src={getValidPhotoSrc(prod.photos)} 
-                                alt={itemName} 
-                                className={`h-10 w-10 object-cover rounded-lg border ${isDark ? "bg-zinc-900 border-zinc-800" : "bg-slate-100 border-slate-200"}`}
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
-                                }}
-                              />
-                            ) : (
-                              <div className={`h-10 w-10 rounded-lg border flex items-center justify-center text-zinc-400 ${isDark ? "bg-zinc-900/20 border-zinc-808" : "bg-slate-50 border-slate-200"}`}>
-                                <Package className="h-5 w-5 text-indigo-500" />
-                              </div>
-                            )}
+                            <div className={`h-10 w-10 rounded-lg border flex items-center justify-center text-zinc-400 ${isDark ? "bg-zinc-900/20 border-zinc-808" : "bg-slate-50 border-slate-200"}`}>
+                              <Package className="h-5 w-5 text-indigo-500" />
+                            </div>
                             <div>
                               <div className={`font-semibold transition duration-150 ${isDark ? "text-zinc-200 group-hover:text-indigo-400" : "text-zinc-800 group-hover:text-indigo-600"}`}>
                                 {itemName}
@@ -5114,29 +5084,9 @@ export default function Dashboard() {
                 }}
                 className={`rounded-2xl border overflow-hidden transition duration-300 group flex flex-col justify-between shadow-sm cursor-pointer hover:shadow-md hover:scale-[1.01] ${isDark ? "bg-zinc-900 border-zinc-808 hover:border-zinc-700 hover:bg-zinc-900/80" : "bg-white border-zinc-200 hover:border-zinc-300 hover:bg-slate-50/50"}`}
               >
-                {/* Product Photo */}
-                <div className={`h-48 w-full relative overflow-hidden ${isDark ? "bg-zinc-900" : "bg-zinc-100"}`}>
-                  {isLowDataMode ? (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-950 text-zinc-400 text-xs font-bold gap-1">
-                      <Package className="h-8 w-8 text-indigo-400 opacity-60" />
-                      <span>Photo Hidden (Low Data Mode)</span>
-                    </div>
-                  ) : (
-                    prod.photos ? (
-                      <img 
-                        src={getValidPhotoSrc(prod.photos)} 
-                        alt={prod.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-zinc-400">
-                        <Package className="h-12 w-12" />
-                      </div>
-                    )
-                  )}
+                {/* Product Card Icon Header */}
+                <div className={`h-24 w-full relative flex items-center justify-center border-b ${isDark ? "bg-zinc-950/60 border-zinc-808 text-indigo-400" : "bg-indigo-50/40 border-indigo-100 text-indigo-600"}`}>
+                  <Package className="h-10 w-10 opacity-80" />
                   <div className="absolute top-3 right-3 flex gap-1.5">
 {currentUser?.rights.edit_inventory && (
                     <button 
@@ -6779,11 +6729,9 @@ export default function Dashboard() {
                     <div className="flex flex-wrap gap-2 p-2 rounded-xl border border-dashed border-indigo-500/30 bg-indigo-500/5 max-h-36 overflow-y-auto">
                       {parseProductPhotoUrls(newProductPhotos).map((url, pIdx) => (
                         <div key={pIdx} className="relative group/thumb rounded-lg overflow-hidden border border-zinc-700/40 w-14 h-14 bg-zinc-900 shrink-0">
-                          {url.startsWith("http") || url.startsWith("/") || url.startsWith("data:") ? (
-                            <img src={url} alt={`Photo ${pIdx+1}`} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[9px] font-mono text-zinc-500">URL</div>
-                          )}
+                          <div className="w-full h-full flex items-center justify-center text-[9px] font-mono text-indigo-400">
+                            <Package className="h-5 w-5 opacity-80" />
+                          </div>
                           {pIdx === 0 && (
                             <span className="absolute top-0.5 left-0.5 bg-indigo-600 text-white text-[7px] font-black px-1 rounded">Main</span>
                           )}
@@ -6853,8 +6801,8 @@ export default function Dashboard() {
                       }}
                       className={`p-2 rounded-lg border cursor-pointer flex items-center gap-3 transition-all duration-150 ${isDark ? "bg-zinc-900 border-zinc-808 hover:border-zinc-700 hover:bg-zinc-850" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}
                     >
-                      <div className="h-9 w-9 rounded overflow-hidden border border-slate-200 dark:border-zinc-800 bg-zinc-900 shrink-0">
-                        <img src="/gift_box_2jar.jpg" alt="Gift Box" className="w-full h-full object-cover" />
+                      <div className="h-9 w-9 rounded overflow-hidden border border-slate-200 dark:border-zinc-800 bg-zinc-900 shrink-0 flex items-center justify-center text-indigo-400">
+                        <Package className="h-5 w-5 opacity-80" />
                       </div>
                       <div className="overflow-hidden text-left">
                         <span className={`text-xs font-bold block truncate ${isDark ? "text-zinc-200" : "text-slate-700"}`}>gift_box_2jar.jpg</span>
@@ -6868,8 +6816,8 @@ export default function Dashboard() {
                       }}
                       className={`p-2 rounded-lg border cursor-pointer flex items-center gap-3 transition-all duration-150 ${isDark ? "bg-zinc-900 border-zinc-808 hover:border-zinc-700 hover:bg-zinc-850" : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}
                     >
-                      <div className="h-9 w-9 rounded overflow-hidden border border-slate-200 dark:border-zinc-800 bg-zinc-900 shrink-0">
-                        <img src="/peacock_tray.jpg" alt="Peacock Tray" className="w-full h-full object-cover" />
+                      <div className="h-9 w-9 rounded overflow-hidden border border-slate-200 dark:border-zinc-800 bg-zinc-900 shrink-0 flex items-center justify-center text-indigo-400">
+                        <Package className="h-5 w-5 opacity-80" />
                       </div>
                       <div className="overflow-hidden text-left">
                         <span className={`text-xs font-bold block truncate ${isDark ? "text-zinc-200" : "text-slate-700"}`}>peacock_tray.jpg</span>
@@ -8938,21 +8886,8 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Product Photo - col-span-5 */}
               <div className="md:col-span-5 flex flex-col gap-3">
-                <div className={`h-56 w-full rounded-xl overflow-hidden border ${isDark ? "bg-zinc-950 border-zinc-808" : "bg-slate-50 border-slate-200"}`}>
-                  {detailProduct.photos ? (
-                    <img 
-                      src={getValidPhotoSrc(detailProduct.photos)} 
-                      alt={detailProduct.name} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-450">
-                      <Package className="h-16 w-16" />
-                    </div>
-                  )}
+                <div className={`h-56 w-full rounded-xl overflow-hidden border flex items-center justify-center ${isDark ? "bg-zinc-950 border-zinc-808 text-indigo-400" : "bg-slate-50 border-slate-200 text-indigo-600"}`}>
+                  <Package className="h-16 w-16 opacity-80" />
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className={`px-2.5 py-1 text-xs font-semibold rounded-lg border ${isDark ? "bg-zinc-950 text-zinc-350 border-zinc-808" : "bg-slate-50 text-slate-650 border-slate-200"}`}>
@@ -9044,21 +8979,8 @@ export default function Dashboard() {
                       onClick={() => setDetailProductId(simProd.id)}
                       className={`flex-none w-48 p-2.5 rounded-xl border cursor-pointer transition duration-200 hover:scale-[1.02] flex items-center gap-3 ${isDark ? "bg-zinc-950 border-zinc-808 hover:border-zinc-700 hover:bg-zinc-900/60" : "bg-slate-50 border-slate-200 hover:border-slate-300 hover:bg-white"}`}
                     >
-                      <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border bg-zinc-900 border-zinc-800">
-                        {simProd.photos ? (
-                          <img 
-                            src={getValidPhotoSrc(simProd.photos)} 
-                            alt={simProd.name} 
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/gift_box_2jar.jpg";
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-zinc-550">
-                            <Package className="h-5 w-5" />
-                          </div>
-                        )}
+                      <div className="h-10 w-10 rounded-lg overflow-hidden shrink-0 border bg-zinc-900 border-zinc-800 flex items-center justify-center text-indigo-400">
+                        <Package className="h-5 w-5 opacity-80" />
                       </div>
                       <div className="overflow-hidden">
                         <span className={`text-xs font-bold block truncate transition duration-150 ${isDark ? "text-zinc-300 hover:text-indigo-400" : "text-slate-700 hover:text-indigo-650"}`}>
